@@ -1,0 +1,5 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^r_libs
+^source_data
+^.*\.prof$
