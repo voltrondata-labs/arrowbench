@@ -7,7 +7,7 @@
 #' * `input` One of `c("arrow_table", "data_frame")`
 #'
 #' @export
-write_file <- Benchmark(
+write_file <- Benchmark("write_file",
   setup = function(ctx,
                    source,
                    format = c("parquet", "feather", "fst"),

@@ -7,9 +7,10 @@
 #' * `output` One of `c("arrow_table", "data_frame")`
 #'
 #' @export
-read_file <- Benchmark(
+read_file <- Benchmark("read_file",
   setup = function(ctx,
-                   source,
+                   source = names(known_sources),
+                   # TODO: break out feather_v1 and feather_v2, feather_v2 only in >= 0.17
                    format = c("parquet", "feather", "fst"),
                    compression = c("uncompressed", "snappy", "zstd"),
                    output = c("arrow_table", "data_frame"),
@@ -66,7 +67,7 @@ get_read_function <- function(format) {
   } else if (format == "parquet") {
     return(function(...) arrow::read_parquet(...))
   } else if (format == "fst") {
-    return(function(...) fst::read_fst(...))
+    return(function(..., as_data_frame) fst::read_fst(...))
   } else {
     stop("Unsupported format: ", format, call. = FALSE)
   }

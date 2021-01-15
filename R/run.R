@@ -11,10 +11,11 @@
 #' a subprocess? Default is `FALSE`, meaning that the benchmarks will be run.
 #' @param profiling Logical: collect prof info? If `TRUE`, the result data will
 #' contain a `prof_file` field, which you can read in with
-#' `profvis::profvis(prof_input = file)`. Default is false
+#' `profvis::profvis(prof_input = file)`. Default is `FALSE`
 #'
 #' @return A `conbench_results` object, containing a list of length `nrow(params)`,
 #' each of those a `list` containing "params" and either "result" or "error".
+#' For a simpler view of results, call `as.data.frame()` on it.
 #' @export
 #' @importFrom purrr pmap map_lgl
 run_benchmark <- function(bm,
@@ -65,7 +66,7 @@ run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE) {
     return(script)
   }
 
-  run_script(script)
+  run_script(script, ..., name = bm$name)
 }
 
 #' Execute a benchmark run
@@ -100,10 +101,10 @@ run_bm <- function(bm, ..., n_iter = 1, profiling = FALSE) {
 }
 
 run_iteration <- function(bm, ctx, profiling = FALSE) {
-  on.exit(bm$after_each(ctx))
   bm$before_each(ctx)
   gc(full = TRUE)
   measure(bm$run(ctx), profiling = profiling)
+  bm$after_each(ctx)
 }
 
 global_setup <- function(lib_path = NULL, cpu_count = NULL, ...) {
@@ -119,7 +120,9 @@ global_setup <- function(lib_path = NULL, cpu_count = NULL, ...) {
     script <- c(
       script,
       paste0('options(Ncpus = ', cpu_count, ')'),
-      paste0('arrow::set_cpu_count(', cpu_count, ')')
+      paste0('arrow:::SetCpuThreadPoolCapacity(as.integer(', cpu_count, '))')
+      # This friendlier wrapper was only added in 0.17
+      # paste0('arrow::set_cpu_count(', cpu_count, ')')
     )
   }
   c(script, "library(conbench)")
@@ -129,14 +132,34 @@ global_setup <- function(lib_path = NULL, cpu_count = NULL, ...) {
 run_script <- function(lines, cmd = "R", ...) {
   # cmd may need to vary by platform; possibly also a param for this fn?
   # TODO: handle env vars in ...
+
+  result_dir <- file.path(getOption("conbench.local_dir", "."), "results")
+  if (!dir.exists(result_dir)) {
+    dir.create(result_dir, recursive = TRUE)
+  }
+  file <- file.path(result_dir, paste0(bm_run_cache_key(...), ".json"))
+  if (file.exists(file)) {
+    message("Loading cached results: ", file)
+    return(fromJSON(file, simplifyDataFrame = TRUE))
+  } else {
+    dots <- list(...)
+    message("Running ", paste(names(dots), dots, sep="=", collapse = " "))
+  }
+
   result <- suppressWarnings(system(paste(cmd, "--no-save -s 2>&1"), intern = TRUE, input = lines))
   find_results <- which(result == results_sentinel)
   if (length(find_results)) {
     # Keep everything after the sentinel
     result <- tail(result, -find_results)
+    # Cache the result so we don't have to re-run it
+    if (!dir.exists(dirname(file))) {
+      dir.create(dirname(file))
+    }
+    writeLines(result, file)
     result <- fromJSON(result, simplifyDataFrame = TRUE)
   } else {
     # This means the script errored.
+    message(paste(result, collapse = "\n"))
     result <- list(
       error = result,
       params = list(...)

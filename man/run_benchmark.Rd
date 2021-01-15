@@ -10,7 +10,7 @@ run_benchmark(
   params = default_params(bm, ...),
   n_iter = 1,
   dry_run = FALSE,
-  profiling = profiling
+  profiling = FALSE
 )
 }
 \arguments{
@@ -30,11 +30,12 @@ a subprocess? Default is \code{FALSE}, meaning that the benchmarks will be run.}
 
 \item{profiling}{Logical: collect prof info? If \code{TRUE}, the result data will
 contain a \code{prof_file} field, which you can read in with
-\code{profvis::profvis(prof_input = file)}. Default is false}
+\code{profvis::profvis(prof_input = file)}. Default is \code{FALSE}}
 }
 \value{
 A \code{conbench_results} object, containing a list of length \code{nrow(params)},
 each of those a \code{list} containing "params" and either "result" or "error".
+For a simpler view of results, call \code{as.data.frame()} on it.
 }
 \description{
 Run a Benchmark across a range of parameters

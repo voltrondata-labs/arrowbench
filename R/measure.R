@@ -9,6 +9,8 @@ measure <- function(..., profiling = FALSE) {
   start_mem <- bench::bench_process_memory()
   gc_info <- with_gc_info({
     prof_file <- with_profiling(profiling, {
+      # TODO: when this errors, the original error is swallowed, and we only
+      # find out because `timings` doesn't exist. Fix that so we see the real error
       timings <- bench::bench_time(eval.parent(...))
     })
   })
@@ -38,6 +40,10 @@ with_profiling <- function(profiling_on, expr) {
 
 with_gc_info <- function(expr) {
   gc_output <- bench:::with_gcinfo(eval.parent(expr))
+  # This will swallow errors, so check for error output and re-raise
+  if (length(gc_output) > 0 && startsWith(gc_output[1], "Error in ")) {
+    stop(paste(gc_output, collapse = "\n"), call. = FALSE)
+  }
   gc <- bench:::parse_gc(gc_output)
   names(gc) <- paste0("gc_", names(gc))
   if (nrow(gc) == 0) {

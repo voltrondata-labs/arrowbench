@@ -11,7 +11,7 @@ measure(..., profiling = FALSE)
 
 \item{profiling}{Logical: collect prof info? If \code{TRUE}, the result data will
 contain a \code{prof_file} field, which you can read in with
-\code{profvis::profvis(prof_input = file)}. Default is false}
+\code{profvis::profvis(prof_input = file)}. Default is \code{FALSE}}
 }
 \value{
 A tibble of timings and memory usage
