@@ -103,8 +103,9 @@ run_bm <- function(bm, ..., n_iter = 1, profiling = FALSE) {
 run_iteration <- function(bm, ctx, profiling = FALSE) {
   bm$before_each(ctx)
   gc(full = TRUE)
-  measure(bm$run(ctx), profiling = profiling)
+  out <- measure(bm$run(ctx), profiling = profiling)
   bm$after_each(ctx)
+  out
 }
 
 global_setup <- function(lib_path = NULL, cpu_count = NULL, ...) {

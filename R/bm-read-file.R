@@ -63,10 +63,13 @@ read_file <- Benchmark("read_file",
 #' @export
 get_read_function <- function(format) {
   if (format == "feather") {
+    library(arrow)
     return(function(...) arrow::read_feather(...))
   } else if (format == "parquet") {
+    library(arrow)
     return(function(...) arrow::read_parquet(...))
   } else if (format == "fst") {
+    library(fst)
     return(function(..., as_data_frame) fst::read_fst(...))
   } else {
     stop("Unsupported format: ", format, call. = FALSE)

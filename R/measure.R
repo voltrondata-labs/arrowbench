@@ -9,8 +9,6 @@ measure <- function(..., profiling = FALSE) {
   start_mem <- bench::bench_process_memory()
   gc_info <- with_gc_info({
     prof_file <- with_profiling(profiling, {
-      # TODO: when this errors, the original error is swallowed, and we only
-      # find out because `timings` doesn't exist. Fix that so we see the real error
       timings <- bench::bench_time(eval.parent(...))
     })
   })
