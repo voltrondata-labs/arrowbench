@@ -76,6 +76,7 @@ known_sources <- list(
   ),
   `nyctaxi_2010-01` = list(
     url = "https://ursa-qa.s3.amazonaws.com/nyctaxi/yellow_tripdata_2010-01.csv.gz",
-    reader = function(file, ...) arrow::read_csv_arrow(file, ...)
+    reader = function(file, ...) arrow::read_csv_arrow(file, ...),
+    dim = c(14863778L, 18L)
   )
 )

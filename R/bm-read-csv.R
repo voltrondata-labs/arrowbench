@@ -7,7 +7,7 @@
 #' * `output` One of `c("arrow_table", "data_frame")`
 #'
 #' @export
-read_file <- Benchmark("read_file",
+read_csv <- Benchmark("read_csv",
    setup = function(ctx,
                     source = names(known_sources),
                     reader = c("arrow", "data.table", "vroom", "readr"),
@@ -23,10 +23,18 @@ read_file <- Benchmark("read_file",
      source <- ensure_source(source)
      ctx$result_dim <- conbench:::get_source_attr(source, "dim")
 
+     input_file <- conbench:::file_with_ext(source, "csv")
      if(ctx$compression == "gzip") {
+       input_file <- conbench:::file_with_ext(source, "csv.gz")
+       if (!file.exists(input_file)) {
+         # compress if the file doesn't already exist
+         gzip(conbench:::file_with_ext(source, "csv"), input_file)
+       }
        # Check file extension, compress if not found
+       ctx$input_file <- input_file
      } else {
        # Check file extension, decompress if not found
+       ctx$input_file <- conbench:::file_with_ext(source, "csv")
      }
    },
    before_each = function(ctx) {
@@ -36,11 +44,17 @@ read_file <- Benchmark("read_file",
      ctx$result <- ctx$read_func(ctx$input_file, as_data_frame = ctx$output == "data_frame")
    },
    after_each = function(ctx) {
-     stopifnot(identical(dim(ctx$result), ctx$result_dim))
+     # we have a tolerance of 1 here because vroom reads 1 additional row of all NAs since
+     # there are two new lines after the header
+     stopifnot("The dimensions do not match" = all.equal(dim(ctx$result), ctx$result_dim, tolerance = 1))
      ctx$result <- NULL
    },
    valid_params = function(params) {
-     drop <- params$output == "arrow_table" & params$reader != "arrow"
+     drop <- params$output == "arrow_table" & params$reader != "arrow" |
+       # on macOS data.table doesn't (typically) have multi core support
+       # TODO: check if this is actually enabled?
+       params$reader == "data.table" & params$cpu_count > 1 |
+       params$reader == "readr" & params$cpu_count > 1
      # Also old versions of arrow didn't accept gzip csv?
      params[!drop,]
    }
@@ -63,8 +77,9 @@ get_csv_reader <- function(reader) {
     return(function(..., as_data_frame) data.table::fread(...))
   } else if (reader == "vroom") {
     # altrep = FALSE because otherwise you aren't getting the data
-    # TODO maybe we do want to compare, esp. later when we do altrep
-    return(function(..., as_data_frame) vroom::vroom(..., altrep = FALSE))
+    # TODO: maybe we do want to compare, esp. later when we do altrep
+    # specify the delim (only needed for compression)
+    return(function(..., as_data_frame) vroom::vroom(..., altrep = FALSE, delim = ","))
   } else {
     stop("Unsupported reader: ", reader, call. = FALSE)
   }
