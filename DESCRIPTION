@@ -18,6 +18,9 @@ Imports:
   utils
 Suggests:
   arrow,
-  fst
+  data.table,
+  dplyr,
+  fst,
+  readr
 RoxygenNote: 7.1.1
 Roxygen: list(markdown = TRUE, load = "source")

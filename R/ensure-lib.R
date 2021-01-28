@@ -1,7 +1,6 @@
 # lib dirs are all inside the "r_libs" directory
 
-# TODO: pull these from DESCRIPTION Suggests
-test_packages <- c("arrow", "fst", "data.table")
+test_packages <- unlist(strsplit(packageDescription("conbench")[["Suggests"]], "[, \n]+"))
 
 ensure_lib <- function(lib = NULL) {
   if (is.null(lib) || identical(lib, "latest")) {
@@ -25,15 +24,24 @@ ensure_lib <- function(lib = NULL) {
     # Install from a CRAN snapshot
     # TODO: if linux use RSPM?
     repo_url <- paste0("https://mran.microsoft.com/snapshot/", arrow_version_to_date[lib])
-    # TODO: this seems to rely on dependencies in the default libPath,
-    # make it install everything from this repo
-    install.packages(test_packages, repos = repo_url, lib = lib_dir_path)
+    with_pure_lib_path(lib_dir_path,
+      install.packages(test_packages, repos = repo_url)
+    )
   } else {
     # git hash? build from source
     # TODO: use remotes package for github ref management
     # For mac, need to do what crossbow and arrow-r-nightly do to use autobrew and pin commit
   }
   lib_dir_path
+}
+
+with_pure_lib_path <- function(path, ...) {
+  old <- .libPaths()
+  on.exit(.libPaths(old))
+  # Hack: assign this internal variable instead of using .libPaths because
+  # .libPaths appends and we want to overwrite/exclude system/user libraries
+  assign(".lib.loc", path, envir = environment(.libPaths))
+  eval.parent(...)
 }
 
 # CRAN archive dates:

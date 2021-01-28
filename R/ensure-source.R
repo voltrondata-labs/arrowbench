@@ -80,3 +80,46 @@ known_sources <- list(
     dim = c(14863778L, 18L)
   )
 )
+
+#' Make sure a multi-file dataset exists
+#'
+#' @param A known-dataset id. See `conbench:::known_datasets`.
+#' @param download logical: should the dataset be synced to the local disk
+#' or queried from its remote URL. Default is `TRUE`; files are cached
+#' and not downloaded if they're already found locally.
+#'
+#' @return An `arrow::Dataset`, validated to have the correct number of rows
+#' @export
+ensure_dataset <- function(name, download = TRUE) {
+  if (!(name %in% names(known_datasets))) {
+    stop("Unknown dataset: ", name, call. = FALSE)
+  }
+  known <- known_datasets[[name]]
+  if (download) {
+    path <- data_file(name)
+    if (!(dir.exists(path) && length(dir(path, recursive = TRUE)) == known$n_files)) {
+      # Only download if some/all files are missing
+      known$download(path)
+    }
+  } else {
+    path <- known$url
+  }
+  ds <- known$open(path)
+  # stopifnot(identical(dim(ds), known$dim))
+  ds
+}
+
+known_datasets <- list(
+  taxi_parquet = list(
+    url = "s3://ursa-labs-taxi-data",
+    download = function(path) {
+      arrow::copy_files("s3://ursa-labs-taxi-data", path)
+      invisible(path)
+    },
+    open = function(path) {
+      arrow::open_dataset(path, partitioning = c("year", "month"))
+    },
+    dim = c(1547741381L, 20L),
+    n_files = 125
+  )
+)
