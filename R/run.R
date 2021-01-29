@@ -122,6 +122,7 @@ global_setup <- function(lib_path = NULL, cpu_count = NULL, ...) {
       script,
       paste0('options(Ncpus = ', cpu_count, ')'),
       paste0('Sys.setenv(VROOM_THREADS = ', cpu_count, ')'),
+      paste0('Sys.setenv(R_DATATABLE_NUM_THREADS = ', cpu_count, ')'),
       paste0('arrow:::SetCpuThreadPoolCapacity(as.integer(', cpu_count, '))')
       # This friendlier wrapper was only added in 0.17
       # paste0('arrow::set_cpu_count(', cpu_count, ')')

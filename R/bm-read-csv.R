@@ -19,6 +19,7 @@ read_csv <- Benchmark("read_csv",
      ctx$output <- match.arg(output)
      # Map string param name to function
      ctx$read_func <- get_csv_reader(ctx$reader)
+     ctx$delim <- conbench:::get_source_attr(source, "delim") %||% ","
 
      source <- ensure_source(source)
      ctx$result_dim <- conbench:::get_source_attr(source, "dim")
@@ -41,19 +42,34 @@ read_csv <- Benchmark("read_csv",
      ctx$result <- NULL
    },
    run = function(ctx) {
-     ctx$result <- ctx$read_func(ctx$input_file, as_data_frame = ctx$output == "data_frame")
+     ctx$result <- ctx$read_func(ctx$input_file, delim = ctx$delim, as_data_frame = ctx$output == "data_frame")
    },
    after_each = function(ctx) {
-     # we have a tolerance of 1 here because vroom reads 1 additional row of all NAs since
-     # there are two new lines after the header
-     stopifnot("The dimensions do not match" = all.equal(dim(ctx$result), ctx$result_dim, tolerance = 1))
+     correct_format <- FALSE
+     if (ctx$output == "data_frame") {
+       correct_format <- inherits(ctx$result, "data.frame")
+     } else if (ctx$output == "arrow_table") {
+       correct_format <- inherits(ctx$result, c("Table", "ArrowObject"))
+     }
+
+     stopifnot(
+       # we have a tolerance of 1 here because vroom reads 1 additional row of
+       # all NAs since there are two new lines after the header
+       "The dimensions do not match" = all.equal(dim(ctx$result), ctx$result_dim, tolerance = 1),
+       "The format isn't correct" = correct_format
+       )
+     if (ctx$output == "arrow_table") {
+       # clean up with arrow_tables
+       # this shouldn't be necessary, but without it each arrow_table iteration
+       # takes longer than the previous
+       ctx$result$invalidate()
+     }
      ctx$result <- NULL
    },
    valid_params = function(params) {
      drop <- params$output == "arrow_table" & params$reader != "arrow" |
        # on macOS data.table doesn't (typically) have multi core support
-       # TODO: check if this is actually enabled?
-       params$reader == "data.table" & params$cpu_count > 1 |
+       # TODO: check if this is actually enabled before running?
        params$reader == "readr" & params$cpu_count > 1
      # Also old versions of arrow didn't accept gzip csv?
      params[!drop,]
@@ -62,15 +78,15 @@ read_csv <- Benchmark("read_csv",
 
 #' Get a CSV reader
 #'
-#' @param reader
+#' @param reader the reader to use
 #'
-#' @return
+#' @return the csv reader
 #' @export
 get_csv_reader <- function(reader) {
   library(reader, character.only = TRUE)
   if (reader == "arrow") {
     # TODO: if gzipped and arrow csv reader version doesn't support, unzip?
-    return(function(...) arrow::read_csv_arrow(...))
+    return(function(...) arrow::read_delim_arrow(...))
   } else if (reader == "readr") {
     return(function(..., as_data_frame) readr::read_csv(...))
   } else if (reader == "data.table") {

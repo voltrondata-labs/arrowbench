@@ -4,10 +4,14 @@
 \alias{as.data.frame.conbench_results}
 \title{Convert benchmark result object to a tidy data frame}
 \usage{
-\method{as.data.frame}{conbench_results}(results, ...)
+\method{as.data.frame}{conbench_results}(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
-\item{results}{list of benchmark results returned by \code{\link[=run_benchmark]{run_benchmark()}}}
+\item{x}{list of benchmark results returned by \code{\link[=run_benchmark]{run_benchmark()}}}
+
+\item{row.names}{for generic consistency}
+
+\item{optional}{for generic consistency}
 
 \item{...}{additional arguments passed to \code{.result_to_df()}. \code{packages} is
 the only currently supported argument, which governs which package versions

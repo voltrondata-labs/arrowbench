@@ -40,10 +40,10 @@ write_file <- Benchmark("write_file",
 
 #' Get a writer
 #'
-#' @param format
-#' @param compression
+#' @param format format to write
+#' @param compression compression to use
 #'
-#' @return
+#' @return the write function to use
 #' @export
 get_write_function <- function(format, compression) {
   force(compression)

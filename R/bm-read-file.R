@@ -57,9 +57,9 @@ read_file <- Benchmark("read_file",
 
 #' Get a reader
 #'
-#' @param format
+#' @param format what format to read
 #'
-#' @return
+#' @return the read function to use
 #' @export
 get_read_function <- function(format) {
   if (format == "feather") {

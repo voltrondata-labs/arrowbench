@@ -7,10 +7,12 @@
 read_source(file, ...)
 }
 \arguments{
-\item{...}{}
+\item{file}{file to read}
+
+\item{...}{extra arguments to pass}
 }
 \value{
-
+the source
 }
 \description{
 Read a known source

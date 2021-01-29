@@ -7,10 +7,10 @@
 get_csv_reader(reader)
 }
 \arguments{
-\item{reader}{}
+\item{reader}{the reader to use}
 }
 \value{
-
+the csv reader
 }
 \description{
 Get a CSV reader

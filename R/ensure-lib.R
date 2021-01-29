@@ -2,6 +2,7 @@
 
 test_packages <- unlist(strsplit(packageDescription("conbench")[["Suggests"]], "[, \n]+"))
 
+#' @importFrom utils install.packages head tail
 ensure_lib <- function(lib = NULL) {
   if (is.null(lib) || identical(lib, "latest")) {
     return(NULL)
@@ -24,9 +25,24 @@ ensure_lib <- function(lib = NULL) {
     # Install from a CRAN snapshot
     # TODO: if linux use RSPM?
     repo_url <- paste0("https://mran.microsoft.com/snapshot/", arrow_version_to_date[lib])
-    with_pure_lib_path(lib_dir_path,
+    with_pure_lib_path(lib_dir_path, {
+      # installing data.table to allow for multi-cores is awkward on macOS
+      if (tolower(Sys.info()["sysname"]) == "darwin" && "data.table" %in% test_packages) {
+        withr::with_makevars(
+          c(
+            LLVM_LOC = "/usr/local/opt/llvm",
+            CC = "$(LLVM_LOC)/bin/clang -fopenmp",
+            CXX="$(LLVM_LOC)/bin/clang++ -fopenmp"
+          ),
+          install.packages("data.table",  repos = repo_url, type = "source")
+        )
+
+        test_packages <- setdiff(test_packages, "data.table")
+      }
+
+      # make it install everything from this repo, install data.table separately (above) tho
       install.packages(test_packages, repos = repo_url)
-    )
+    })
   } else {
     # git hash? build from source
     # TODO: use remotes package for github ref management
@@ -69,5 +85,6 @@ arrow_version_to_date <- c(
 )
 
 lib_dir <- function(..., local_dir = getOption("conbench.local_dir", getwd())) {
-  file.path(local_dir, "r_libs", ...)
+  r_version <- paste0(c(getRversion()$major, getRversion()$minor), collapse = ".")
+  file.path(local_dir, "r_libs", paste0("R-", r_version),  ...)
 }

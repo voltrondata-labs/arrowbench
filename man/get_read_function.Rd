@@ -7,10 +7,10 @@
 get_read_function(format)
 }
 \arguments{
-\item{format}{}
+\item{format}{what format to read}
 }
 \value{
-
+the read function to use
 }
 \description{
 Get a reader

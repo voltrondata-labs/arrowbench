@@ -1,4 +1,5 @@
 #' @importFrom purrr map_int
+#' @importFrom stats setNames
 get_default_args <- function(FUN) {
   forms <- formals(FUN)
   keep <- names(forms)[map_int(forms, length) > 1]
@@ -26,3 +27,16 @@ bm_run_cache_key <- function(name, ...) {
   dots <- dots[sort(names(dots))]
   paste0(name, "/", paste(dots, collapse="-"))
 }
+
+
+#' Default value for NULL
+#'
+#' @param a Thing to test for `NULL`-ness
+#' @param b Thing to use if `a` is `NULL`
+#'
+#' @return `a` unless it's `NULL`, then `b`
+#'
+#' @name null-default
+#'
+#' @export
+"%||%" <- function(a, b) if (!is.null(a)) a else b # nolint

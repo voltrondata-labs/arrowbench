@@ -7,10 +7,12 @@
 get_write_function(format, compression)
 }
 \arguments{
-\item{compression}{}
+\item{format}{format to write}
+
+\item{compression}{compression to use}
 }
 \value{
-
+the write function to use
 }
 \description{
 Get a writer

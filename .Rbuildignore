@@ -3,4 +3,5 @@
 ^r_libs
 ^source_data
 ^results
+^plots
 ^.*\.prof$

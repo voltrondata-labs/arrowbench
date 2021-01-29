@@ -7,7 +7,7 @@
 ensure_source(file)
 }
 \arguments{
-\item{A}{known-source id, a file path, or a URL}
+\item{file}{A known-source id, a file path, or a URL}
 }
 \value{
 A valid path to a source file. If a known source but not present,

@@ -1,6 +1,6 @@
 #' Make sure a data file exists
 #'
-#' @param A known-source id, a file path, or a URL
+#' @param file A known-source id, a file path, or a URL
 #'
 #' @return A valid path to a source file. If a known source but not present,
 #' it will be downloaded and possibly decompressed.
@@ -50,10 +50,10 @@ is_url <- function(x) is.character(x) && length(x) == 1 && grepl("://", x)
 
 #' Read a known source
 #'
-#' @param file
-#' @param ...
+#' @param file file to read
+#' @param ... extra arguments to pass
 #'
-#' @return
+#' @return the source
 #' @export
 read_source <- function(file, ...) {
   reader <- get_source_attr(file, "reader")
@@ -72,18 +72,20 @@ known_sources <- list(
   fanniemae_2016Q4 = list(
     url = "https://ursa-qa.s3.amazonaws.com/fanniemae_loanperf/2016Q4.csv.gz",
     reader = function(file, ...) arrow::read_delim_arrow(file, delim = "|", col_names = FALSE, ...),
+    delim = "|",
     dim = c(22180168L, 31L)
   ),
   `nyctaxi_2010-01` = list(
     url = "https://ursa-qa.s3.amazonaws.com/nyctaxi/yellow_tripdata_2010-01.csv.gz",
     reader = function(file, ...) arrow::read_csv_arrow(file, ...),
+    delim = ",",
     dim = c(14863778L, 18L)
   )
 )
 
 #' Make sure a multi-file dataset exists
 #'
-#' @param A known-dataset id. See `conbench:::known_datasets`.
+#' @param name A known-dataset id. See `conbench:::known_datasets`.
 #' @param download logical: should the dataset be synced to the local disk
 #' or queried from its remote URL. Default is `TRUE`; files are cached
 #' and not downloaded if they're already found locally.

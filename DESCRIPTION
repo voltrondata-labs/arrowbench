@@ -15,12 +15,14 @@ Imports:
   jsonlite,
   purrr,
   sessioninfo,
-  utils
+  utils,
+  withr
 Suggests:
   arrow,
   data.table,
   dplyr,
   fst,
-  readr
+  readr,
+  vroom
 RoxygenNote: 7.1.1
 Roxygen: list(markdown = TRUE, load = "source")
