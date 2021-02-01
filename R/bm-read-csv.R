@@ -62,16 +62,20 @@ read_csv <- Benchmark("read_csv",
        # clean up with arrow_tables
        # this shouldn't be necessary, but without it each arrow_table iteration
        # takes longer than the previous
-       ctx$result$invalidate()
+       # ctx$result$invalidate() is more to-the-point, but was only introduced
+       # in 3.0.0, so use one of the other work arounds:
+       empty_tab <- Table$create(data.frame())
      }
      ctx$result <- NULL
    },
    valid_params = function(params) {
+     # on macOS data.table doesn't (typically) have multi core support
+     # TODO: check if this is actually enabled before running?
      drop <- params$output == "arrow_table" & params$reader != "arrow" |
-       # on macOS data.table doesn't (typically) have multi core support
-       # TODO: check if this is actually enabled before running?
-       params$reader == "readr" & params$cpu_count > 1
-     # Also old versions of arrow didn't accept gzip csv?
+       params$reader == "readr" & params$cpu_count > 1 |
+       # compression was only supported from arrow 1.0.0 and onward
+       params$compression != "uncompressed" & params$reader == "arrow" & params$lib_path < "1.0"
+     # Also old versions of arrow didn't accept gzip csv1
      params[!drop,]
    }
 )
@@ -84,18 +88,18 @@ read_csv <- Benchmark("read_csv",
 #' @export
 get_csv_reader <- function(reader) {
   library(reader, character.only = TRUE)
+  # TODO: allow other readers to read non-comma delimed files
   if (reader == "arrow") {
     # TODO: if gzipped and arrow csv reader version doesn't support, unzip?
     return(function(...) arrow::read_delim_arrow(...))
   } else if (reader == "readr") {
-    return(function(..., as_data_frame) readr::read_csv(...))
+    return(function(..., as_data_frame, delim) readr::read_delim(...))
   } else if (reader == "data.table") {
-    return(function(..., as_data_frame) data.table::fread(...))
+    return(function(..., as_data_frame, delim) data.table::fread(...))
   } else if (reader == "vroom") {
     # altrep = FALSE because otherwise you aren't getting the data
     # TODO: maybe we do want to compare, esp. later when we do altrep
-    # specify the delim (only needed for compression)
-    return(function(..., as_data_frame) vroom::vroom(..., altrep = FALSE, delim = ","))
+    return(function(..., as_data_frame) vroom::vroom(..., altrep = FALSE))
   } else {
     stop("Unsupported reader: ", reader, call. = FALSE)
   }
