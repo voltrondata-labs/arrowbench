@@ -90,11 +90,11 @@
 #' @return A `Benchmark` object containing these functions
 #' @export
 Benchmark <- function(name,
-                      setup = function(ctx, ...) {},
-                      before_each = function(ctx) {},
-                      run = function(ctx) {},
-                      after_each = function(ctx) {},
-                      teardown = function(ctx) {},
+                      setup = function(...) BenchEnvironment(...),
+                      before_each = TRUE,
+                      run = TRUE,
+                      after_each = TRUE,
+                      teardown = TRUE,
                       valid_params = function(params) params,
                       ...) {
   stopifnot(is.character(name))
@@ -102,15 +102,22 @@ Benchmark <- function(name,
     list(
       name = name,
       setup = setup,
-      before_each = before_each,
-      run = run,
-      after_each = after_each,
-      teardown = teardown,
+      before_each = substitute(before_each),
+      run = substitute(run),
+      after_each = substitute(after_each),
+      teardown = substitute(teardown),
       valid_params = valid_params,
       ...),
     class = "Benchmark"
   )
 }
+
+#' Create a test environment to run benchmarks in
+#'
+#' @param ... named list of parameters to set in the environment
+#' @return An environment
+#' @export
+BenchEnvironment <- function(...) list2env(list(...))
 
 default_params <- function(bm, ...) {
   # This takes the expansion of the default parameters in the function signature

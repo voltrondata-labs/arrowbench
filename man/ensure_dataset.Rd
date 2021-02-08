@@ -7,7 +7,7 @@
 ensure_dataset(name, download = TRUE)
 }
 \arguments{
-\item{name}{A known-dataset id. See \code{conbench:::known_datasets}.}
+\item{name}{A known-dataset id. See \code{known_datasets}.}
 
 \item{download}{logical: should the dataset be synced to the local disk
 or queried from its remote URL. Default is \code{TRUE}; files are cached

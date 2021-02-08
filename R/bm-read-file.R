@@ -8,45 +8,49 @@
 #'
 #' @export
 read_file <- Benchmark("read_file",
-  setup = function(ctx,
-                   source = names(known_sources),
+  setup = function(source = names(known_sources),
                    # TODO: break out feather_v1 and feather_v2, feather_v2 only in >= 0.17
                    format = c("parquet", "feather", "fst"),
                    compression = c("uncompressed", "snappy", "zstd"),
                    output = c("arrow_table", "data_frame"),
                    ...) {
-    ctx$format <- match.arg(format)
-    ctx$compression <- match.arg(compression)
-    ctx$output <- match.arg(output)
-    # Map string param name to function
-    ctx$read_func <- get_read_function(ctx$format)
+    format <- match.arg(format)
+    compression <- match.arg(compression)
+    output <- match.arg(output)
 
-    source <- ensure_source(source)
-    ctx$input_file <- conbench:::file_with_ext(source, paste(ctx$format, ctx$compression, sep = "."))
-    ctx$result_dim <- conbench:::get_source_attr(source, "dim")
+    source <- ensure_source(match.arg(source))
+    input_file <- file_with_ext(source, paste(format, compression, sep = "."))
+    result_dim <- get_source_attr(source, "dim")
 
-    if (is.null(ctx$result_dim) || !file.exists(ctx$input_file)) {
-      tab <- read_source(source, as_data_frame = ctx$format == "fst")
-      if (is.null(ctx$result_dim)) {
+    if (is.null(result_dim) || !file.exists(input_file)) {
+      tab <- read_source(source, as_data_frame = format == "fst")
+      if (is.null(result_dim)) {
         # This means we haven't recorded the dim in known_sources, so compute it
-        ctx$result_dim <- dim(tab)
+        result_dim <- dim(tab)
       }
-      if (!file.exists(ctx$input_file)) {
+      if (!file.exists(input_file)) {
         # Create the file in the specified format
-        get_write_function(ctx$format, ctx$compression)(tab, ctx$input_file)
-        stopifnot(file.exists(ctx$input_file))
+        get_write_function(format, compression)(tab, input_file)
+        stopifnot(file.exists(input_file))
       }
     }
+    BenchEnvironment(
+      # Map string param name to function
+      read_func = get_read_function(format),
+      input_file = input_file,
+      result_dim = result_dim,
+      as_data_frame = output == "data_frame"
+    )
   },
-  before_each = function(ctx) {
-    ctx$result <- NULL
+  before_each = {
+    result <- NULL
   },
-  run = function(ctx) {
-    ctx$result <- ctx$read_func(ctx$input_file, as_data_frame = ctx$output == "data_frame")
+  run = {
+    result <- read_func(input_file, as_data_frame = as_data_frame)
   },
-  after_each = function(ctx) {
-    stopifnot(identical(dim(ctx$result), ctx$result_dim))
-    ctx$result <- NULL
+  after_each = {
+    stopifnot(identical(dim(result), result_dim))
+    result <- NULL
   },
   valid_params = function(params) {
     drop <- params$compression == "snappy" & params$format != "parquet" |
@@ -62,14 +66,18 @@ read_file <- Benchmark("read_file",
 #' @return the read function to use
 #' @export
 get_read_function <- function(format) {
+  pkg_map <- list(
+    "feather" = "arrow",
+    "parquet" = "arrow",
+    "fst" = "fst"
+  )
+  library(pkg_map[[format]], character.only = TRUE)
+
   if (format == "feather") {
-    library(arrow)
     return(function(...) arrow::read_feather(...))
   } else if (format == "parquet") {
-    library(arrow)
     return(function(...) arrow::read_parquet(...))
   } else if (format == "fst") {
-    library(fst)
     return(function(..., as_data_frame) fst::read_fst(...))
   } else {
     stop("Unsupported format: ", format, call. = FALSE)

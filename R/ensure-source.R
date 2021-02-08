@@ -66,8 +66,17 @@ read_source <- function(file, ...) {
   }
 }
 
+#' Get source attributes
+#'
+#' @param file the file to get attributes for
+#' @param attr the attribute to get
+#'
+#' @keywords internal
+#' @export
 get_source_attr <- function(file, attr) known_sources[[file_base(file)]][[attr]]
 
+#' Known data files
+#' @export
 known_sources <- list(
   fanniemae_2016Q4 = list(
     url = "https://ursa-qa.s3.amazonaws.com/fanniemae_loanperf/2016Q4.csv.gz",
@@ -85,7 +94,7 @@ known_sources <- list(
 
 #' Make sure a multi-file dataset exists
 #'
-#' @param name A known-dataset id. See `conbench:::known_datasets`.
+#' @param name A known-dataset id. See `known_datasets`.
 #' @param download logical: should the dataset be synced to the local disk
 #' or queried from its remote URL. Default is `TRUE`; files are cached
 #' and not downloaded if they're already found locally.

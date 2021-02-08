@@ -8,65 +8,73 @@
 #'
 #' @export
 read_csv <- Benchmark("read_csv",
-   setup = function(ctx,
-                    source = names(known_sources),
+   setup = function(source = names(known_sources),
                     reader = c("arrow", "data.table", "vroom", "readr"),
                     compression = c("uncompressed", "gzip"),
                     output = c("arrow_table", "data_frame"),
                     ...) {
-     ctx$reader <- match.arg(reader)
-     ctx$compression <- match.arg(compression)
-     ctx$output <- match.arg(output)
+     reader <- match.arg(reader)
+     compression <- match.arg(compression)
+     output <- match.arg(output)
      # Map string param name to function
-     ctx$read_func <- get_csv_reader(ctx$reader)
-     ctx$delim <- conbench:::get_source_attr(source, "delim") %||% ","
+     read_func <- get_csv_reader(reader)
+     delim <- get_source_attr(source, "delim") %||% ","
 
-     source <- ensure_source(source)
-     ctx$result_dim <- conbench:::get_source_attr(source, "dim")
+     source <- ensure_source(match.arg(source))
+     result_dim <- get_source_attr(source, "dim")
 
-     input_file <- conbench:::file_with_ext(source, "csv")
-     if(ctx$compression == "gzip") {
-       input_file <- conbench:::file_with_ext(source, "csv.gz")
+     input_file <- file_with_ext(source, "csv")
+     if(compression == "gzip") {
+       input_file <- file_with_ext(source, "csv.gz")
        if (!file.exists(input_file)) {
          # compress if the file doesn't already exist
-         gzip(conbench:::file_with_ext(source, "csv"), input_file)
+         gzip(file_with_ext(source, "csv"), input_file)
        }
        # Check file extension, compress if not found
-       ctx$input_file <- input_file
+       input_file <- input_file
      } else {
        # Check file extension, decompress if not found
-       ctx$input_file <- conbench:::file_with_ext(source, "csv")
+       input_file <- file_with_ext(source, "csv")
      }
+
+     BenchEnvironment(
+       # Map string param name to function
+       read_func = get_csv_reader(reader),
+       input_file = input_file,
+       result_dim = result_dim,
+       as_data_frame = output == "data_frame",
+       delim = delim
+     )
    },
-   before_each = function(ctx) {
-     ctx$result <- NULL
+   before_each = {
+     result <- NULL
    },
-   run = function(ctx) {
-     ctx$result <- ctx$read_func(ctx$input_file, delim = ctx$delim, as_data_frame = ctx$output == "data_frame")
+   run = {
+     result <- read_func(input_file, delim = delim, as_data_frame = as_data_frame)
    },
-   after_each = function(ctx) {
+   after_each = {
      correct_format <- FALSE
-     if (ctx$output == "data_frame") {
-       correct_format <- inherits(ctx$result, "data.frame")
-     } else if (ctx$output == "arrow_table") {
-       correct_format <- inherits(ctx$result, c("Table", "ArrowObject"))
+     if (as_data_frame) {
+       correct_format <- inherits(result, "data.frame")
+     } else {
+       correct_format <- inherits(result, c("Table", "ArrowObject"))
      }
 
      stopifnot(
        # we have a tolerance of 1 here because vroom reads 1 additional row of
        # all NAs since there are two new lines after the header
-       "The dimensions do not match" = all.equal(dim(ctx$result), ctx$result_dim, tolerance = 1),
+       "The dimensions do not match" = all.equal(dim(result), result_dim, tolerance = 1),
        "The format isn't correct" = correct_format
        )
-     if (ctx$output == "arrow_table") {
+     if (!as_data_frame) {
        # clean up with arrow_tables
        # this shouldn't be necessary, but without it each arrow_table iteration
        # takes longer than the previous
-       # ctx$result$invalidate() is more to-the-point, but was only introduced
+       # result$invalidate() is more to-the-point, but was only introduced
        # in 3.0.0, so use one of the other work arounds:
        empty_tab <- Table$create(data.frame())
      }
-     ctx$result <- NULL
+     result <- NULL
    },
    valid_params = function(params) {
      # on macOS data.table doesn't (typically) have multi core support

@@ -6,11 +6,11 @@
 \usage{
 Benchmark(
   name,
-  setup = function(ctx, ...) { },
-  before_each = function(ctx) { },
-  run = function(ctx) { },
-  after_each = function(ctx) { },
-  teardown = function(ctx) { },
+  setup = function(...) BenchEnvironment(...),
+  before_each = TRUE,
+  run = TRUE,
+  after_each = TRUE,
+  teardown = TRUE,
   valid_params = function(params) params,
   ...
 )

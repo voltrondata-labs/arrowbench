@@ -18,6 +18,14 @@ file_base <- function(file) {
   unlist(strsplit(basename(file), ".", fixed = TRUE))[1]
 }
 
+#' Get a file with an extension
+#'
+#' @param file the file
+#' @param new_ext the new extension
+#'
+#' @return the file with the new extension
+#' @export
+#' @keywords internal
 file_with_ext <- function(file, new_ext) {
   sub(paste0(file_ext(file), "$"), new_ext, file)
 }

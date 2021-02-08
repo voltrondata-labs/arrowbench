@@ -52,7 +52,7 @@ run_benchmark <- function(bm,
 #' "result" or "error".
 #' @export
 run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE) {
-  eval_script <- deparse(list(bm = bm, n_iter = n_iter, ..., profiling = profiling))
+  eval_script <- deparse(list(bm = bm, n_iter = n_iter, ..., profiling = profiling), control = "all")
   eval_script[1] <- sub("^list", "out <- run_bm", eval_script[1])
 
   script <- c(
@@ -79,9 +79,11 @@ run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE) {
 #' @importFrom utils modifyList
 #' @importFrom sessioninfo package_info
 run_bm <- function(bm, ..., n_iter = 1, profiling = FALSE) {
-  ctx <- new.env()
-  on.exit(bm$teardown(ctx))
-  bm$setup(ctx, ...)
+  ctx <- bm$setup(...)
+  on.exit({
+    eval(bm$teardown, envir = ctx)
+    rm(ctx)
+  })
 
   results <- list()
   for (i in seq_len(n_iter)) {
@@ -101,10 +103,10 @@ run_bm <- function(bm, ..., n_iter = 1, profiling = FALSE) {
 }
 
 run_iteration <- function(bm, ctx, profiling = FALSE) {
-  bm$before_each(ctx)
+  eval(bm$before_each, envir = ctx)
   gc(full = TRUE)
-  out <- measure(bm$run(ctx), profiling = profiling)
-  bm$after_each(ctx)
+  out <- measure(eval(bm$run, envir = ctx), profiling = profiling)
+  eval(bm$after_each, envir = ctx)
   out
 }
 

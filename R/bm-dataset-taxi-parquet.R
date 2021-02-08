@@ -5,21 +5,25 @@
 #'
 #' @export
 dataset_taxi_parquet <- Benchmark("dataset_taxi_parquet",
-  setup = function(ctx,
-                   query = names(dataset_taxi_parquet$cases),
+  setup = function(query = names(dataset_taxi_parquet$cases),
                    ...) {
-    library(dplyr)
-    ctx$dataset <- ensure_dataset("taxi_parquet")
-    ctx$query <- dataset_taxi_parquet$cases[[match.arg(query)]]
+    library("dplyr")
+    dataset <- ensure_dataset("taxi_parquet")
+    query <- dataset_taxi_parquet$cases[[match.arg(query)]]
+
+    BenchEnvironment(
+      query = query,
+      dataset = dataset
+    )
   },
-  before_each = function(ctx) {
-    ctx$result <- NULL
+  before_each = {
+    result <- NULL
   },
-  run = function(ctx) {
-    ctx$result <- ctx$query$query(ctx$dataset)
+  run = {
+    result <- query$query(dataset)
   },
-  after_each = function(ctx) {
-    ctx$query$assert(ctx$result)
+  after_each = {
+    query$assert(result)
   },
   cases = list(
     vignette = list(
