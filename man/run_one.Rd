@@ -4,7 +4,7 @@
 \alias{run_one}
 \title{Run a Benchmark with a single set of parameters}
 \usage{
-run_one(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE)
+run_one(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, progress_bar)
 }
 \arguments{
 \item{bm}{\code{\link[=Benchmark]{Benchmark()}} object}

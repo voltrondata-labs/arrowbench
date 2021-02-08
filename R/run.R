@@ -18,6 +18,7 @@
 #' For a simpler view of results, call `as.data.frame()` on it.
 #' @export
 #' @importFrom purrr pmap map_lgl
+#' @importFrom progress progress_bar
 run_benchmark <- function(bm,
                           ...,
                           params = default_params(bm, ...),
@@ -29,7 +30,14 @@ run_benchmark <- function(bm,
   message("Running ", nrow(params), " benchmarks with ", n_iter, " iterations:")
   print(params)
 
-  out <- pmap(params, run_one, bm = bm, n_iter = n_iter, dry_run = dry_run, profiling = profiling)
+  progress_bar <- progress_bar$new(
+    format = "  [:bar] :percent in :elapsed eta: :eta",
+    clear = FALSE,
+    total = nrow(params)
+  )
+  progress_bar$tick(0)
+
+  out <- pmap(params, run_one, bm = bm, n_iter = n_iter, dry_run = dry_run, profiling = profiling, progress_bar = progress_bar)
 
   errors <- map_lgl(out, ~!is.null(.$error))
   if (any(errors)) {
@@ -51,7 +59,7 @@ run_benchmark <- function(bm,
 #' @return A `conbench_result`: a `list` containing "params" and either
 #' "result" or "error".
 #' @export
-run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE) {
+run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, progress_bar) {
   eval_script <- deparse(list(bm = bm, n_iter = n_iter, ..., profiling = profiling), control = "all")
   eval_script[1] <- sub("^list", "out <- run_bm", eval_script[1])
 
@@ -66,7 +74,7 @@ run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE) {
     return(script)
   }
 
-  run_script(script, ..., name = bm$name)
+  run_script(script, ..., name = bm$name, progress_bar = progress_bar)
 }
 
 #' Execute a benchmark run
@@ -134,7 +142,7 @@ global_setup <- function(lib_path = NULL, cpu_count = NULL, ...) {
 }
 
 #' @importFrom jsonlite fromJSON
-run_script <- function(lines, cmd = "R", ...) {
+run_script <- function(lines, cmd = "R", ..., progress_bar) {
   # cmd may need to vary by platform; possibly also a param for this fn?
   # TODO: handle env vars in ...
 
@@ -148,7 +156,9 @@ run_script <- function(lines, cmd = "R", ...) {
     return(fromJSON(file, simplifyDataFrame = TRUE))
   } else {
     dots <- list(...)
-    message("Running ", paste(names(dots), dots, sep="=", collapse = " "))
+    msg <- paste0("Running ", paste(names(dots), dots, sep="=", collapse = " "))
+    progress_bar$message(msg, set_width = FALSE)
+    progress_bar$tick()
   }
 
   result <- suppressWarnings(system(paste(cmd, "--no-save -s 2>&1"), intern = TRUE, input = lines))
