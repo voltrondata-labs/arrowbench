@@ -18,21 +18,23 @@ Benchmark(
 \arguments{
 \item{name}{string identifier for the benchmark, included in results}
 
-\item{setup}{function taking an environment as the first argument and
-additional arguments are benchmark parameters. This function is called once
-to initialize the benchmark context for a given set of parameters.}
+\item{setup}{function having as its arguments the benchmark parameters. See
+the \verb{Parametrizing benchmarks} section. This function is called once
+to initialize the benchmark context for a given set of parameters.
+It should return \code{\link[=BenchEnvironment]{BenchEnvironment()}} with any parameter values or resources
+that the other expressions will need to run.}
 
-\item{before_each}{function that is called before every iteration. You may
+\item{before_each}{expression that is evaluated before every iteration. You may
 not need to define one.}
 
-\item{run}{function that executes what we want to measure (and nothing more).
+\item{run}{expression that executes what we want to measure (and nothing more).
 Only code in this function is benchmarked.}
 
-\item{after_each}{function executed after every iteration. You can put here
+\item{after_each}{expression evaluated after every iteration. You can put here
 assertions about the result of \code{run()}--errors in this function will fail
 the benchmark (not record results)}
 
-\item{teardown}{function run after all iterations are complete. Use this to
+\item{teardown}{expression evaluated after all iterations are complete. Use this to
 clean up any artifacts created, for example. This function may error without
 affecting the benchmark results}
 
@@ -51,19 +53,14 @@ Define a Benchmark
 }
 \section{Evaluation}{
 
-A \code{Benchmark} is evaluated something like:\preformatted{ctx <- new.env()
-bm$setup(ctx, param1 = "value", param2 = "value")
+A \code{Benchmark} is evaluated something like:\preformatted{env <- bm$setup(param1 = "value", param2 = "value")
 for (i in seq_len(n_iter)) \{
-  bm$before_each(ctx)
-  measure(bm$run(ctx))
-  bm$after_each(ctx)
+  eval(bm$before_each, envir = env)
+  measure(eval(bm$run, envir = env))
+  eval(bm$after_each, envir = env)
 \}
-bm$teardown(ctx)
+eval(bm$teardown, envir = env)
 }
-
-Every function in the benchmark should take an environment as its first
-argument, and only \code{setup()} should take additional arguments, which are
-benchmark parameters.
 
 Benchmarks should run a single combination of parameters. Running across
 a range of parameter combinations is handled by the runner, not the functions

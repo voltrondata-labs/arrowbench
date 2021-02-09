@@ -1,11 +1,32 @@
 # conbench
 
 This R package contains tools for defining benchmarks, running them across a 
-range of parameters, and reporting their results in a language-independent form.
+range of parameters, and reporting their results in a standardized form. It also
+contains some benchmark code for measuring performance of Apache Arrow and other 
+projects one might compare it to.
+
+The purpose of the package is to provide developers with better tools for 
+creating, parametrizing, and reproducing benchmarks across a range of library 
+versions, variables, and machines, as well as to facilitate continuous monitoring. 
+While this package could be used for microbenchmarking, it is designed specially
+for "macrobenchmarks": workflows that real users do with real data that take 
+longer than microseconds to run. 
+
+It builds on top of existing R benchmarking tools, notably the `bench` package.
+Among the features that this package adds are
+
+* Setup designed with parametrization in mind so you can test across a range of
+  variables, which may not all be valid in combination
+* Isolation of benchmark runs in separate processes to prevent cross-contamination
+  such as global environment changes and previous memory allocation
+* Tools for bootstrapping package versions and known data sources to facilitate
+  running the same code on different machines
+
+# User guide
 
 ## Defining benchmarks
 
-Benchmarks are constructed by `Benchmark()`, which takes functions that handle 
+Benchmarks are constructed by `Benchmark()`, which takes expressions that handle 
 setup, teardown, and the actual work that we want to measure. See its 
 documentation for details, and see `read_file` and `write_file` for examples.
 
@@ -115,21 +136,3 @@ if you are using the default `lib_path` **and** are updating the package
 versions installed there between benchmark runs, you should clear the cache
 before starting a new run (at least deleting the cached .json files containing
 "latest" in the file name).
-
-## Continuous benchmarking
-
-> Note: this does not yet exist.
-
-To monitor our performance over time and prevent performance regressions, we 
-want to run these benchmarks with a subset of the possible parameters (e.g., 
-we don't need to compare our code to other libraries on every commit).
-
-The package includes a single function that runs all benchmarks in the package, 
-following a configuration object included in the package. 
-
-```r
-run_all()
-```
-
-You can provide an alternative config object and pass it to `run_all()` to run 
-a different subset.

@@ -4,19 +4,14 @@
 #' A `Benchmark` is evaluated something like:
 #'
 #' ```
-#' ctx <- new.env()
-#' bm$setup(ctx, param1 = "value", param2 = "value")
+#' env <- bm$setup(param1 = "value", param2 = "value")
 #' for (i in seq_len(n_iter)) {
-#'   bm$before_each(ctx)
-#'   measure(bm$run(ctx))
-#'   bm$after_each(ctx)
+#'   eval(bm$before_each, envir = env)
+#'   measure(eval(bm$run, envir = env))
+#'   eval(bm$after_each, envir = env)
 #' }
-#' bm$teardown(ctx)
+#' eval(bm$teardown, envir = env)
 #' ```
-#'
-#' Every function in the benchmark should take an environment as its first
-#' argument, and only `setup()` should take additional arguments, which are
-#' benchmark parameters.
 #'
 #' Benchmarks should run a single combination of parameters. Running across
 #' a range of parameter combinations is handled by the runner, not the functions
@@ -68,17 +63,19 @@
 #' the `teardown()` function.
 #'
 #' @param name string identifier for the benchmark, included in results
-#' @param setup function taking an environment as the first argument and
-#' additional arguments are benchmark parameters. This function is called once
+#' @param setup function having as its arguments the benchmark parameters. See 
+#' the `Parametrizing benchmarks` section. This function is called once
 #' to initialize the benchmark context for a given set of parameters.
-#' @param before_each function that is called before every iteration. You may
+#' It should return [BenchEnvironment()] with any parameter values or resources
+#' that the other expressions will need to run.
+#' @param before_each expression that is evaluated before every iteration. You may
 #' not need to define one.
-#' @param run function that executes what we want to measure (and nothing more).
+#' @param run expression that executes what we want to measure (and nothing more).
 #' Only code in this function is benchmarked.
-#' @param after_each function executed after every iteration. You can put here
+#' @param after_each expression evaluated after every iteration. You can put here
 #' assertions about the result of `run()`--errors in this function will fail
 #' the benchmark (not record results)
-#' @param teardown function run after all iterations are complete. Use this to
+#' @param teardown expression evaluated after all iterations are complete. Use this to
 #' clean up any artifacts created, for example. This function may error without
 #' affecting the benchmark results
 #' @param valid_params function taking a `data.frame` of setup parameters and
