@@ -15,7 +15,7 @@
 #' @param read_only this will only attempt to read benchmark files and will not
 #' run any that it cannot find.
 #'
-#' @return A `conbench_results` object, containing a list of length `nrow(params)`,
+#' @return A `arrowbench_results` object, containing a list of length `nrow(params)`,
 #' each of those a `list` containing "params" and either "result" or "error".
 #' For a simpler view of results, call `as.data.frame()` on it.
 #' @export
@@ -63,8 +63,8 @@ run_benchmark <- function(bm,
     out <- out[!sapply(out, is.null)]
   }
 
-  out <- lapply(out, `class<-`, "conbench_result")
-  class(out) <- "conbench_results"
+  out <- lapply(out, `class<-`, "arrowbench_result")
+  class(out) <- "arrowbench_results"
   message("Total run time: ", format(Sys.time() - start))
   out
 }
@@ -74,7 +74,7 @@ run_benchmark <- function(bm,
 #' @inheritParams run_benchmark
 #' @param ... parameters passed to `bm$setup()`.
 #'
-#' @return A `conbench_result`: a `list` containing "params" and either
+#' @return A `arrowbench_result`: a `list` containing "params" and either
 #' "result" or "error".
 #' @export
 run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, progress_bar, read_only = FALSE, test_packages = NULL) {
@@ -125,7 +125,7 @@ run_bm <- function(bm, ..., n_iter = 1, profiling = FALSE) {
   structure(list(
     result = do.call(rbind, results),
     params = params
-  ), class = "conbench_result")
+  ), class = "arrowbench_result")
 }
 
 run_iteration <- function(bm, ctx, profiling = FALSE) {
@@ -161,7 +161,7 @@ global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL, ..
       # paste0('arrow::set_cpu_count(', cpu_count, ')')
     )
   }
-  script <- c(script, "library(conbench)")
+  script <- c(script, "library(arrowbench)")
   if (!is.na.null(mem_alloc)) {
     script <- c(
       script,
@@ -175,7 +175,7 @@ global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL, ..
 run_script <- function(lines, cmd = "R", ..., progress_bar, read_only = FALSE) {
   # cmd may need to vary by platform; possibly also a param for this fn?
 
-  result_dir <- file.path(getOption("conbench.local_dir", "."), "results")
+  result_dir <- file.path(getOption("arrowbench.local_dir", "."), "results")
   if (!dir.exists(result_dir)) {
     dir.create(result_dir, recursive = TRUE)
   }

@@ -45,7 +45,7 @@ ensure_source <- function(file) {
   file
 }
 
-data_file <- function(..., local_dir = getOption("conbench.local_dir", getwd())) {
+data_file <- function(..., local_dir = getOption("arrowbench.local_dir", getwd())) {
   file.path(local_dir, "source_data", ...)
 }
 

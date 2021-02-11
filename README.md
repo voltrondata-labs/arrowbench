@@ -1,4 +1,4 @@
-# conbench
+# arrowbench
 
 This R package contains tools for defining benchmarks, running them across a 
 range of parameters, and reporting their results in a standardized form. It also
@@ -103,7 +103,7 @@ source's provided `reader` function.
 Source files are cached in a `source_data` directory and are only downloaded if
 not present. This speeds up repeat benchmark runs on the same host. By default,
 `source_data` is assumed to be relative to the current working directory, but
-you can set `options(conbench.local_dir)` to point to another (permanent)
+you can set `options(arrowbench.local_dir)` to point to another (permanent)
 base directory.
 
 Similarly, there is an `ensure_lib()` function called in the `global_setup()`
@@ -115,12 +115,12 @@ all Suggested packages into that directory using the MRAN snapshot for
 test against old versions of the code and to backfill benchmark results.
 
 These versioned R package libraries are cached in an `r_libs` directory, 
-like `source_data` relative to `getOption("conbench.local_dir", ".")`.
+like `source_data` relative to `getOption("arrowbench.local_dir", ".")`.
 
 ## Results and caching
 
 `run_benchmark()` returns a list of benchmark results, which may be massaged,
-JSON-serialized, and uploaded to the Conbench service. Within an R process,
+JSON-serialized, and uploaded to the arrowbench service. Within an R process,
 you can call `as.data.frame()` on it to get a more manageable view, which
 can be passed to plotting functions.
 

@@ -37,7 +37,7 @@ contain a \code{prof_file} field, which you can read in with
 run any that it cannot find.}
 }
 \value{
-A \code{conbench_results} object, containing a list of length \code{nrow(params)},
+A \code{arrowbench_results} object, containing a list of length \code{nrow(params)},
 each of those a \code{list} containing "params" and either "result" or "error".
 For a simpler view of results, call \code{as.data.frame()} on it.
 }

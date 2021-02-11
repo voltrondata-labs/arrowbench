@@ -8,14 +8,14 @@
 #' to keep as columns in the result.
 #' @return A data.frame suitable for analysis in R
 #' @export
-as.data.frame.conbench_results <- function(x, row.names = NULL, optional = FALSE, ...) {
+as.data.frame.arrowbench_results <- function(x, row.names = NULL, optional = FALSE, ...) {
   valid <- map_lgl(x, ~is.null(.$error))
 
   dplyr::bind_rows(lapply(x[valid], as.data.frame, ...))
 }
 
 #' @export
-as.data.frame.conbench_result <- function(x, row.names = NULL, optional = FALSE, packages = "arrow", ...) {
+as.data.frame.arrowbench_result <- function(x, row.names = NULL, optional = FALSE, packages = "arrow", ...) {
   pkgs <- x$params$packages
   x$params$packages <- NULL
   for (p in packages) {

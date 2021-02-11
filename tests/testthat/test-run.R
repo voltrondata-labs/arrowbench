@@ -18,7 +18,7 @@ test_that("run_bm", {
     }
   )
   out <- run_bm(b, n_iter = 3)
-  expect_s3_class(out, "conbench_result")
+  expect_s3_class(out, "arrowbench_result")
   expect_identical(nrow(out$result), 3L)
 
   expect_error(run_bm(b, param1 = "b"), "isTRUE(result) is not TRUE", fixed = TRUE)

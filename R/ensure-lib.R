@@ -2,7 +2,7 @@
 
 
 #' @importFrom utils install.packages head tail
-ensure_lib <- function(lib = NULL, test_packages = unlist(strsplit(packageDescription("conbench")[["Suggests"]], "[, \n]+"))) {
+ensure_lib <- function(lib = NULL, test_packages = unlist(strsplit(packageDescription("arrowbench")[["Suggests"]], "[, \n]+"))) {
   # some packages need extra packages to do what we want
   # Listing them here is easier than installing with dependencies = TRUE
   if ("data.table" %in% test_packages) {
@@ -11,11 +11,11 @@ ensure_lib <- function(lib = NULL, test_packages = unlist(strsplit(packageDescri
   # always install purrr + tibble for reasons:
   # when run_bm() is run inside of the benchmark it uses the packages found in
   # the r_lib library first then system/user packages. This is usually not a
-  # problem, except the dependencies of conbench that aren't in r_lib can depend
+  # problem, except the dependencies of arrowbench that aren't in r_lib can depend
   # on packages that are (and mis-match). For example: purrr suggests tibble
   # and the most recent version of tibble requires vctrs >= 0.3.2. *But* the
   # snapshot version of vctrs at that point is 0.3.0 causing a conflict.
-  # TODO: maybe we should install all of the conbench dependencies?
+  # TODO: maybe we should install all of the arrowbench dependencies?
   test_packages <- c(test_packages, "purrr", "tibble")
 
   if (is.null(lib) || identical(lib, "latest")) {
@@ -171,7 +171,7 @@ get_repo_url <- function(lib) {
   repo_url
 }
 
-lib_dir <- function(..., local_dir = getOption("conbench.local_dir", getwd())) {
+lib_dir <- function(..., local_dir = getOption("arrowbench.local_dir", getwd())) {
   r_version <- paste0(c(getRversion()$major, getRversion()$minor), collapse = ".")
   file.path(local_dir, "r_libs", paste0("R-", r_version),  ...)
 }

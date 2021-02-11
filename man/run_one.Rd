@@ -33,7 +33,7 @@ contain a \code{prof_file} field, which you can read in with
 run any that it cannot find.}
 }
 \value{
-A \code{conbench_result}: a \code{list} containing "params" and either
+A \code{arrowbench_result}: a \code{list} containing "params" and either
 "result" or "error".
 }
 \description{
