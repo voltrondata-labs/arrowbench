@@ -5,7 +5,7 @@
 \alias{dataset_taxi_parquet}
 \title{Benchmark Taxi dataset (Parquet) reading}
 \format{
-An object of class \code{Benchmark} of length 8.
+An object of class \code{Benchmark} of length 9.
 }
 \usage{
 dataset_taxi_parquet

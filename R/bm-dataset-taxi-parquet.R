@@ -66,5 +66,8 @@ dataset_taxi_parquet <- Benchmark("dataset_taxi_parquet",
         )
       }
     )
-  )
+  ),
+  packages_used = function(params) {
+    c("arrow", "dplyr")
+  }
 )

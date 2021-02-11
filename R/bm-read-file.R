@@ -56,6 +56,14 @@ read_file <- Benchmark("read_file",
     drop <- params$compression == "snappy" & params$format != "parquet" |
             params$output == "arrow_table" & params$format == "fst"
     params[!drop,]
+  },
+  packages_used = function(params) {
+    pkg_map <- c(
+      "feather" = "arrow",
+      "parquet" = "arrow",
+      "fst" = "fst"
+    )
+    unique(pkg_map[params$format])
   }
 )
 
@@ -66,7 +74,7 @@ read_file <- Benchmark("read_file",
 #' @return the read function to use
 #' @export
 get_read_function <- function(format) {
-  pkg_map <- list(
+  pkg_map <- c(
     "feather" = "arrow",
     "parquet" = "arrow",
     "fst" = "fst"

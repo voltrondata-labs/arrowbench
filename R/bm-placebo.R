@@ -14,5 +14,8 @@ placebo <- Benchmark("placebo",
   after_each = TRUE,
   valid_params = function(params) {
     params
+  },
+  packages_used = function(params) {
+    "base"
   }
 )

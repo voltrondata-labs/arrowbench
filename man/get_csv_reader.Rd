@@ -4,7 +4,7 @@
 \alias{get_csv_reader}
 \title{Get a CSV reader}
 \usage{
-get_csv_reader(reader)
+get_csv_reader(reader, delim)
 }
 \arguments{
 \item{reader}{the reader to use}

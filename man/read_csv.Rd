@@ -5,7 +5,7 @@
 \alias{read_csv}
 \title{Benchmark CSV reading}
 \format{
-An object of class \code{Benchmark} of length 7.
+An object of class \code{Benchmark} of length 8.
 }
 \usage{
 read_csv

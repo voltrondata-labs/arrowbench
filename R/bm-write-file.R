@@ -41,6 +41,14 @@ write_file <- Benchmark("write_file",
   valid_params = function(params) {
     drop <- params$format != "parquet" & params$compression == "snappy"
     params[!drop,]
+  },
+  packages_used = function(params) {
+    pkg_map <- c(
+      "feather" = "arrow",
+      "parquet" = "arrow",
+      "fst" = "fst"
+    )
+    unique(pkg_map[params$format])
   }
 )
 

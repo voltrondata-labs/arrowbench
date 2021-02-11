@@ -36,6 +36,9 @@ ensure_source <- function(file) {
       }
       file <- file_with_ext(file, "csv")
     }
+    if (!is.null(known$post_process)) {
+      known$post_process(file)
+    }
   } else {
     stop(file, " does not exist", call. = FALSE)
   }
@@ -88,7 +91,15 @@ known_sources <- list(
     url = "https://ursa-qa.s3.amazonaws.com/nyctaxi/yellow_tripdata_2010-01.csv.gz",
     reader = function(file, ...) arrow::read_csv_arrow(file, ...),
     delim = ",",
-    dim = c(14863778L, 18L)
+    dim = c(14863778L, 18L),
+    post_process = function(filename) {
+      message("Post processing. This may take a bit...")
+      # remove the extra new line after the header row which causes some readers trouble
+      # TODO: ensure this sed is cross compatible on linux
+      system(paste0("sed -i '' '/^$/d' ", filename))
+      # and then overwrite the gzipped file so that's available
+      R.utils::gzip(filename, paste0(filename, ".gz"), overwrite = TRUE, remove = FALSE)
+    }
   )
 )
 

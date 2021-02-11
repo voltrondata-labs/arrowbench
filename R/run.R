@@ -12,6 +12,8 @@
 #' @param profiling Logical: collect prof info? If `TRUE`, the result data will
 #' contain a `prof_file` field, which you can read in with
 #' `profvis::profvis(prof_input = file)`. Default is `FALSE`
+#' @param read_only this will only attempt to read benchmark files and will not
+#' run any that it cannot find.
 #'
 #' @return A `conbench_results` object, containing a list of length `nrow(params)`,
 #' each of those a `list` containing "params" and either "result" or "error".
@@ -24,7 +26,8 @@ run_benchmark <- function(bm,
                           params = default_params(bm, ...),
                           n_iter = 1,
                           dry_run = FALSE,
-                          profiling = FALSE) {
+                          profiling = FALSE,
+                          read_only = FALSE) {
   start <- Sys.time()
   stopifnot(is.data.frame(params))
   message("Running ", nrow(params), " benchmarks with ", n_iter, " iterations:")
@@ -37,12 +40,27 @@ run_benchmark <- function(bm,
   )
   progress_bar$tick(0)
 
-  out <- pmap(params, run_one, bm = bm, n_iter = n_iter, dry_run = dry_run, profiling = profiling, progress_bar = progress_bar)
+  out <- pmap(
+    params,
+    run_one,
+    bm = bm,
+    n_iter = n_iter,
+    dry_run = dry_run,
+    profiling = profiling,
+    progress_bar = progress_bar,
+    read_only = read_only,
+    test_packages = bm$packages_used(params)
+  )
 
   errors <- map_lgl(out, ~!is.null(.$error))
   if (any(errors)) {
     message(sum(errors), " benchmarks errored:")
     print(params[errors,])
+  }
+
+  if (read_only) {
+    # cleanout nulls from not-yet-finished benchmarks
+    out <- out[!sapply(out, is.null)]
   }
 
   out <- lapply(out, `class<-`, "conbench_result")
@@ -59,12 +77,12 @@ run_benchmark <- function(bm,
 #' @return A `conbench_result`: a `list` containing "params" and either
 #' "result" or "error".
 #' @export
-run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, progress_bar) {
+run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, progress_bar, read_only = FALSE, test_packages = NULL) {
   eval_script <- deparse(list(bm = bm, n_iter = n_iter, ..., profiling = profiling), control = "all")
   eval_script[1] <- sub("^list", "out <- run_bm", eval_script[1])
 
   script <- c(
-    global_setup(...),
+    global_setup(..., test_packages = test_packages),
     eval_script,
     paste0('cat("', results_sentinel, '\n")'),
     "cat(jsonlite::toJSON(unclass(out), digits = 15))"
@@ -74,7 +92,7 @@ run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, pro
     return(script)
   }
 
-  run_script(script, ..., name = bm$name, progress_bar = progress_bar)
+  run_script(script, ..., name = bm$name, progress_bar = progress_bar,  read_only = read_only)
 }
 
 #' Execute a benchmark run
@@ -118,9 +136,9 @@ run_iteration <- function(bm, ctx, profiling = FALSE) {
   out
 }
 
-global_setup <- function(lib_path = NULL, cpu_count = NULL, ...) {
+global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL, ..., test_packages = NULL) {
   script <- ""
-  lib_path <- ensure_lib(lib_path)
+  lib_path <- ensure_lib(lib_path, test_packages = test_packages)
   if (!is.null(lib_path)) {
     script <- c(
       script,
@@ -131,6 +149,11 @@ global_setup <- function(lib_path = NULL, cpu_count = NULL, ...) {
     script <- c(
       script,
       paste0('options(Ncpus = ', cpu_count, ')'),
+      # TODO: only set on linux? only on binaries? This is needed for RSPM to
+      # identify + serve the appropriate binaries (otherwise it falls back to
+      # source)
+      paste0('options(HTTPUserAgent = sprintf("R/%s R (%s)", getRversion(), paste(getRversion(), R.version$platform, R.version$arch, R.version$os)))'),
+      paste0('Sys.setenv(LIBARROW_BINARY=TRUE)'),
       paste0('Sys.setenv(VROOM_THREADS = ', cpu_count, ')'),
       paste0('Sys.setenv(R_DATATABLE_NUM_THREADS = ', cpu_count, ')'),
       paste0('arrow:::SetCpuThreadPoolCapacity(as.integer(', cpu_count, '))')
@@ -138,13 +161,19 @@ global_setup <- function(lib_path = NULL, cpu_count = NULL, ...) {
       # paste0('arrow::set_cpu_count(', cpu_count, ')')
     )
   }
-  c(script, "library(conbench)")
+  script <- c(script, "library(conbench)")
+  if (!is.na.null(mem_alloc)) {
+    script <- c(
+      script,
+      paste0("confirm_mem_alloc('", mem_alloc, "')")
+    )
+  }
+  script
 }
 
 #' @importFrom jsonlite fromJSON
-run_script <- function(lines, cmd = "R", ..., progress_bar) {
+run_script <- function(lines, cmd = "R", ..., progress_bar, read_only = FALSE) {
   # cmd may need to vary by platform; possibly also a param for this fn?
-  # TODO: handle env vars in ...
 
   result_dir <- file.path(getOption("conbench.local_dir", "."), "results")
   if (!dir.exists(result_dir)) {
@@ -152,16 +181,37 @@ run_script <- function(lines, cmd = "R", ..., progress_bar) {
   }
   file <- file.path(result_dir, paste0(bm_run_cache_key(...), ".json"))
   if (file.exists(file)) {
-    message("Loading cached results: ", file)
-    return(fromJSON(file, simplifyDataFrame = TRUE))
-  } else {
-    dots <- list(...)
-    msg <- paste0("Running ", paste(names(dots), dots, sep="=", collapse = " "))
+    msg <- paste0("Loading cached results: ", file)
     progress_bar$message(msg, set_width = FALSE)
     progress_bar$tick()
+
+    return(fromJSON(file, simplifyDataFrame = TRUE))
+  } else if (read_only) {
+    msg <- paste0("\U274C results not found: ", file)
+    progress_bar$message(msg, set_width = FALSE)
+    progress_bar$tick()
+    # return nothing since we are only reading.
+    return(NULL)
   }
 
-  result <- suppressWarnings(system(paste(cmd, "--no-save -s 2>&1"), intern = TRUE, input = lines))
+  dots <- list(...)
+  msg <- paste0("Running ", paste(names(dots), dots, sep="=", collapse = " "))
+  progress_bar$message(msg, set_width = FALSE)
+  progress_bar$tick()
+
+  env_vars <- character(0)
+  if (!is.na.null(dots$mem_alloc)) {
+    env_vars <- c(env_vars, paste0("ARROW_DEFAULT_MEMORY_POOL=", dots$mem_alloc))
+  }
+
+  result <- suppressWarnings(system2(
+    cmd,
+    args = c("--no-save", "-s"),
+    stdout = TRUE,
+    stderr = TRUE,
+    input = lines,
+    env = env_vars
+    ))
   find_results <- which(result == results_sentinel)
   if (length(find_results)) {
     # Keep everything after the sentinel

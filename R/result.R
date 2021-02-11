@@ -11,7 +11,7 @@
 as.data.frame.conbench_results <- function(x, row.names = NULL, optional = FALSE, ...) {
   valid <- map_lgl(x, ~is.null(.$error))
 
-  do.call(rbind, lapply(x[valid], as.data.frame, ...))
+  dplyr::bind_rows(lapply(x[valid], as.data.frame, ...))
 }
 
 #' @export

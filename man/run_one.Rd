@@ -4,7 +4,16 @@
 \alias{run_one}
 \title{Run a Benchmark with a single set of parameters}
 \usage{
-run_one(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, progress_bar)
+run_one(
+  bm,
+  ...,
+  n_iter = 1,
+  dry_run = FALSE,
+  profiling = FALSE,
+  progress_bar,
+  read_only = FALSE,
+  test_packages = NULL
+)
 }
 \arguments{
 \item{bm}{\code{\link[=Benchmark]{Benchmark()}} object}
@@ -19,6 +28,9 @@ a subprocess? Default is \code{FALSE}, meaning that the benchmarks will be run.}
 \item{profiling}{Logical: collect prof info? If \code{TRUE}, the result data will
 contain a \code{prof_file} field, which you can read in with
 \code{profvis::profvis(prof_input = file)}. Default is \code{FALSE}}
+
+\item{read_only}{this will only attempt to read benchmark files and will not
+run any that it cannot find.}
 }
 \value{
 A \code{conbench_result}: a \code{list} containing "params" and either
