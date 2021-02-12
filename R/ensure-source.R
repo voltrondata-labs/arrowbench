@@ -93,7 +93,7 @@ known_sources <- list(
     delim = ",",
     dim = c(14863778L, 18L),
     post_process = function(filename) {
-      message("Post processing. This may take a bit...")
+      message("Preparing data for tests. This may take a bit...")
       # remove the extra new line after the header row which causes some readers trouble
       # TODO: ensure this sed is cross compatible on linux
       system(paste0("sed -i '' '/^$/d' ", filename))
