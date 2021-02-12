@@ -173,7 +173,7 @@ global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL, ..
 
 #' @importFrom jsonlite fromJSON
 #' @importFrom withr with_envvar
-run_script <- function(lines, cmd = "R", ..., progress_bar, read_only = FALSE) {
+run_script <- function(lines, cmd = find_r(), ..., progress_bar, read_only = FALSE) {
   # cmd may need to vary by platform; possibly also a param for this fn?
 
   result_dir <- file.path(getOption("arrowbench.local_dir", "."), "results")

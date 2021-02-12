@@ -5,6 +5,7 @@
 #' @return A valid path to a source file. If a known source but not present,
 #' it will be downloaded and possibly decompressed.
 #' @export
+#' @importFrom R.utils gunzip
 ensure_source <- function(file) {
   if (is_url(file)) {
     # TODO: validate that it exists?
@@ -27,17 +28,20 @@ ensure_source <- function(file) {
     file <- paste(data_file(file), ext, sep = ".")
     if (!file.exists(file)) {
       utils::download.file(known$url, file, mode = "wb")
+      # run the post processing only once.
+      on.exit({
+        if (!is.null(known$post_process)) {
+          known$post_process(file)
+        }
+      })
     }
     if (ext == "csv.gz") {
       if (!file.exists(file_with_ext(file, "csv"))) {
         # This could be done more efficiently
         # Could shell out to `gunzip` but that assumes the command exists
-        writeLines(readLines(gzfile(file)), file_with_ext(file, "csv"))
+        gunzip(file, file_with_ext(file, "csv"), remove = FALSE)
       }
       file <- file_with_ext(file, "csv")
-    }
-    if (!is.null(known$post_process)) {
-      known$post_process(file)
     }
   } else {
     stop(file, " does not exist", call. = FALSE)

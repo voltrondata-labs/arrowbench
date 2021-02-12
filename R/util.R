@@ -73,3 +73,11 @@ is_arrow_package <- function(params, min_version = "0.17") {
   (params$reader %||% FALSE == "arrow" | params$format %||% "fst" != "fst" ) &
     params$lib_path >= min_version
 }
+
+find_r <- function() {
+  if (.Platform$OS.type == "windows") {
+    file.path(R.home("bin"), "Rcmd.exe")
+  } else {
+    file.path(R.home("bin"), "R")
+  }
+}
