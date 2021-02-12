@@ -99,8 +99,12 @@ known_sources <- list(
     post_process = function(filename) {
       message("Post processing. This may take a bit...")
       # remove the extra new line after the header row which causes some readers trouble
-      # TODO: ensure this sed is cross compatible on linux
-      system(paste0("sed -i '' '/^$/d' ", filename))
+      # sed on macOS and linux is slightly different. Windows will fail here.
+      if (tolower(Sys.info()["sysname"]) == "darwin" ) {
+        system(paste0("sed -iE '/^$/d' ", filename))
+      } else {
+        system(paste0("sed -i '/^$/d' ", filename))
+      }
       # and then overwrite the gzipped file so that's available
       R.utils::gzip(filename, paste0(filename, ".gz"), overwrite = TRUE, remove = FALSE)
     }

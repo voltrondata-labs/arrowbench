@@ -153,7 +153,6 @@ global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL, ..
       # identify + serve the appropriate binaries (otherwise it falls back to
       # source)
       paste0('options(HTTPUserAgent = sprintf("R/%s R (%s)", getRversion(), paste(getRversion(), R.version$platform, R.version$arch, R.version$os)))'),
-      paste0('Sys.setenv(LIBARROW_BINARY=TRUE)'),
       paste0('Sys.setenv(VROOM_THREADS = ', cpu_count, ')'),
       paste0('Sys.setenv(R_DATATABLE_NUM_THREADS = ', cpu_count, ')'),
       paste0('arrow:::SetCpuThreadPoolCapacity(as.integer(', cpu_count, '))')

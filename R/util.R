@@ -76,7 +76,7 @@ is_arrow_package <- function(params, min_version = "0.17") {
 
 find_r <- function() {
   if (.Platform$OS.type == "windows") {
-    file.path(R.home("bin"), "Rcmd.exe")
+    file.path(R.home("bin"), "R.exe")
   } else {
     file.path(R.home("bin"), "R")
   }
