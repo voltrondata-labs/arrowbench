@@ -101,13 +101,15 @@ special_data_table_install <- function(repo_url = NULL, dev = FALSE, cran_url = 
           install.packages("data.table",  repos = repo_url, type = "source")
         }
       },
-      error = function(e) {
+      warning = function(w) {
         message(
-          "You must install llvm before you can install data.table from ",
-          "source. Try running `brew install llvm` before re-running. The ",
-          "original error was:"
+          "You must install llvm and libomp before you can install data.table from ",
+          "source. Try running `brew install llvm libomp` before re-running. ",
+          "https://github.com/Rdatatable/data.table/wiki/Installation#openmp-enabled-compiler-for-mac ",
+          "may have more information about how the dependencies needed to install ",
+          "data.table with multicore awareness. The original error was:"
         )
-        cat(e)
+        stop(w$message)
       }
       )
   )
