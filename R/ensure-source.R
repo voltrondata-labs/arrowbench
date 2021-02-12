@@ -6,6 +6,7 @@
 #' it will be downloaded and possibly decompressed.
 #' @export
 #' @importFrom R.utils gunzip
+#' @importFrom withr with_options
 ensure_source <- function(file) {
   if (is_url(file)) {
     # TODO: validate that it exists?
@@ -28,7 +29,8 @@ ensure_source <- function(file) {
     file <- paste(data_file(file), ext, sep = ".")
     if (!file.exists(file)) {
       # override the timeout
-      withr::with_options(
+      # TODO: retry with backoff instead of just overriding?
+      with_options(
         new = list(timeout = 600),
         utils::download.file(known$url, file, mode = "wb")
       )
