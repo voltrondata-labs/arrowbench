@@ -27,7 +27,11 @@ ensure_source <- function(file) {
     ext <- file_ext(known$url)
     file <- paste(data_file(file), ext, sep = ".")
     if (!file.exists(file)) {
-      utils::download.file(known$url, file, mode = "wb")
+      # override the timeout
+      withr::with_options(
+        timeout = 600,
+        utils::download.file(known$url, file, mode = "wb")
+      )
       # run the post processing only once.
       on.exit({
         if (!is.null(known$post_process)) {
