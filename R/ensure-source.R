@@ -29,7 +29,7 @@ ensure_source <- function(file) {
     file <- paste(data_file(file), ext, sep = ".")
     if (!file.exists(file)) {
       # override the timeout
-      # TODO: retry with backoff instead of just overriding?
+      # TODO: retry with backoff instead of just overriding? or use `curl`?
       with_options(
         new = list(timeout = 600),
         utils::download.file(known$url, file, mode = "wb")
