@@ -29,7 +29,7 @@ ensure_source <- function(file) {
     if (!file.exists(file)) {
       # override the timeout
       withr::with_options(
-        timeout = 600,
+        new = list(timeout = 600),
         utils::download.file(known$url, file, mode = "wb")
       )
       # run the post processing only once.
