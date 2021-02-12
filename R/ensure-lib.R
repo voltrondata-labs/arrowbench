@@ -164,8 +164,9 @@ rspm_ids <- c(
 
 get_repo_url <- function(lib) {
   if (tolower(Sys.info()["sysname"]) == "linux") {
-    # TODO: bionic is hard-coded; use distro package to ID the OS properly
-    repo_url <-  paste0("https://packagemanager.rstudio.com/all/__linux__/bionic/", rspm_ids[lib])
+    # TODO: non-Ubuntu OSes need different handling
+    # RSPM will send binaries as a fallback, so if the distro isn't perfect the worst that should happen is source installs.
+    repo_url <-  paste0("https://packagemanager.rstudio.com/all/__linux__/",  distro::distro()$codename, "/", rspm_ids[lib])
   } else {
     # macOS + windows
     repo_url <- paste0("https://mran.microsoft.com/snapshot/", arrow_version_to_date[lib])

@@ -5,6 +5,8 @@
 #' @return A valid path to a source file. If a known source but not present,
 #' it will be downloaded and possibly decompressed.
 #' @export
+#' @importFrom R.utils gunzip
+#' @importFrom withr with_options
 ensure_source <- function(file) {
   if (is_url(file)) {
     # TODO: validate that it exists?
@@ -26,18 +28,26 @@ ensure_source <- function(file) {
     ext <- file_ext(known$url)
     file <- paste(data_file(file), ext, sep = ".")
     if (!file.exists(file)) {
-      utils::download.file(known$url, file, mode = "wb")
+      # override the timeout
+      # TODO: retry with backoff instead of just overriding? or use `curl`?
+      with_options(
+        new = list(timeout = 600),
+        utils::download.file(known$url, file, mode = "wb")
+      )
+      # run the post processing only once.
+      on.exit({
+        if (!is.null(known$post_process)) {
+          known$post_process(file)
+        }
+      })
     }
     if (ext == "csv.gz") {
       if (!file.exists(file_with_ext(file, "csv"))) {
         # This could be done more efficiently
         # Could shell out to `gunzip` but that assumes the command exists
-        writeLines(readLines(gzfile(file)), file_with_ext(file, "csv"))
+        gunzip(file, file_with_ext(file, "csv"), remove = FALSE)
       }
       file <- file_with_ext(file, "csv")
-    }
-    if (!is.null(known$post_process)) {
-      known$post_process(file)
     }
   } else {
     stop(file, " does not exist", call. = FALSE)
@@ -95,8 +105,12 @@ known_sources <- list(
     post_process = function(filename) {
       message("Preparing data for tests. This may take a bit...")
       # remove the extra new line after the header row which causes some readers trouble
-      # TODO: ensure this sed is cross compatible on linux
-      system(paste0("sed -i '' '/^$/d' ", filename))
+      # sed on macOS and linux is slightly different. Windows will fail here.
+      if (tolower(Sys.info()["sysname"]) == "darwin" ) {
+        system(paste0("sed -iE '/^$/d' ", filename))
+      } else {
+        system(paste0("sed -i '/^$/d' ", filename))
+      }
       # and then overwrite the gzipped file so that's available
       R.utils::gzip(filename, paste0(filename, ".gz"), overwrite = TRUE, remove = FALSE)
     }
