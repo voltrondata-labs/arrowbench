@@ -172,6 +172,7 @@ global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL, ..
 }
 
 #' @importFrom jsonlite fromJSON
+#' @importFrom withr with_envvar
 run_script <- function(lines, cmd = "R", ..., progress_bar, read_only = FALSE) {
   # cmd may need to vary by platform; possibly also a param for this fn?
 
@@ -199,19 +200,15 @@ run_script <- function(lines, cmd = "R", ..., progress_bar, read_only = FALSE) {
   progress_bar$message(msg, set_width = FALSE)
   progress_bar$tick()
 
-  env_vars <- character(0)
+  env_vars <- list()
   if (!is.na.null(dots$mem_alloc)) {
-    env_vars <- c(env_vars, paste0("ARROW_DEFAULT_MEMORY_POOL=", dots$mem_alloc))
+    env_vars <- c(env_vars, ARROW_DEFAULT_MEMORY_POOL = dots$mem_alloc)
   }
 
-  result <- suppressWarnings(system2(
-    cmd,
-    args = c("--no-save", "-s"),
-    stdout = TRUE,
-    stderr = TRUE,
-    input = lines,
-    env = env_vars
-    ))
+  with_envvar(
+    new = env_vars,
+    result <- suppressWarnings(system(paste(cmd, "--no-save -s 2>&1"), intern = TRUE, input = lines))
+  )
   find_results <- which(result == results_sentinel)
   if (length(find_results)) {
     # Keep everything after the sentinel
