@@ -131,7 +131,7 @@ like `source_data` relative to `getOption("arrowbench.local_dir", ".")`.
 ## Results and caching
 
 `run_benchmark()` returns a list of benchmark results, which may be massaged,
-JSON-serialized, and uploaded to the arrowbench service. Within an R process,
+JSON-serialized, and uploaded to the conbench service. Within an R process,
 you can call `as.data.frame()` on it to get a more manageable view, which
 can be passed to plotting functions.
 
