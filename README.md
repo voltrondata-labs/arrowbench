@@ -24,6 +24,17 @@ Among the features that this package adds are
 
 # User guide
 
+## Installation
+
+The quickest and easiest way to install is to run 
+`remotes::install_github("ursa-labs/arrowbench")` in R.
+
+If you've downloaded the source, or you're making changes to arrow bench you 
+should make sure that you have the dependencies with `remotes::install_deps(".")` 
+in R. And then running `R CMD INSTALL .` in a terminal (for both, you should do 
+this in the root directory of arrowbench, or pass the path to arrowbench instead 
+of `.`).
+
 ## Defining benchmarks
 
 Benchmarks are constructed by `Benchmark()`, which takes expressions that handle 
