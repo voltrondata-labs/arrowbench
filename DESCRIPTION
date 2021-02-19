@@ -25,7 +25,6 @@ Suggests:
   arrow,
   data.table,
   dplyr,
-  fst,
   readr,
   vroom
 RoxygenNote: 7.1.1
