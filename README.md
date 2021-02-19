@@ -32,7 +32,7 @@ remotes you can `install.packages("remotes")`.
 
 If you've downloaded the source, or you're making changes to arrow bench you 
 should make sure that you have the dependencies with `remotes::install_deps(".")` 
-in R . And then running `R CMD INSTALL .` in a terminal (for both, you should do 
+in R. And then running `R CMD INSTALL .` in a terminal (for both, you should do 
 this in the root directory of arrowbench, or pass the path to arrowbench instead 
 of `.`).
 
