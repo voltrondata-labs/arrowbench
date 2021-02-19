@@ -27,11 +27,12 @@ Among the features that this package adds are
 ## Installation
 
 The quickest and easiest way to install is to run 
-`remotes::install_github("ursa-labs/arrowbench")` in R.
+`remotes::install_github("ursa-labs/arrowbench")` in R. If you need to install 
+remotes you can `install.packages("remotes")`.
 
 If you've downloaded the source, or you're making changes to arrow bench you 
 should make sure that you have the dependencies with `remotes::install_deps(".")` 
-in R. And then running `R CMD INSTALL .` in a terminal (for both, you should do 
+in R . And then running `R CMD INSTALL .` in a terminal (for both, you should do 
 this in the root directory of arrowbench, or pass the path to arrowbench instead 
 of `.`).
 
@@ -53,7 +54,7 @@ of parameters down to the valid set.
 For example,
 
 ```r
-run_benchmark(write_file, source = "nyctaxi_2010-01")
+arrowbench::run_benchmark(write_file, source = "nyctaxi_2010-01")
 ```
 
 will run the `write_file` benchmark with "nyctaxi_2010-01" source file on the 
@@ -63,7 +64,7 @@ Cartesian product of the other function parameters--`format`, `compression`, and
 Another example:
 
 ```r
-run_benchmark(write_file, source = "nyctaxi_2010-01", writer = "feather", 
+arrowbench::run_benchmark(write_file, source = "nyctaxi_2010-01", writer = "feather", 
   input = "data.frame", cpu_count = c(1, 4, 8))
 ```
 
