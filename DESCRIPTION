@@ -22,10 +22,11 @@ Imports:
   utils,
   withr
 Suggests:
-  arrow,
-  data.table,
-  dplyr,
-  readr,
-  vroom
+    arrow,
+    data.table,
+    dplyr,
+    readr,
+    vroom,
+    covr
 RoxygenNote: 7.1.1
 Roxygen: list(markdown = TRUE, load = "source")

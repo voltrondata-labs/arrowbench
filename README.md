@@ -1,5 +1,9 @@
 # arrowbench
 
+  <!-- badges: start -->
+  [![R-CMD-check](https://github.com/ursa-labs/arrowbench/workflows/R-CMD-check/badge.svg)](https://github.com/ursa-labs/arrowbench/actions)
+  <!-- badges: end -->
+
 This R package contains tools for defining benchmarks, running them across a 
 range of parameters, and reporting their results in a standardized form. It also
 contains some benchmark code for measuring performance of Apache Arrow and other 

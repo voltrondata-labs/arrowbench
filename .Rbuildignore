@@ -5,3 +5,5 @@
 ^results
 ^plots
 ^.*\.prof$
+^codecov\.yml$
+^\.github$
