@@ -72,6 +72,8 @@ run_benchmark <- function(bm,
 #' Run a Benchmark with a single set of parameters
 #'
 #' @inheritParams run_benchmark
+#' @param progress_bar a `progress` object to update progress to (default `NULL`)
+#' @param test_packages a character vector of packages that the benchmarks test (default `NULL`)
 #' @param ... parameters passed to `bm$setup()`.
 #'
 #' @return A `arrowbench_result`: a `list` containing "params" and either

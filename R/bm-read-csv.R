@@ -88,6 +88,7 @@ read_csv <- Benchmark(
 #' Get a CSV reader
 #'
 #' @param reader the reader to use
+#' @param delim the delimiter to use
 #'
 #' @return the csv reader
 #' @export

@@ -8,6 +8,8 @@ get_csv_reader(reader, delim)
 }
 \arguments{
 \item{reader}{the reader to use}
+
+\item{delim}{the delimiter to use}
 }
 \value{
 the csv reader

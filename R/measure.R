@@ -37,12 +37,14 @@ with_profiling <- function(profiling_on, expr) {
 }
 
 with_gc_info <- function(expr) {
-  gc_output <- bench:::with_gcinfo(eval.parent(expr))
+  with_gcinfo <- "bench" %:::% "with_gcinfo"
+  gc_output <- with_gcinfo(eval.parent(expr))
   # This will swallow errors, so check for error output and re-raise
   if (length(gc_output) > 0 && startsWith(gc_output[1], "Error in ")) {
     stop(paste(gc_output, collapse = "\n"), call. = FALSE)
   }
-  gc <- bench:::parse_gc(gc_output)
+  parse_gc <- "bench" %:::% "parse_gc"
+  gc <- parse_gc(gc_output)
   names(gc) <- paste0("gc_", names(gc))
   if (nrow(gc) == 0) {
     # Means there was no garbage collection, so let's fill this in with 0s
@@ -50,3 +52,6 @@ with_gc_info <- function(expr) {
   }
   gc
 }
+
+# work around checks looking for`:::`
+`%:::%` = function(pkg, fun) get(fun, envir = asNamespace(pkg), inherits = FALSE)

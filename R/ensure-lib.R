@@ -1,7 +1,7 @@
 # lib dirs are all inside the "r_libs" directory
 
 
-#' @importFrom utils install.packages head tail
+#' @importFrom utils head tail install.packages installed.packages packageDescription
 ensure_lib <- function(lib = NULL, test_packages = unlist(strsplit(packageDescription("arrowbench")[["Suggests"]], "[, \n]+"))) {
   # some packages need extra packages to do what we want
   # Listing them here is easier than installing with dependencies = TRUE
@@ -162,11 +162,12 @@ rspm_ids <- c(
   "3.0" = 1194160
 )
 
+#' @importFrom distro distro
 get_repo_url <- function(lib) {
   if (tolower(Sys.info()["sysname"]) == "linux") {
     # TODO: non-Ubuntu OSes need different handling
     # RSPM will send binaries as a fallback, so if the distro isn't perfect the worst that should happen is source installs.
-    repo_url <-  paste0("https://packagemanager.rstudio.com/all/__linux__/",  distro::distro()$codename, "/", rspm_ids[lib])
+    repo_url <-  paste0("https://packagemanager.rstudio.com/all/__linux__/",  distro()$codename, "/", rspm_ids[lib])
   } else {
     # macOS + windows
     repo_url <- paste0("https://mran.microsoft.com/snapshot/", arrow_version_to_date[lib])
