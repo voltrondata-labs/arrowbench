@@ -114,6 +114,11 @@ known_sources <- list(
       # and then overwrite the gzipped file so that's available
       R.utils::gzip(filename, paste0(filename, ".gz"), overwrite = TRUE, remove = FALSE)
     }
+  ),
+  chi_traffic_2020_Q1 = list(
+    url = "./source_data/chi_traffic_2020_Q1.parquet",
+    reader = function(file, ...) arrow::read_parquet(file, ...),
+    dim = c(13038291L, 23L)
   )
 )
 
