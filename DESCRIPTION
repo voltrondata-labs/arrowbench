@@ -11,6 +11,7 @@ Description: More about what it does (maybe more than one line)
 License: Apache License (>= 2.0)
 Encoding: UTF-8
 LazyData: true
+Depends: R (>= 3.5.0)
 Imports:
   bench,
   jsonlite,

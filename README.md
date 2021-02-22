@@ -27,13 +27,15 @@ Among the features that this package adds are
 ## Installation
 
 The quickest and easiest way to install is to run 
-`remotes::install_github("ursa-labs/arrowbench")` in R.
+`remotes::install_github("ursa-labs/arrowbench", dependencies = TRUE)` in R. If you need to install 
+remotes you can `install.packages("remotes")`.
 
 If you've downloaded the source, or you're making changes to arrow bench you 
-should make sure that you have the dependencies with `remotes::install_deps(".")` 
-in R. And then running `R CMD INSTALL .` in a terminal (for both, you should do 
-this in the root directory of arrowbench, or pass the path to arrowbench instead 
-of `.`).
+should make sure that you have the dependencies with `remotes::install_deps(".", dependencies = TRUE)` 
+in R (this will also install the arrow package along with other packages that 
+can be benchmarked with arrowbench. And then running `R CMD INSTALL .` in a 
+terminal (for both, you should do this in the root directory of arrowbench, or 
+pass the path to arrowbench instead of `.`).
 
 ## Defining benchmarks
 
@@ -53,6 +55,8 @@ of parameters down to the valid set.
 For example,
 
 ```r
+library(arrowbench)
+
 run_benchmark(write_file, source = "nyctaxi_2010-01")
 ```
 
@@ -63,6 +67,8 @@ Cartesian product of the other function parameters--`format`, `compression`, and
 Another example:
 
 ```r
+library(arrowbench)
+
 run_benchmark(write_file, source = "nyctaxi_2010-01", writer = "feather", 
   input = "data.frame", cpu_count = c(1, 4, 8))
 ```
@@ -131,7 +137,7 @@ like `source_data` relative to `getOption("arrowbench.local_dir", ".")`.
 ## Results and caching
 
 `run_benchmark()` returns a list of benchmark results, which may be massaged,
-JSON-serialized, and uploaded to the arrowbench service. Within an R process,
+JSON-serialized, and uploaded to the conbench service. Within an R process,
 you can call `as.data.frame()` on it to get a more manageable view, which
 can be passed to plotting functions.
 
