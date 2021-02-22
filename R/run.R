@@ -77,7 +77,7 @@ run_benchmark <- function(bm,
 #' @return A `arrowbench_result`: a `list` containing "params" and either
 #' "result" or "error".
 #' @export
-run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, progress_bar, read_only = FALSE, test_packages = NULL) {
+run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, progress_bar = NULL, read_only = FALSE, test_packages = NULL) {
   eval_script <- deparse(list(bm = bm, n_iter = n_iter, ..., profiling = profiling), control = "all")
   eval_script[1] <- sub("^list", "out <- run_bm", eval_script[1])
 
@@ -182,22 +182,28 @@ run_script <- function(lines, cmd = find_r(), ..., progress_bar, read_only = FAL
   file <- file.path(result_dir, paste0(bm_run_cache_key(...), ".json"))
   if (file.exists(file)) {
     msg <- paste0("Loading cached results: ", file)
-    progress_bar$message(msg, set_width = FALSE)
-    progress_bar$tick()
+    if (!is.null(progress_bar)) {
+      progress_bar$message(msg, set_width = FALSE)
+      progress_bar$tick()
+    }
 
     return(fromJSON(file, simplifyDataFrame = TRUE))
   } else if (read_only) {
     msg <- paste0("\U274C results not found: ", file)
-    progress_bar$message(msg, set_width = FALSE)
-    progress_bar$tick()
+    if (!is.null(progress_bar)) {
+      progress_bar$message(msg, set_width = FALSE)
+      progress_bar$tick()
+    }
     # return nothing since we are only reading.
     return(NULL)
   }
 
   dots <- list(...)
   msg <- paste0("Running ", paste(names(dots), dots, sep="=", collapse = " "))
-  progress_bar$message(msg, set_width = FALSE)
-  progress_bar$tick()
+  if (!is.null(progress_bar)) {
+    # update the progress bar message so we know what's happening
+    progress_bar$message(msg, set_width = FALSE)
+  }
 
   env_vars <- list()
   if (!is.na.null(dots$mem_alloc)) {
@@ -225,6 +231,11 @@ run_script <- function(lines, cmd = find_r(), ..., progress_bar, read_only = FAL
       error = result,
       params = list(...)
     )
+  }
+
+  if (!is.null(progress_bar)) {
+    # only tick progress after completion
+    progress_bar$tick()
   }
   result
 }

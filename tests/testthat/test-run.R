@@ -1,3 +1,5 @@
+wipe_results <- function() unlink(test_path("results/placebo"))
+
 test_that("run_iteration", {
   b <- Benchmark("test")
   out <- run_iteration(b, ctx = new.env())
@@ -22,4 +24,10 @@ test_that("run_bm", {
   expect_identical(nrow(out$result), 3L)
 
   expect_error(run_bm(b, param1 = "b"), "isTRUE(result) is not TRUE", fixed = TRUE)
+})
+
+
+test_that("run_one", {
+  run_one(placebo)
+  wipe_results()
 })

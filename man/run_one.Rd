@@ -10,7 +10,7 @@ run_one(
   n_iter = 1,
   dry_run = FALSE,
   profiling = FALSE,
-  progress_bar,
+  progress_bar = NULL,
   read_only = FALSE,
   test_packages = NULL
 )

@@ -4,7 +4,7 @@
 #' * `duration` the duration for the benchmark to take
 #'
 placebo <- Benchmark("placebo",
-  setup = function(duration = 1, grid = TRUE, ...) {
+  setup = function(duration = 0.01, grid = TRUE, ...) {
     BenchEnvironment(placebo_func = function() {Sys.sleep(duration)})
   },
   before_each = TRUE,
