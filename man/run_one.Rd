@@ -29,8 +29,12 @@ a subprocess? Default is \code{FALSE}, meaning that the benchmarks will be run.}
 contain a \code{prof_file} field, which you can read in with
 \code{profvis::profvis(prof_input = file)}. Default is \code{FALSE}}
 
+\item{progress_bar}{a \code{progress} object to update progress to (default \code{NULL})}
+
 \item{read_only}{this will only attempt to read benchmark files and will not
 run any that it cannot find.}
+
+\item{test_packages}{a character vector of packages that the benchmarks test (default \code{NULL})}
 }
 \value{
 A \code{arrowbench_result}: a \code{list} containing "params" and either

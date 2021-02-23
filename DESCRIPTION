@@ -14,6 +14,7 @@ LazyData: true
 Depends: R (>= 3.5.0)
 Imports:
   bench,
+  distro,
   jsonlite,
   progress,
   purrr,
@@ -23,10 +24,11 @@ Imports:
   utils,
   withr
 Suggests:
-  arrow,
-  data.table,
-  dplyr,
-  readr,
-  vroom
+    arrow,
+    data.table,
+    dplyr,
+    fst,
+    readr,
+    vroom
 RoxygenNote: 7.1.1
 Roxygen: list(markdown = TRUE, load = "source")
