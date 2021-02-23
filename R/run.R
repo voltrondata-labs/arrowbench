@@ -82,7 +82,9 @@ run_benchmark <- function(bm,
 run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, progress_bar = NULL, read_only = FALSE, test_packages = NULL) {
   params <- list(...)
 
-  script <- c(
+  # start with the global setup with parameters that are only used at the global
+  # level
+  setup_script <- c(
     global_setup(
       lib_path = params[["lib_path"]],
       cpu_count = params[["cpu_count"]],
@@ -91,19 +93,25 @@ run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, pro
     )
   )
 
-  # remove the global parameters, add in other arguments
+  # remove the global parameters
   params[c("lib_path", "cpu_count", "mem_alloc")] <- NULL
 
+  # add in other arguments as parameters
   args <- modifyList(
     params,
     list(bm = bm, n_iter = n_iter, profiling = profiling)
   )
 
+  # transform the arguments into a string representation that can be called in
+  # a new process (and alter that slightly to call `run_bm()` and then store it
+  # in `out`)
   eval_script <- deparse(args, control = "all")
   eval_script[1] <- sub("^list", "out <- run_bm", eval_script[1])
 
+  # put together the full script from the setup, what to evaluate, and finally
+  # printing the results
   script <- c(
-    script,
+    setup_script,
     eval_script,
     paste0('cat("', results_sentinel, '\n")'),
     "cat(jsonlite::toJSON(unclass(out), digits = 15))"
@@ -113,7 +121,9 @@ run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, pro
     return(script)
   }
 
-  params <- modifyList(
+  # construct the `run_script()` arguments out of the remaining params as well
+  # as a few other arguments. Then run the script.
+  run_script_args <- modifyList(
     params,
     list(
       lines = script,
@@ -123,7 +133,7 @@ run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, pro
     ),
     keep.null = TRUE
   )
-  do.call(run_script, params)
+  do.call(run_script, run_script_args)
 }
 
 #' Execute a benchmark run
