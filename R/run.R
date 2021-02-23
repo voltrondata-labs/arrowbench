@@ -80,11 +80,38 @@ run_benchmark <- function(bm,
 #' "result" or "error".
 #' @export
 run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, progress_bar = NULL, read_only = FALSE, test_packages = NULL) {
-  eval_script <- deparse(list(bm = bm, n_iter = n_iter, ..., profiling = profiling), control = "all")
+  params <- list(...)
+
+  # start with the global setup with parameters that are only used at the global
+  # level
+  setup_script <- c(
+    global_setup(
+      lib_path = params[["lib_path"]],
+      cpu_count = params[["cpu_count"]],
+      mem_alloc = params[["mem_alloc"]],
+      test_packages = test_packages
+    )
+  )
+
+  # remove the global parameters
+  params[c("lib_path", "cpu_count", "mem_alloc")] <- NULL
+
+  # add in other arguments as parameters
+  args <- modifyList(
+    params,
+    list(bm = bm, n_iter = n_iter, profiling = profiling)
+  )
+
+  # transform the arguments into a string representation that can be called in
+  # a new process (and alter that slightly to call `run_bm()` and then store it
+  # in `out`)
+  eval_script <- deparse(args, control = "all")
   eval_script[1] <- sub("^list", "out <- run_bm", eval_script[1])
 
+  # put together the full script from the setup, what to evaluate, and finally
+  # printing the results
   script <- c(
-    global_setup(..., test_packages = test_packages),
+    setup_script,
     eval_script,
     paste0('cat("', results_sentinel, '\n")'),
     "cat(jsonlite::toJSON(unclass(out), digits = 15))"
@@ -94,7 +121,19 @@ run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, pro
     return(script)
   }
 
-  run_script(script, ..., name = bm$name, progress_bar = progress_bar,  read_only = read_only)
+  # construct the `run_script()` arguments out of the remaining params as well
+  # as a few other arguments. Then run the script.
+  run_script_args <- modifyList(
+    params,
+    list(
+      lines = script,
+      name = bm$name,
+      progress_bar = progress_bar,
+      read_only = read_only
+    ),
+    keep.null = TRUE
+  )
+  do.call(run_script, run_script_args)
 }
 
 #' Execute a benchmark run
@@ -138,7 +177,7 @@ run_iteration <- function(bm, ctx, profiling = FALSE) {
   out
 }
 
-global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL, ..., test_packages = NULL) {
+global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL, test_packages = NULL) {
   script <- ""
   lib_path <- ensure_lib(lib_path, test_packages = test_packages)
   if (!is.null(lib_path)) {

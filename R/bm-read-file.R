@@ -12,8 +12,7 @@ read_file <- Benchmark("read_file",
                    # TODO: break out feather_v1 and feather_v2, feather_v2 only in >= 0.17
                    format = c("parquet", "feather", "fst"),
                    compression = c("uncompressed", "snappy", "zstd"),
-                   output = c("arrow_table", "data_frame"),
-                   ...) {
+                   output = c("arrow_table", "data_frame")) {
     format <- match.arg(format)
     compression <- match.arg(compression)
     output <- match.arg(output)

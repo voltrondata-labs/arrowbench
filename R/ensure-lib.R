@@ -81,6 +81,7 @@ ensure_lib <- function(lib = NULL, test_packages = unlist(strsplit(packageDescri
     # git hash? build from source
     # TODO: use remotes package for github ref management
     # For mac, need to do what crossbow and arrow-r-nightly do to use autobrew and pin commit
+    stop("The lib_path is not a known value: ", lib)
   }
   lib_dir_path
 }
