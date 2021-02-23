@@ -13,8 +13,7 @@ read_csv <- Benchmark(
   setup = function(source = names(known_sources),
                    reader = c("arrow", "data.table", "vroom", "readr"),
                    compression = c("uncompressed", "gzip"),
-                   output = c("arrow_table", "data_frame"),
-                   ...) {
+                   output = c("arrow_table", "data_frame")) {
     reader <- match.arg(reader)
     compression <- match.arg(compression)
     output <- match.arg(output)
@@ -45,8 +44,7 @@ read_csv <- Benchmark(
       input_file = input_file,
       result_dim = result_dim,
       as_data_frame = output == "data_frame",
-      delim = delim,
-      ...
+      delim = delim
     )
   },
   before_each = {

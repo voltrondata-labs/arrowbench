@@ -80,11 +80,30 @@ run_benchmark <- function(bm,
 #' "result" or "error".
 #' @export
 run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, progress_bar = NULL, read_only = FALSE, test_packages = NULL) {
-  eval_script <- deparse(list(bm = bm, n_iter = n_iter, ..., profiling = profiling), control = "all")
+  params <- list(...)
+
+  script <- c(
+    global_setup(
+      lib_path = params[["lib_path"]],
+      cpu_count = params[["cpu_count"]],
+      mem_alloc = params[["mem_alloc"]],
+      test_packages = test_packages
+    )
+  )
+
+  # remove the global parameters, add in other arguments
+  params[c("lib_path", "cpu_count", "mem_alloc")] <- NULL
+
+  args <- modifyList(
+    params,
+    list(bm = bm, n_iter = n_iter, profiling = profiling)
+  )
+
+  eval_script <- deparse(args, control = "all")
   eval_script[1] <- sub("^list", "out <- run_bm", eval_script[1])
 
   script <- c(
-    global_setup(..., test_packages = test_packages),
+    script,
     eval_script,
     paste0('cat("', results_sentinel, '\n")'),
     "cat(jsonlite::toJSON(unclass(out), digits = 15))"
@@ -94,7 +113,17 @@ run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, pro
     return(script)
   }
 
-  run_script(script, ..., name = bm$name, progress_bar = progress_bar,  read_only = read_only)
+  params <- modifyList(
+    params,
+    list(
+      lines = script,
+      name = bm$name,
+      progress_bar = progress_bar,
+      read_only = read_only
+    ),
+    keep.null = TRUE
+  )
+  do.call(run_script, params)
 }
 
 #' Execute a benchmark run
@@ -138,7 +167,7 @@ run_iteration <- function(bm, ctx, profiling = FALSE) {
   out
 }
 
-global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL, ..., test_packages = NULL) {
+global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL, test_packages = NULL) {
   script <- ""
   lib_path <- ensure_lib(lib_path, test_packages = test_packages)
   if (!is.null(lib_path)) {

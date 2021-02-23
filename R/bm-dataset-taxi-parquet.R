@@ -5,8 +5,7 @@
 #'
 #' @export
 dataset_taxi_parquet <- Benchmark("dataset_taxi_parquet",
-  setup = function(query = names(dataset_taxi_parquet$cases),
-                   ...) {
+  setup = function(query = names(dataset_taxi_parquet$cases)) {
     library("dplyr")
     dataset <- ensure_dataset("taxi_parquet")
     query <- dataset_taxi_parquet$cases[[match.arg(query)]]
