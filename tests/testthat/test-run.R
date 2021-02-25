@@ -44,7 +44,23 @@ test_that("Argument validation", {
   )
 
   expect_true(file.exists(test_path("results/placebo/1.json")))
-  wipe_results()
+})
+
+test_that("form of the results", {
+  expect_message(res <- run_benchmark(placebo, cpu_count = 1))
+
+  results_df <- as.data.frame(res)
+  expect_identical(
+    results_df[,c("iteration", "cpu_count", "lib_path")],
+    data.frame(
+      iteration = 1L,
+      cpu_count = 1L,
+      lib_path = "latest"
+    )
+  )
+  expect_true(all(
+    c("real", "process", "version_arrow") %in% colnames(results_df)
+  ))
 })
 
 wipe_results()
