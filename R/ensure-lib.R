@@ -73,8 +73,12 @@ ensure_lib <- function(lib = NULL, test_packages = unlist(strsplit(packageDescri
         if ("fst" %in% test_packages) {
           install.packages("fstcore")
         }
-        subdir <- if (pkg == "arrow") "r" else NULL
-        remotes::install_dev(pkg, subdir = subdir, upgrade = "never", cran_url = cran_url)
+
+        if (pkg == "arrow") {
+          install_arrow_github()
+        } else {
+          remotes::install_dev(pkg, upgrade = "never", cran_url = cran_url)
+        }
       }
     })
   } else {
@@ -84,6 +88,29 @@ ensure_lib <- function(lib = NULL, test_packages = unlist(strsplit(packageDescri
     stop("The lib_path is not a known value: ", lib)
   }
   lib_dir_path
+}
+
+install_arrow_github <- function(repo = "apache/arrow", ref = "HEAD", ...) {
+  # TODO: check if cmake is found? Say to use brew to install that?
+  with_envvar(
+    list(
+      # always use the tools/linuxlibs.R script for installing arrow lib
+      USE_TOOLS_LIBS_SCRIPT = "true",
+      # we want everything to be available
+      LIBARROW_MINIMAL = "false",
+      # Don't use pkgconfig because we don't want to find sources that are already installed
+      ARROW_USE_PKG_CONFIG = "false",
+      # for verbosity
+      ARROW_R_DEV = "true"
+    ),
+    remotes::install_github(
+      repo,
+      ref = ref,
+      subdir = "r",
+      build = FALSE,
+      ...
+    )
+  )
 }
 
 special_data_table_install <- function(repo_url = NULL, dev = FALSE, cran_url = NULL) {
