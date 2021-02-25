@@ -92,6 +92,8 @@ ensure_lib <- function(lib = NULL, test_packages = unlist(strsplit(packageDescri
 
 install_arrow_github <- function(repo = "apache/arrow", ref = "HEAD", ...) {
   # TODO: check if cmake is found? Say to use brew to install that?
+  # Do we want or need to also allow this to install any github package. For
+  # most it would only need to change the repo arg + expose the subdir argument
   with_envvar(
     list(
       # always use the tools/linuxlibs.R script for installing arrow lib
