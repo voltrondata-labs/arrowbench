@@ -116,7 +116,7 @@ known_sources <- list(
     }
   ),
   chi_traffic_2020_Q1 = list(
-    url = "./source_data/chi_traffic_2020_Q1.parquet",
+    url = "https://ursa-qa.s3.amazonaws.com/chitraffic/chi_traffic_2020_Q1.parquet",
     reader = function(file, ...) arrow::read_parquet(file, ...),
     dim = c(13038291L, 23L)
   )
