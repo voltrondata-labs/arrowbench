@@ -80,20 +80,21 @@ run_benchmark <- function(bm,
 #' "result" or "error".
 #' @export
 run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, progress_bar = NULL, read_only = FALSE, test_packages = NULL) {
-  params <- list(...)
+  all_params <- list(...)
 
   # start with the global setup with parameters that are only used at the global
   # level
   setup_script <- c(
     global_setup(
-      lib_path = params[["lib_path"]],
-      cpu_count = params[["cpu_count"]],
-      mem_alloc = params[["mem_alloc"]],
+      lib_path = all_params[["lib_path"]],
+      cpu_count = all_params[["cpu_count"]],
+      mem_alloc = all_params[["mem_alloc"]],
       test_packages = test_packages
     )
   )
 
   # remove the global parameters
+  params <- all_params
   params[c("lib_path", "cpu_count", "mem_alloc")] <- NULL
 
   # add in other arguments as parameters
@@ -121,10 +122,11 @@ run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, pro
     return(script)
   }
 
-  # construct the `run_script()` arguments out of the remaining params as well
-  # as a few other arguments. Then run the script.
+  # construct the `run_script()` arguments out of all of the params as well as a
+  # few other arguments. We need all of the parameters here so that the
+  # filenames are right. Then run the script.
   run_script_args <- modifyList(
-    params,
+    all_params,
     list(
       lines = script,
       name = bm$name,

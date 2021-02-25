@@ -1,4 +1,4 @@
-wipe_results <- function() unlink(test_path("results/placebo"))
+wipe_results <- function() unlink(test_path("results/placebo"), recursive = TRUE)
 
 test_that("run_iteration", {
   b <- Benchmark("test")
@@ -42,6 +42,8 @@ test_that("Argument validation", {
     run_one(placebo, cpu_count = 1),
     NA
   )
+
+  expect_true(file.exists(test_path("results/placebo/1.json")))
   wipe_results()
 })
 
