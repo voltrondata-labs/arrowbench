@@ -119,6 +119,26 @@ known_sources <- list(
     url = "https://ursa-qa.s3.amazonaws.com/chitraffic/chi_traffic_2020_Q1.parquet",
     reader = function(file, ...) arrow::read_parquet(file, ...),
     dim = c(13038291L, 23L)
+  ),
+  sample_strings = list(
+    url = "file://./source_data/sample_strings.parquet",
+    reader = function(file, ...) arrow::read_parquet(file, ...),
+    dim = c(1000000L, 5L)
+  ),
+  sample_integers = list(
+    url = "file://./source_data/sample_integers.parquet",
+    reader = function(file, ...) arrow::read_parquet(file, ...),
+    dim = c(1000000L, 5L)
+  ),
+  sample_floats = list(
+    url = "file://./source_data/sample_floats.parquet",
+    reader = function(file, ...) arrow::read_parquet(file, ...),
+    dim = c(1000000L, 5L)
+  ),
+  sample_nested = list(
+    url = "file://./source_data/sample_nested.parquet",
+    reader = function(file, ...) arrow::read_parquet(file, ...),
+    dim = c(1000000L, 3L)
   )
 )
 
