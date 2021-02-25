@@ -4,7 +4,7 @@
 \alias{run_bm}
 \title{Execute a benchmark run}
 \usage{
-run_bm(bm, ..., n_iter = 1, profiling = FALSE)
+run_bm(bm, ..., n_iter = 1, profiling = FALSE, global_params = list())
 }
 \arguments{
 \item{bm}{\code{\link[=Benchmark]{Benchmark()}} object}
@@ -16,6 +16,8 @@ run_bm(bm, ..., n_iter = 1, profiling = FALSE)
 \item{profiling}{Logical: collect prof info? If \code{TRUE}, the result data will
 contain a \code{prof_file} field, which you can read in with
 \code{profvis::profvis(prof_input = file)}. Default is \code{FALSE}}
+
+\item{global_params}{the global parameters that have been set}
 }
 \description{
 This is the function that gets called in the script that \code{\link[=run_one]{run_one()}} prepares.
