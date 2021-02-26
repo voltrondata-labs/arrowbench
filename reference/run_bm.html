@@ -116,7 +116,7 @@ You may call this function interactively, but you won't get the isolation
 in a fresh R process that <code><a href='run_one.html'>run_one()</a></code> provides.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>run_bm</span><span class='op'>(</span><span class='va'>bm</span>, <span class='va'>...</span>, n_iter <span class='op'>=</span> <span class='fl'>1</span>, profiling <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>run_bm</span><span class='op'>(</span><span class='va'>bm</span>, <span class='va'>...</span>, n_iter <span class='op'>=</span> <span class='fl'>1</span>, profiling <span class='op'>=</span> <span class='cn'>FALSE</span>, global_params <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -138,6 +138,10 @@ in a fresh R process that <code><a href='run_one.html'>run_one()</a></code> prov
       <td><p>Logical: collect prof info? If <code>TRUE</code>, the result data will
 contain a <code>prof_file</code> field, which you can read in with
 <code>profvis::profvis(prof_input = file)</code>. Default is <code>FALSE</code></p></td>
+    </tr>
+    <tr>
+      <th>global_params</th>
+      <td><p>the global parameters that have been set</p></td>
     </tr>
     </table>
 
