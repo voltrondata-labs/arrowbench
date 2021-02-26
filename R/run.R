@@ -80,26 +80,27 @@ run_benchmark <- function(bm,
 #' "result" or "error".
 #' @export
 run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, progress_bar = NULL, read_only = FALSE, test_packages = NULL) {
-  params <- list(...)
+  all_params <- list(...)
 
-  # start with the global setup with parameters that are only used at the global
-  # level
-  setup_script <- c(
-    global_setup(
-      lib_path = params[["lib_path"]],
-      cpu_count = params[["cpu_count"]],
-      mem_alloc = params[["mem_alloc"]],
-      test_packages = test_packages
-    )
-  )
+  # separate the global parameters, and make sure only those that are specified remain
+  global_param_names <- c("lib_path", "cpu_count", "mem_alloc")
+  global_params <- all_params[global_param_names]
+  global_params <- Filter(Negate(is.null), global_params)
+  # ensure that the lib_path "latest" is always present, since that's what would
+  # happen when the script runs regardless
+  global_params[["lib_path"]] <- global_params[["lib_path"]] %||% "latest"
 
   # remove the global parameters
-  params[c("lib_path", "cpu_count", "mem_alloc")] <- NULL
+  params <- all_params[!names(all_params) %in% global_param_names]
+
+  # start with the global setup with parameters that are only used at the global
+  # level along with the packages needed to test
+  setup_script <- do.call(global_setup, c(global_params, test_packages = test_packages))
 
   # add in other arguments as parameters
   args <- modifyList(
     params,
-    list(bm = bm, n_iter = n_iter, profiling = profiling)
+    list(bm = bm, n_iter = n_iter, profiling = profiling, global_params = global_params)
   )
 
   # transform the arguments into a string representation that can be called in
@@ -121,10 +122,11 @@ run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, pro
     return(script)
   }
 
-  # construct the `run_script()` arguments out of the remaining params as well
-  # as a few other arguments. Then run the script.
+  # construct the `run_script()` arguments out of all of the params as well as a
+  # few other arguments. We need all of the parameters here so that the
+  # cached result file names are right. Then run the script.
   run_script_args <- modifyList(
-    params,
+    all_params,
     list(
       lines = script,
       name = bm$name,
@@ -142,10 +144,11 @@ run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, pro
 #' You may call this function interactively, but you won't get the isolation
 #' in a fresh R process that `run_one()` provides.
 #' @inheritParams run_one
+#' @param global_params the global parameters that have been set
 #' @export
 #' @importFrom utils modifyList
 #' @importFrom sessioninfo package_info
-run_bm <- function(bm, ..., n_iter = 1, profiling = FALSE) {
+run_bm <- function(bm, ..., n_iter = 1, profiling = FALSE, global_params = list()) {
   ctx <- bm$setup(...)
   on.exit({
     eval(bm$teardown, envir = ctx)
@@ -160,6 +163,7 @@ run_bm <- function(bm, ..., n_iter = 1, profiling = FALSE) {
   defaults <- lapply(get_default_args(bm$setup), head, 1)
   defaults$cpu_count <- parallel::detectCores()
   params <- modifyList(defaults, list(...))
+  params <- modifyList(params, global_params)
   params$packages <- package_info()[, c("package", "loadedversion", "date", "source")]
   names(params$packages)[2] <- "version"
 

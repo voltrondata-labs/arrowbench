@@ -1,4 +1,4 @@
-wipe_results <- function() unlink(test_path("results/placebo"))
+wipe_results <- function() unlink(test_path("results/placebo"), recursive = TRUE)
 
 test_that("run_iteration", {
   b <- Benchmark("test")
@@ -42,7 +42,25 @@ test_that("Argument validation", {
     run_one(placebo, cpu_count = 1),
     NA
   )
-  wipe_results()
+
+  expect_true(file.exists(test_path("results/placebo/1.json")))
+})
+
+test_that("form of the results", {
+  expect_message(res <- run_benchmark(placebo, cpu_count = 1))
+
+  results_df <- as.data.frame(res)
+  expect_identical(
+    results_df[,c("iteration", "cpu_count", "lib_path")],
+    data.frame(
+      iteration = 1L,
+      cpu_count = 1L,
+      lib_path = "latest"
+    )
+  )
+  expect_true(all(
+    c("real", "process", "version_arrow") %in% colnames(results_df)
+  ))
 })
 
 wipe_results()
