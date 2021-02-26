@@ -121,22 +121,22 @@ known_sources <- list(
     dim = c(13038291L, 23L)
   ),
   sample_strings = list(
-    url = "file://./source_data/sample_strings.parquet",
+    url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_strings.parquet",
     reader = function(file, ...) arrow::read_parquet(file, ...),
     dim = c(1000000L, 5L)
   ),
   sample_integers = list(
-    url = "file://./source_data/sample_integers.parquet",
+    url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_integers.parquet",
     reader = function(file, ...) arrow::read_parquet(file, ...),
     dim = c(1000000L, 5L)
   ),
   sample_floats = list(
-    url = "file://./source_data/sample_floats.parquet",
+    url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_floats.parquet",
     reader = function(file, ...) arrow::read_parquet(file, ...),
     dim = c(1000000L, 5L)
   ),
   sample_nested = list(
-    url = "file://./source_data/sample_nested.parquet",
+    url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_nested.parquet",
     reader = function(file, ...) arrow::read_parquet(file, ...),
     dim = c(1000000L, 3L)
   )
