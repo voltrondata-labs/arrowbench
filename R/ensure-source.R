@@ -144,6 +144,11 @@ known_sources <- list(
     url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_nested.parquet",
     reader = function(file, ...) arrow::read_parquet(file, ...),
     dim = c(1000000L, 3L)
+  ),
+  sample_simple_features = list(
+    url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_simple_features",
+    reader = function(file, ...) arrow::read_parquet(file, ...),
+    dim = c(1000000L, 5L)
   )
 )
 
