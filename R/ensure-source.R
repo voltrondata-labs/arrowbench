@@ -125,6 +125,11 @@ known_sources <- list(
     reader = function(file, ...) arrow::read_parquet(file, ...),
     dim = c(1000000L, 5L)
   ),
+  sample_dict = list(
+    url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_dict.parquet",
+    reader = function(file, ...) arrow::read_parquet(file, ...),
+    dim = c(1000000L, 5L)
+  ),
   sample_integers = list(
     url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_integers.parquet",
     reader = function(file, ...) arrow::read_parquet(file, ...),
