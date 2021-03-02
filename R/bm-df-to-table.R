@@ -12,7 +12,7 @@ df_to_table <- Benchmark("df_to_table",
     result_dim <- get_source_attr(source, "dim")
     df <- read_source(source, as_data_frame = TRUE)
 
-    transfer_func <- function(df, ...) arrow::Table$create(df, ...)
+    transfer_func <- function(df) arrow::Table$create(df)
 
     BenchEnvironment(
       transfer_func = transfer_func,
