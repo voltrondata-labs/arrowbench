@@ -5,4 +5,9 @@ test_that("lib_dir()", {
   )
 })
 
-
+test_that("identify_repo_ref()", {
+  expect_identical(
+    identify_repo_ref("remote-name/repo@ref"),
+    list(repo = "name/repo", ref = "ref")
+  )
+})
