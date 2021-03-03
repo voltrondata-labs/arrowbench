@@ -81,7 +81,7 @@ ensure_lib <- function(lib = NULL, test_packages = unlist(strsplit(packageDescri
         }
       }
     } else if (grepl("^remote-.*", lib)) {
-      install.packages("remotes")
+      install.packages(c("remotes", setdiff(test_packages, "arrow")))
       # the form of the lib is remote-repo@ref
       args <- identify_repo_ref(lib)
       do.call(install_arrow_github, args)
