@@ -1,7 +1,7 @@
 # arrowbench
 
   <!-- badges: start -->
-  [![R-CMD-check](https://github.com/ursa-labs/arrowbench/workflows/R-CMD-check/badge.svg)](https://github.com/ursa-labs/arrowbench/actions)
+  [![R-CMD-check](https://github.com/ursacomputing/arrowbench/workflows/R-CMD-check/badge.svg)](https://github.com/ursa-labs/arrowbench/actions)
   <!-- badges: end -->
 
 This R package contains tools for defining benchmarks, running them across a 
@@ -31,7 +31,7 @@ Among the features that this package adds are
 ## Installation
 
 The quickest and easiest way to install is to run 
-`remotes::install_github("ursa-labs/arrowbench", dependencies = TRUE)` in R. If you need to install 
+`remotes::install_github("ursacomputing/arrowbench", dependencies = TRUE)` in R. If you need to install 
 remotes you can `install.packages("remotes")`.
 
 If you've downloaded the source, or you're making changes to arrow bench you 
