@@ -112,8 +112,7 @@ install_arrow_github <- function(repo = "apache/arrow", ref = "HEAD", ...) {
     # we want everything to be available
     LIBARROW_MINIMAL = "false",
     # for verbosity
-    ARROW_R_DEV = "true",
-    SDKROOT = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+    ARROW_R_DEV = "true"
   )
 
   # Newer versions of the macos sdk do not use /usr/include or the like to house
