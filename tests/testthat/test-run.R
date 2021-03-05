@@ -63,4 +63,10 @@ test_that("form of the results", {
   ))
 })
 
+test_that("form of the results during a dry run", {
+  res <- run_benchmark(placebo, cpu_count = 10, dry_run = TRUE)
+  expect_true(all(sapply(res[[1]], class) == "character"))
+  expect_true("cat(\"##### RESULTS FOLLOW\n\")" %in% res[[1]])
+})
+
 wipe_results()

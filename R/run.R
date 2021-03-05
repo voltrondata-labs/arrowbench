@@ -52,6 +52,11 @@ run_benchmark <- function(bm,
     test_packages = bm$packages_used(params)
   )
 
+  if (dry_run) {
+    # return now so that we don't attempt to process looking for errors, etc.
+    return(out)
+  }
+
   errors <- map_lgl(out, ~!is.null(.$error))
   if (any(errors)) {
     message(sum(errors), " benchmarks errored:")

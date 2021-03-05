@@ -114,6 +114,41 @@ known_sources <- list(
       # and then overwrite the gzipped file so that's available
       R.utils::gzip(filename, paste0(filename, ".gz"), overwrite = TRUE, remove = FALSE)
     }
+  ),
+  chi_traffic_2020_Q1 = list(
+    url = "https://ursa-qa.s3.amazonaws.com/chitraffic/chi_traffic_2020_Q1.parquet",
+    reader = function(file, ...) arrow::read_parquet(file, ...),
+    dim = c(13038291L, 23L)
+  ),
+  sample_strings = list(
+    url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_strings.parquet",
+    reader = function(file, ...) arrow::read_parquet(file, ...),
+    dim = c(1000000L, 5L)
+  ),
+  sample_dict = list(
+    url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_dict.parquet",
+    reader = function(file, ...) arrow::read_parquet(file, ...),
+    dim = c(1000000L, 5L)
+  ),
+  sample_integers = list(
+    url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_integers.parquet",
+    reader = function(file, ...) arrow::read_parquet(file, ...),
+    dim = c(1000000L, 5L)
+  ),
+  sample_floats = list(
+    url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_floats.parquet",
+    reader = function(file, ...) arrow::read_parquet(file, ...),
+    dim = c(1000000L, 5L)
+  ),
+  sample_nested = list(
+    url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_nested.parquet",
+    reader = function(file, ...) arrow::read_parquet(file, ...),
+    dim = c(1000000L, 4L)
+  ),
+  sample_simple_features = list(
+    url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_simple_features.parquet",
+    reader = function(file, ...) arrow::read_parquet(file, ...),
+    dim = c(1000000L, 5L)
   )
 )
 
