@@ -64,7 +64,7 @@
 <div id="arrowbench" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#arrowbench" class="anchor"></a>arrowbench</h1></div>
-<p><!-- badges: start --> <a href="https://github.com/ursa-labs/arrowbench/actions"><img src="https://github.com/ursa-labs/arrowbench/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a> <!-- badges: end --></p>
+<p><!-- badges: start --> <a href="https://github.com/ursa-labs/arrowbench/actions"><img src="https://github.com/ursacomputing/arrowbench/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a> <!-- badges: end --></p>
 <p>This R package contains tools for defining benchmarks, running them across a range of parameters, and reporting their results in a standardized form. It also contains some benchmark code for measuring performance of Apache Arrow and other projects one might compare it to.</p>
 <p>The purpose of the package is to provide developers with better tools for creating, parametrizing, and reproducing benchmarks across a range of library versions, variables, and machines, as well as to facilitate continuous monitoring. While this package could be used for microbenchmarking, it is designed specially for “macrobenchmarks”: workflows that real users do with real data that take longer than microseconds to run.</p>
 <p>It builds on top of existing R benchmarking tools, notably the <code>bench</code> package. Among the features that this package adds are</p>
@@ -80,7 +80,7 @@
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
-<p>The quickest and easiest way to install is to run <code><a href="https://remotes.r-lib.org/reference/install_github.html">remotes::install_github("ursa-labs/arrowbench", dependencies = TRUE)</a></code> in R. If you need to install remotes you can <code><a href="https://rdrr.io/r/utils/install.packages.html">install.packages("remotes")</a></code>.</p>
+<p>The quickest and easiest way to install is to run <code><a href="https://remotes.r-lib.org/reference/install_github.html">remotes::install_github("ursacomputing/arrowbench", dependencies = TRUE)</a></code> in R. If you need to install remotes you can <code><a href="https://rdrr.io/r/utils/install.packages.html">install.packages("remotes")</a></code>.</p>
 <p>If you’ve downloaded the source, or you’re making changes to arrow bench you should make sure that you have the dependencies with <code><a href="https://remotes.r-lib.org/reference/install_deps.html">remotes::install_deps(".", dependencies = TRUE)</a></code> in R (this will also install the arrow package along with other packages that can be benchmarked with arrowbench. And then running <code>R CMD INSTALL .</code> in a terminal (for both, you should do this in the root directory of arrowbench, or pass the path to arrowbench instead of <code>.</code>).</p>
 </div>
 <div id="defining-benchmarks" class="section level2">
