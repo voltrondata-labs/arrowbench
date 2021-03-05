@@ -3,3 +3,5 @@
 .RData
 .Ruserdata
 tests/testthat/results
+.DS_Store
+
