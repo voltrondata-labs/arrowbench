@@ -3,8 +3,8 @@ Type: Package
 Title: Tools for Continuous and Interactive Benchmarking
 Version: 0.1.0
 Authors@R: c(
-    person("Neal", "Richardson", email = "neal.p.richardson@gmail.com", role = c("aut", "cre")),
-    person("Jonathan", "Keane", email = "jkeane@gmail.com", role = c("aut"))
+    person("Neal", "Richardson", email = "neal.p.richardson@gmail.com", role = "aut"),
+    person("Jonathan", "Keane", email = "jkeane@gmail.com", role = c("aut", "cre"))
   )
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
