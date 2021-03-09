@@ -7,3 +7,4 @@
 ^.*\.prof$
 ^codecov\.yml$
 ^\.github$
+^LICENSE\.md$
