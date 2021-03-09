@@ -64,6 +64,29 @@ dataset_taxi_parquet <- Benchmark("dataset_taxi_parquet",
           identical(sum(result$n), 2412399L)
         )
       }
+    ),
+    # The intention of this is to filter + read from a small number of parquet
+    # files (smaller than the number of threads) to see if parallelism is
+    # beneficial
+    small_no_files = list(
+      query = function(ds) {
+        ds %>%
+          filter(total_amount > 20, year %in% c(2011, 2019) & month == 2) %>%
+          select(tip_amount, total_amount, passenger_count) %>%
+          group_by(passenger_count) %>%
+          collect() %>%
+          summarize(
+            tip_pct = median(100 * tip_amount / total_amount),
+            n = n()
+          )
+      },
+      assert = function(result) {
+        stopifnot(
+          identical(dim(result), c(11L, 3L)),
+          identical(names(result), c("passenger_count", "tip_pct", "n")),
+          identical(sum(result$n), 3069271L)
+        )
+      }
     )
   ),
   packages_used = function(params) {
