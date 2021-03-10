@@ -21,7 +21,7 @@ read_csv <- Benchmark(
     # Map string param name to function
     read_func <- get_csv_reader(reader, delim)
 
-    source <- ensure_source(match.arg(source))
+    source <- ensure_source(source)
     result_dim <- get_source_attr(source, "dim")
 
     input_file <- file_with_ext(source, "csv")
@@ -29,7 +29,7 @@ read_csv <- Benchmark(
       input_file <- file_with_ext(source, "csv.gz")
       if (!file.exists(input_file)) {
         # compress if the file doesn't already exist
-        gzip(file_with_ext(source, "csv"), input_file)
+        R.utils::gzip(file_with_ext(source, "csv"), input_file, remove = FALSE)
       }
       # Check file extension, compress if not found
       input_file <- input_file

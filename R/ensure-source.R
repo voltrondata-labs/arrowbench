@@ -49,8 +49,11 @@ ensure_source <- function(file) {
       }
       file <- file_with_ext(file, "csv")
     }
+  } else if (!is.null(test_sources[[file]])) {
+    test <- test_sources[[file]]
+    file <- system.file("test_data", test$filename, package = "arrowbench")
   } else {
-    stop(file, " does not exist", call. = FALSE)
+    stop(file, " is not a known source", call. = FALSE)
   }
   file
 }
@@ -86,7 +89,7 @@ read_source <- function(file, ...) {
 #'
 #' @keywords internal
 #' @export
-get_source_attr <- function(file, attr) known_sources[[file_base(file)]][[attr]]
+get_source_attr <- function(file, attr) all_sources[[file_base(file)]][[attr]]
 
 #' Known data files
 #' @export
@@ -120,37 +123,61 @@ known_sources <- list(
     reader = function(file, ...) arrow::read_parquet(file, ...),
     dim = c(13038291L, 23L)
   ),
-  sample_strings = list(
-    url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_strings.parquet",
+  type_strings = list(
+    url = "https://ursa-qa.s3.amazonaws.com/single_types/type_strings.parquet",
     reader = function(file, ...) arrow::read_parquet(file, ...),
     dim = c(1000000L, 5L)
   ),
-  sample_dict = list(
-    url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_dict.parquet",
+  type_dict = list(
+    url = "https://ursa-qa.s3.amazonaws.com/single_types/type_dict.parquet",
     reader = function(file, ...) arrow::read_parquet(file, ...),
     dim = c(1000000L, 5L)
   ),
-  sample_integers = list(
-    url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_integers.parquet",
+  type_integers = list(
+    url = "https://ursa-qa.s3.amazonaws.com/single_types/type_integers.parquet",
     reader = function(file, ...) arrow::read_parquet(file, ...),
     dim = c(1000000L, 5L)
   ),
-  sample_floats = list(
-    url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_floats.parquet",
+  type_floats = list(
+    url = "https://ursa-qa.s3.amazonaws.com/single_types/type_floats.parquet",
     reader = function(file, ...) arrow::read_parquet(file, ...),
     dim = c(1000000L, 5L)
   ),
-  sample_nested = list(
-    url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_nested.parquet",
+  type_nested = list(
+    url = "https://ursa-qa.s3.amazonaws.com/single_types/type_nested.parquet",
     reader = function(file, ...) arrow::read_parquet(file, ...),
     dim = c(1000000L, 4L)
   ),
-  sample_simple_features = list(
-    url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_simple_features.parquet",
+  type_simple_features = list(
+    url = "https://ursa-qa.s3.amazonaws.com/single_types/type_simple_features.parquet",
     reader = function(file, ...) arrow::read_parquet(file, ...),
     dim = c(1000000L, 5L)
   )
 )
+
+# these are similar to known_sources above, with the exception that they come
+# with the package, so they have a filename instead of a url
+test_sources <- list(
+  fanniemae_sample = list(
+    filename = "fanniemae_sample.csv",
+    reader = function(file, ...) arrow::read_delim_arrow(file, delim = "|", col_names = FALSE, ...),
+    delim = "|",
+    dim = c(757L, 108L)
+  ),
+  nyctaxi_sample = list(
+    filename = "nyctaxi_sample.csv",
+    reader = function(file, ...) arrow::read_delim_arrow(file, ...),
+    delim = ",",
+    dim = c(998L,  18L)
+  ),
+  chi_traffic_sample = list(
+    filename = "chi_traffic_sample.parquet",
+    reader = function(file, ...) arrow::read_parquet(file, ...),
+    dim = c(1000L, 23L)
+  )
+)
+
+all_sources <- c(known_sources, test_sources)
 
 #' Make sure a multi-file dataset exists
 #'
