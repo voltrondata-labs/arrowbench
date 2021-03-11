@@ -83,3 +83,10 @@ find_r <- function() {
 }
 
 is_macos <- function() tolower(Sys.info()["sysname"]) == "darwin"
+
+local_dir <- function() {
+  Sys.getenv(
+    "ARROWBENCH_LOCAL_DIR",
+    unset = getOption("arrowbench.local_dir", getwd())
+  )
+}

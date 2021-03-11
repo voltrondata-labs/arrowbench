@@ -223,7 +223,7 @@ get_repo_url <- function(lib) {
   repo_url
 }
 
-lib_dir <- function(..., local_dir = getOption("arrowbench.local_dir", getwd())) {
+lib_dir <- function(...) {
   r_version <- paste0(c(getRversion()$major, getRversion()$minor), collapse = ".")
-  file.path(local_dir, "r_libs", paste0("R-", r_version),  ...)
+  file.path(local_dir(), "r_libs", paste0("R-", r_version),  ...)
 }

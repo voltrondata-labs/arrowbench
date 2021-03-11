@@ -7,26 +7,45 @@
 #' @export
 #' @importFrom R.utils gunzip
 #' @importFrom withr with_options
-ensure_source <- function(file) {
-  if (is_url(file)) {
+ensure_source <- function(name) {
+  # if this is a direct file reference, return quickly.
+  if (is_url(name)) {
     # TODO: validate that it exists?
-    return(file)
-  } else if (file.exists(file)) {
+    return(name)
+  } else if (file.exists(name)) {
     # TODO: wrap in some object?
-    return(file)
-  } else if (file.exists(data_file(file))) {
-    return(data_file(file))
+    return(name)
   }
 
-  # Look up, download it
-  known <- known_sources[[file]]
+  known <- known_sources[[name]]
   if (!is.null(known)) {
+    filename <- basename(known$url)
+
+    # Check for places this file might already be and return those.
+    if (file.exists(data_file(filename))) {
+      # if the file is in our temp storage, go for it there.
+      return(data_file(filename))
+    } else if (file.exists(source_data_file(filename))) {
+      # if the file is in the source data (and not the temp storage), move it
+      # and return the temp storage path. `overwrite = TRUE` here is redundent
+      # since if it were there the case above should have caught, but let's not
+      # error if that's the case
+      file.copy(source_data_file(filename), data_file(filename), overwrite = TRUE)
+      return(data_file(filename))
+    }
+
+    # If the source doesn't exist we need to create it
+    # Make sure data dirs exist
+    if (!dir.exists(source_data_file(""))) {
+      dir.create(source_data_file(""))
+    }
     if (!dir.exists(data_file(""))) {
-      # Make sure data dir exists
       dir.create(data_file(""))
     }
-    ext <- file_ext(known$url)
-    file <- paste(data_file(file), ext, sep = ".")
+
+    # Look up, download it
+    ext <- file_ext(filename)
+    file <- source_data_file(filename)
     if (!file.exists(file)) {
       # override the timeout
       # TODO: retry with backoff instead of just overriding? or use `curl`?
@@ -34,12 +53,6 @@ ensure_source <- function(file) {
         new = list(timeout = 600),
         utils::download.file(known$url, file, mode = "wb")
       )
-      # run the post processing only once.
-      on.exit({
-        if (!is.null(known$post_process)) {
-          known$post_process(file)
-        }
-      })
     }
     if (ext == "csv.gz") {
       if (!file.exists(file_with_ext(file, "csv"))) {
@@ -49,17 +62,26 @@ ensure_source <- function(file) {
       }
       file <- file_with_ext(file, "csv")
     }
-  } else if (!is.null(test_sources[[file]])) {
-    test <- test_sources[[file]]
+
+    # finally copy it to temp since that's where it'll be looked for by other
+    # tests. Again, `overwrite = TRUE` should be unnecessary here
+    file.copy(file, data_file(filename), overwrite = TRUE)
+    file <-  data_file(filename)
+  } else if (!is.null(test_sources[[name]])) {
+    test <- test_sources[[name]]
     file <- system.file("test_data", test$filename, package = "arrowbench")
   } else {
-    stop(file, " is not a known source", call. = FALSE)
+    stop(name, " is not a known source", call. = FALSE)
   }
   file
 }
 
-data_file <- function(..., local_dir = getOption("arrowbench.local_dir", getwd())) {
-  file.path(local_dir, "source_data", ...)
+source_data_file <- function(...) {
+  file.path(local_dir(), "source_data", ...)
+}
+
+data_file <- function(..., temp_dir = "temp") {
+  file.path(local_dir(), "source_data", temp_dir, ...)
 }
 
 is_url <- function(x) is.character(x) && length(x) == 1 && grepl("://", x)
@@ -104,19 +126,7 @@ known_sources <- list(
     url = "https://ursa-qa.s3.amazonaws.com/nyctaxi/yellow_tripdata_2010-01.csv.gz",
     reader = function(file, ...) arrow::read_csv_arrow(file, ...),
     delim = ",",
-    dim = c(14863778L, 18L),
-    post_process = function(filename) {
-      message("Preparing data for tests. This may take a bit...")
-      # remove the extra new line after the header row which causes some readers trouble
-      # sed on macOS and linux is slightly different. Windows will fail here.
-      if (is_macos()) {
-        system(paste0("sed -i '' '/^$/d' ", filename))
-      } else {
-        system(paste0("sed -i '/^$/d' ", filename))
-      }
-      # and then overwrite the gzipped file so that's available
-      R.utils::gzip(filename, paste0(filename, ".gz"), overwrite = TRUE, remove = FALSE)
-    }
+    dim = c(14863778L, 18L)
   ),
   chi_traffic_2020_Q1 = list(
     url = "https://ursa-qa.s3.amazonaws.com/chitraffic/chi_traffic_2020_Q1.parquet",

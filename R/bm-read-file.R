@@ -17,7 +17,7 @@ read_file <- Benchmark("read_file",
     compression <- match.arg(compression)
     output <- match.arg(output)
 
-    source <- ensure_source(match.arg(source))
+    source <- ensure_source(source)
     input_file <- file_with_ext(source, paste(format, compression, sep = "."))
     result_dim <- get_source_attr(source, "dim")
 
