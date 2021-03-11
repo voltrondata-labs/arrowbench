@@ -2,10 +2,22 @@
 #'
 #' @section Parameters:
 #' * `duration` the duration for the benchmark to take
+#' * `error_type` `NULL` to cause no error, `"rlang::abort"` to use rlang's
+#' `abort` and any other string (including `"base"`) will use base's `stop`
 #'
+#' @keywords internal
 placebo <- Benchmark("placebo",
-  setup = function(duration = 0.01, grid = TRUE) {
-    BenchEnvironment(placebo_func = function() {Sys.sleep(duration)})
+  setup = function(duration = 0.01, error_type = NULL, grid = TRUE) {
+    BenchEnvironment(placebo_func = function() {
+      if (!is.null(error_type)) {
+        msg <- "something went wrong (but I knew that)"
+        if (error_type == "rlang::abort") {
+          rlang::abort(msg)
+        }
+        stop(msg)
+      }
+      Sys.sleep(duration)
+      })
   },
   before_each = TRUE,
   run = {
