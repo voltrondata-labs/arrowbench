@@ -100,7 +100,7 @@ run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, pro
 
   # start with the global setup with parameters that are only used at the global
   # level along with the packages needed to test
-  setup_script <- do.call(global_setup, c(global_params, test_packages = test_packages))
+  setup_script <- do.call(global_setup, append(global_params, list(test_packages = test_packages)))
 
   # add in other arguments as parameters
   args <- modifyList(
