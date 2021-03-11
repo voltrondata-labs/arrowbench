@@ -121,9 +121,9 @@ identifier and mapping it to a file path, downloading and extracting the file
 if it isn't found. Pass the result to `read_source()` load the data with the
 source's provided `reader` function. 
 
-Source files are cached in a `source_data` directory and are only downloaded if
+Source files are cached in a `data` directory and are only downloaded if
 not present. This speeds up repeat benchmark runs on the same host. By default,
-`source_data` is assumed to be relative to the current working directory, but
+`data` is assumed to be relative to the current working directory, but
 you can set `options(arrowbench.local_dir)` or the environment variable 
 `ARROWBENCH_LOCAL_DIR` to point to another (permanent) base directory.
 
@@ -136,7 +136,7 @@ all Suggested packages into that directory using the MRAN snapshot for
 test against old versions of the code and to backfill benchmark results.
 
 These versioned R package libraries are cached in an `r_libs` directory, 
-like `source_data` relative to `getOption("arrowbench.local_dir", ".")`.
+like `data` relative to `getOption("arrowbench.local_dir", ".")`.
 
 ## Results and caching
 

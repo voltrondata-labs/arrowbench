@@ -77,11 +77,11 @@ ensure_source <- function(name) {
 }
 
 source_data_file <- function(...) {
-  file.path(local_dir(), "source_data", ...)
+  file.path(local_dir(), "data", ...)
 }
 
 data_file <- function(..., temp_dir = "temp") {
-  file.path(local_dir(), "source_data", temp_dir, ...)
+  file.path(local_dir(), "data", temp_dir, ...)
 }
 
 is_url <- function(x) is.character(x) && length(x) == 1 && grepl("://", x)
