@@ -40,9 +40,7 @@ with_gc_info <- function(expr) {
   with_gcinfo <- "bench" %:::% "with_gcinfo"
   gc_output <- with_gcinfo(eval.parent(expr))
   # This will swallow errors, so check for error output and re-raise
-  if (length(gc_output) > 0 &&
-      # catch both base "Error in " and rlang "Error: " style errors.
-      ( startsWith(gc_output[1], "Error in ") | startsWith(gc_output[1], "Error: ") )) {
+  if (length(gc_output) > 0 && startsWith(gc_output[1], "Error") ) {
     stop(paste(gc_output, collapse = "\n"), call. = FALSE)
   }
   parse_gc <- "bench" %:::% "parse_gc"
