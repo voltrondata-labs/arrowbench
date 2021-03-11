@@ -124,8 +124,8 @@ source's provided `reader` function.
 Source files are cached in a `source_data` directory and are only downloaded if
 not present. This speeds up repeat benchmark runs on the same host. By default,
 `source_data` is assumed to be relative to the current working directory, but
-you can set `options(arrowbench.local_dir)` to point to another (permanent)
-base directory.
+you can set `options(arrowbench.local_dir)` or the environment variable 
+`ARROWBENCH_LOCAL_DIR` to point to another (permanent) base directory.
 
 Similarly, there is an `ensure_lib()` function called in the `global_setup()`
 that supports a list of known `arrow` package versions, which are mapped to

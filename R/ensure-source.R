@@ -1,6 +1,6 @@
 #' Make sure a data file exists
 #'
-#' @param file A known-source id, a file path, or a URL
+#' @param name A known-source id, a file path, or a URL
 #'
 #' @return A valid path to a source file. If a known source but not present,
 #' it will be downloaded and possibly decompressed.
