@@ -17,7 +17,9 @@ Placebo benchmark for testing
 
 \itemize{
 \item \code{duration} the duration for the benchmark to take
+\item \code{error_type} \code{NULL} to cause no error, \code{"rlang::abort"} to use rlang's
+\code{abort} and any other string (including \code{"base"}) will use base's \code{stop}
 }
 }
 
-\keyword{datasets}
+\keyword{internal}

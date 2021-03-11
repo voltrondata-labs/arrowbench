@@ -5,7 +5,7 @@
 \alias{known_sources}
 \title{Known data files}
 \format{
-An object of class \code{list} of length 7.
+An object of class \code{list} of length 9.
 }
 \usage{
 known_sources
