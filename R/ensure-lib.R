@@ -115,13 +115,6 @@ install_arrow_github <- function(repo = "apache/arrow", ref = "HEAD", ...) {
     ARROW_R_DEV = "true"
   )
 
-  # Newer versions of the macos sdk do not use /usr/include or the like to house
-  # their headers, instead they are in a special root inside the developer SDK.
-  # Setting the SDKROOT allowssome of arrow's dependencies find these.
-  if (is_macos()) {
-    env_vars <- append(env_vars, list(SDKROOT = system("xcrun --show-sdk-path", intern = TRUE)))
-  }
-
   with_makevars(
     # make sure that we don't reference the system library locations
     list(CPPFLAGS = "", LDFLAGS = ""),
