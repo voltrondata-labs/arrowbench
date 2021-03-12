@@ -32,3 +32,19 @@ Suggests:
     vroom
 RoxygenNote: 7.1.1
 Roxygen: list(markdown = TRUE, load = "source")
+Collate: 
+    'benchmark.R'
+    'bm-dataset-taxi-parquet.R'
+    'bm-df-to-table.R'
+    'bm-placebo.R'
+    'bm-read-csv.R'
+    'bm-read-file.R'
+    'bm-write-file.R'
+    'ensure-lib.R'
+    'known-sources.R'
+    'ensure-source.R'
+    'measure.R'
+    'result.R'
+    'run.R'
+    'setup.R'
+    'util.R'

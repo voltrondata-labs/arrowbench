@@ -12,3 +12,10 @@ test_that("ensure_source error handling", {
     "not_a_source is not a known source"
   )
 })
+
+test_that("source_filename()", {
+  expect_identical(
+    source_filename("fanniemae_2016Q4"),
+    "fanniemae_2016Q4.csv.gz"
+  )
+})
