@@ -1,4 +1,5 @@
 #' @include known-sources.R
+NULL
 
 #' Make sure a data file exists
 #'
@@ -182,6 +183,8 @@ source_filename <- function(name) {
 #'
 #' @return the file that was ensured to exist
 #' @export
+#'
+#' @importFrom utils write.csv
 ensure_format <- function(
   name,
   format = c("csv", "parquet", "feather", "csv.gz"),
