@@ -17,14 +17,12 @@ read_csv <- Benchmark(
     reader <- match.arg(reader)
     compression <- match.arg(compression)
     output <- match.arg(output)
-    delim <- get_source_attr(source, "delim") %||% ","
-
     # ensure the the file exists
     input_file <- ensure_format(source, "csv", compression)
 
     # Map string param name to function
+    delim <- get_source_attr(source, "delim") %||% ","
     read_func <- get_csv_reader(reader, delim)
-    source <- ensure_source(source)
     result_dim <- get_source_attr(source, "dim")
 
     BenchEnvironment(
