@@ -20,29 +20,22 @@ ensure_source <- function(name) {
     return(name)
   }
 
+  # If the source doesn't exist we need to create it
+  # Make sure data dirs exist
+  if (!dir.exists(source_data_file(""))) {
+    dir.create(source_data_file(""))
+  }
+  if (!dir.exists(temp_data_file(""))) {
+    dir.create(temp_data_file(""))
+  }
+
   known <- known_sources[[name]]
   if (!is.null(known)) {
     filename <- source_filename(name)
 
-    # If the source doesn't exist we need to create it
-    # Make sure data dirs exist
-    if (!dir.exists(source_data_file(""))) {
-      dir.create(source_data_file(""))
-    }
-    if (!dir.exists(data_file(""))) {
-      dir.create(data_file(""))
-    }
-
     # Check for places this file might already be and return those.
     if (file.exists(data_file(filename))) {
-      # if the file is in our temp storage, go for it there.
-      return(data_file(filename))
-    } else if (file.exists(source_data_file(filename))) {
-      # if the file is in the source data (and not the temp storage), move it
-      # and return the temp storage path. `overwrite = TRUE` here is redundent
-      # since if it were there the case above should have caught, but let's not
-      # error if that's the case
-      file.copy(source_data_file(filename), data_file(filename), overwrite = TRUE)
+      # if the file is in our temp storage or source storage, go for it there.
       return(data_file(filename))
     }
 
@@ -58,19 +51,14 @@ ensure_source <- function(name) {
       )
     }
 
-    # copy it to temp since that's where it'll be looked for by other
-    # tests. Again, `overwrite = TRUE` should be unnecessary here
-    file.copy(file, data_file(filename), overwrite = TRUE)
-    file <-  data_file(filename)
-
-    # # special case for csv.gz, unzip them proactively in ithe temp data directory
+    # # special case for csv.gz, unzip them proactively in the temp data directory
     # if (ext == "csv.gz") {
     #   if (!file.exists(file_with_ext(file, "csv"))) {
     #     # This could be done more efficiently
     #     # Could shell out to `gunzip` but that assumes the command exists
-    #     gunzip(file, file_with_ext(file, "csv"), remove = FALSE)
+    #     gunzip(file, file_with_ext(filename, "csv"), remove = FALSE)
     #   }
-    #   file <- file_with_ext(file, "csv")
+    #   file <- file_with_ext(filename, "csv")
     # }
   } else if (!is.null(test_sources[[name]])) {
     test <- test_sources[[name]]
@@ -85,8 +73,34 @@ source_data_file <- function(...) {
   file.path(local_dir(), "data", ...)
 }
 
-data_file <- function(..., temp_dir = "temp") {
+
+temp_data_file <- function(..., temp_dir = "temp") {
   file.path(local_dir(), "data", temp_dir, ...)
+}
+
+
+#' Find a data file
+#'
+#' This looks in both the source dir ("data") as well as the temp directory
+#' ("data/temp") and returns the temp directory file if it exists, if it doesn't
+#' but the source dir exists it will return that, if neither exist it returns
+#' the temp directory path.
+#'
+#' @param ... file path to look for
+#'
+#' @return path to the file
+#' @keywords internal
+data_file <- function(...) {
+  temp_file <- temp_data_file(...)
+  source_file <- source_data_file(...)
+
+  if (file.exists(temp_file)) {
+    return(temp_file)
+  } else if (file.exists(source_file)) {
+    return(source_file)
+  }
+
+  return(temp_file)
 }
 
 is_url <- function(x) is.character(x) && length(x) == 1 && grepl("://", x)
@@ -171,7 +185,14 @@ ensure_dataset <- function(name, download = TRUE) {
 }
 
 source_filename <- function(name) {
-  ext <- file_ext(basename(get_source_attr(name, "url")))
+  filename <- get_source_attr(name, "url")
+
+  # if the filename is NULL, this is a test data source
+  if (is.null(filename)) {
+    filename <- get_source_attr(name, "filename")
+  }
+
+  ext <- file_ext(basename(filename))
   paste(c(name, ext), collapse = ".")
 }
 
@@ -189,7 +210,6 @@ ensure_format <- function(
   name,
   format = c("csv", "parquet", "feather", "csv.gz"),
   compression = c("uncompressed", "snappy", "zstd", "gzip", "gz", "lz4")) {
-  # exit quickly if exists already
   compression <- match.arg(compression)
   format <- match.arg(format)
 
@@ -206,28 +226,31 @@ ensure_format <- function(
     ext <- paste(format, compression, sep = ".")
   }
 
-  file_out <- file_with_ext(data_file(source_filename(name)), ext)
+  # exit quickly if exists already
+  file_out <- data_file(file_with_ext(source_filename(name), ext))
   if (file.exists(file_out)) {
     return(file_out)
   }
 
   # special case if input is csv + gzip compression since we don't need to read
   # that to re-serialize
-  if(file_ext(ensure_source(name)) %in% c("csv", "csv.gz") && format == "csv") {
-    if(compression == "gzip") {
+  file_in <- ensure_source(name)
+  if(format == "csv") {
+    if(compression == "gzip" & file_ext(file_in) == "csv") {
       # compress if the file doesn't already exist
-      R.utils::gzip(file_with_ext(data_file(source_filename(name)), "csv"), file_out, remove = FALSE)
+      R.utils::gzip(file_in, file_out, remove = FALSE)
       return(file_out)
-    } else {
+    } else if(compression == "uncompressed" & file_ext(file_in) == "csv.gz") {
       # compress if the file doesn't already exist
-      R.utils::gunzip(file_with_ext(data_file(source_filename(name)), "csv.gz"), file_out, remove = FALSE)
+      R.utils::gunzip(file_in, file_out, remove = FALSE)
       return(file_out)
     }
+    return(file_in)
   }
 
   # read
   # TODO: read in things that are easier to read in feather > parquet >> csv?
-  source <- known_sources[[name]]
+  source <- all_sources[[name]]
   tab <- source$reader(ensure_source(name))
 
   if (format == "csv") {
