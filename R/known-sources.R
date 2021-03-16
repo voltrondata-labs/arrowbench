@@ -50,6 +50,30 @@ known_sources <- list(
   )
 )
 
+# these are similar to known_sources above, with the exception that they come
+# with the package, so they have a filename instead of a url
+test_sources <- list(
+  fanniemae_sample = list(
+    filename = "fanniemae_sample.csv",
+    reader = function(file, ...) arrow::read_delim_arrow(file, delim = "|", col_names = FALSE, ...),
+    delim = "|",
+    dim = c(757L, 108L)
+  ),
+  nyctaxi_sample = list(
+    filename = "nyctaxi_sample.csv",
+    reader = function(file, ...) arrow::read_delim_arrow(file, ...),
+    delim = ",",
+    dim = c(998L,  18L)
+  ),
+  chi_traffic_sample = list(
+    filename = "chi_traffic_sample.parquet",
+    reader = function(file, ...) arrow::read_parquet(file, ...),
+    dim = c(1000L, 23L)
+  )
+)
+
+all_sources <- c(known_sources, test_sources)
+
 known_datasets <- list(
   taxi_parquet = list(
     url = "s3://ursa-labs-taxi-data",

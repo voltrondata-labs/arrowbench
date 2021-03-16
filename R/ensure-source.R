@@ -63,11 +63,9 @@ source_data_file <- function(...) {
   file.path(local_dir(), "data", ...)
 }
 
-
-temp_data_file <- function(..., temp_dir = "temp") {
-  file.path(local_dir(), "data", temp_dir, ...)
+temp_data_file <- function(...) {
+  source_data_file("temp", ...)
 }
-
 
 #' Find a data file
 #'
@@ -121,30 +119,6 @@ read_source <- function(file, ...) {
 #' @keywords internal
 #' @export
 get_source_attr <- function(file, attr) all_sources[[file_base(file)]][[attr]]
-
-# these are similar to known_sources above, with the exception that they come
-# with the package, so they have a filename instead of a url
-test_sources <- list(
-  fanniemae_sample = list(
-    filename = "fanniemae_sample.csv",
-    reader = function(file, ...) arrow::read_delim_arrow(file, delim = "|", col_names = FALSE, ...),
-    delim = "|",
-    dim = c(757L, 108L)
-  ),
-  nyctaxi_sample = list(
-    filename = "nyctaxi_sample.csv",
-    reader = function(file, ...) arrow::read_delim_arrow(file, ...),
-    delim = ",",
-    dim = c(998L,  18L)
-  ),
-  chi_traffic_sample = list(
-    filename = "chi_traffic_sample.parquet",
-    reader = function(file, ...) arrow::read_parquet(file, ...),
-    dim = c(1000L, 23L)
-  )
-)
-
-all_sources <- c(known_sources, test_sources)
 
 #' Make sure a multi-file dataset exists
 #'
@@ -203,11 +177,14 @@ ensure_format <- function(
   compression <- match.arg(compression)
   format <- match.arg(format)
 
+  # if we get "csv.gz" split it up correctly.
   if (format == "csv.gz") {
     format <- "csv"
     compression <- "gzip"
   }
 
+  # generate an extension based on format + compression (with special cases for
+  # uncompressed and gzip)
   if (compression == "gzip") {
     ext <- paste(format, "gz", sep = ".")
   } else if (compression == "uncompressed") {
@@ -223,7 +200,7 @@ ensure_format <- function(
   }
 
   # special case if input is csv + gzip compression since we don't need to read
-  # that to re-serialize
+  # that just to compress
   file_in <- ensure_source(name)
   if(format == "csv") {
     if(compression == "gzip" & file_ext(file_in) == "csv") {
@@ -238,11 +215,12 @@ ensure_format <- function(
     return(file_in)
   }
 
-  # read
+  # read the data in
   # TODO: read in things that are easier to read in feather > parquet >> csv?
   source <- all_sources[[name]]
   tab <- source$reader(ensure_source(name))
 
+  # write the reformatted data based on the format/ext
   if (format == "csv") {
     csv_filename <- gsub(".gz", "", file_out)
     write.csv(tab, file = csv_filename, row.names = FALSE, na = "")
