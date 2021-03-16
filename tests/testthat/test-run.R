@@ -55,6 +55,9 @@ test_that("Argument validation", {
 })
 
 test_that("form of the results", {
+  # the stdout isn't redirected correctly on windows, at least in GHA
+  skip_on_os("windows")
+
   expect_message(res <- run_benchmark(placebo, cpu_count = 1))
 
   results_df <- as.data.frame(res)
