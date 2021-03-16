@@ -50,16 +50,6 @@ ensure_source <- function(name) {
         utils::download.file(known$url, file, mode = "wb")
       )
     }
-
-    # # special case for csv.gz, unzip them proactively in the temp data directory
-    # if (ext == "csv.gz") {
-    #   if (!file.exists(file_with_ext(file, "csv"))) {
-    #     # This could be done more efficiently
-    #     # Could shell out to `gunzip` but that assumes the command exists
-    #     gunzip(file, file_with_ext(filename, "csv"), remove = FALSE)
-    #   }
-    #   file <- file_with_ext(filename, "csv")
-    # }
   } else if (!is.null(test_sources[[name]])) {
     test <- test_sources[[name]]
     file <- system.file("test_data", test$filename, package = "arrowbench")
