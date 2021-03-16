@@ -7,6 +7,8 @@ test_that("find_r()", {
   out <- system(paste(find_r(), "--no-save -s 2>&1"), intern = TRUE, input = "print('output')\n")
   expect_match(out, "output")
 
+  # the stderror isn't redirected correctly on windows, at least in GHA
+  skip_on_os("windows")
   error_out <- system(paste(find_r(), "--no-save -s 2>&1"), intern = TRUE, input = "stop('this is an error')\n")
   expect_match(error_out[[1]], "this is an error")
 })
