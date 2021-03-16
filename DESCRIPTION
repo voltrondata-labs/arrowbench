@@ -24,6 +24,7 @@ Imports:
   utils,
   withr
 Suggests:
+    testthat (>= 3.0.0),
     arrow,
     data.table,
     dplyr,
@@ -48,3 +49,4 @@ Collate:
     'run.R'
     'setup.R'
     'util.R'
+Config/testthat/edition: 3
