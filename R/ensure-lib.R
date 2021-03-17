@@ -108,7 +108,7 @@ install_arrow_github <- function(repo = "apache/arrow", ref = "HEAD", ...) {
   # most it would only need to change the repo arg + expose the subdir argument
   env_vars <- list(
     # always use the tools/linuxlibs.R script for installing arrow lib
-    FORCE_TOOLS_LIBS_SCRIPT = "true",
+    FORCE_BUNDLED_BUILD = "true",
     # we want everything to be available
     LIBARROW_MINIMAL = "false",
     # for verbosity
