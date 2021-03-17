@@ -2,6 +2,7 @@
 
 
 #' @importFrom utils head tail install.packages installed.packages packageDescription
+#' @importFrom remotes install_github
 ensure_lib <- function(lib = NULL, test_packages = unlist(strsplit(packageDescription("arrowbench")[["Suggests"]], "[, \n]+"))) {
   # some packages need extra packages to do what we want
   # Listing them here is easier than installing with dependencies = TRUE
@@ -41,26 +42,25 @@ ensure_lib <- function(lib = NULL, test_packages = unlist(strsplit(packageDescri
     }
   }
 
-  if (lib %in% names(arrow_version_to_date)) {
-    # Install from a CRAN snapshot
-    repo_url <- get_repo_url(lib)
-    with_pure_lib_path(lib_dir_path, {
-      if (tolower(Sys.info()["sysname"]) == "darwin" && "data.table" %in% test_packages) {
+  with_pure_lib_path(lib_dir_path, {
+    if (lib %in% names(arrow_version_to_date)) {
+      # Install from a CRAN snapshot
+      repo_url <- get_repo_url(lib)
+      if (is_macos() && "data.table" %in% test_packages) {
         special_data_table_install(repo_url = repo_url)
         test_packages <- setdiff(test_packages, "data.table")
       }
 
       # make it install everything from this repo, install data.table separately (above) tho
       install.packages(test_packages, repos = repo_url)
-    })
-  } else if (lib == "devel") {
-    # using the canonical repo here for getting description files only
-    cran_url <- "https://cloud.r-project.org/"
-    # install the package from github
-    with_pure_lib_path(lib_dir_path, {
+    } else if (lib == "devel") {
+      # using the canonical repo here for getting description files only
+      cran_url <- "https://cloud.r-project.org/"
+      # install the package from github
+
       install.packages("remotes")
 
-      if (tolower(Sys.info()["sysname"]) == "darwin" && "data.table" %in% test_packages) {
+      if (is_macos() && "data.table" %in% test_packages) {
         special_data_table_install(dev = TRUE, cran_url = cran_url)
         test_packages <- setdiff(test_packages, "data.table")
       }
@@ -73,17 +73,64 @@ ensure_lib <- function(lib = NULL, test_packages = unlist(strsplit(packageDescri
         if ("fst" %in% test_packages) {
           install.packages("fstcore")
         }
-        subdir <- if (pkg == "arrow") "r" else NULL
-        remotes::install_dev(pkg, subdir = subdir, upgrade = "never", cran_url = cran_url)
+
+        if (pkg == "arrow") {
+          install_arrow_github()
+        } else {
+          remotes::install_dev(pkg, upgrade = "never", cran_url = cran_url)
+        }
       }
-    })
-  } else {
-    # git hash? build from source
-    # TODO: use remotes package for github ref management
-    # For mac, need to do what crossbow and arrow-r-nightly do to use autobrew and pin commit
-    stop("The lib_path is not a known value: ", lib)
-  }
+    } else if (grepl("^remote-.*", lib)) {
+      install.packages(c("remotes", setdiff(test_packages, "arrow")))
+      # the form of the lib is remote-repo@ref
+      args <- identify_repo_ref(lib)
+      do.call(install_arrow_github, args)
+    } else {
+      # git hash? build from source
+      # TODO: use remotes package for github ref management
+      # For mac, need to do what crossbow and arrow-r-nightly do to use autobrew and pin commit
+      stop("The lib_path is not a known value: ", lib, call. = FALSE)
+    }
+  })
   lib_dir_path
+}
+
+identify_repo_ref <- function(x) {
+  repo <- gsub("^remote-(.*?)@(.*?)$", "\\1", x)
+  ref <- gsub("^remote-(.*?)@(.*?)$", "\\2", x)
+
+  list(repo = repo, ref = ref)
+}
+
+#' @importFrom withr with_makevars
+install_arrow_github <- function(repo = "apache/arrow", ref = "HEAD", ...) {
+  # Do we want or need to also allow this to install any github package? For
+  # most it would only need to change the repo arg + expose the subdir argument
+  env_vars <- list(
+    # always use the tools/linuxlibs.R script for installing arrow lib
+    FORCE_BUNDLED_BUILD = "true",
+    # we want everything to be available
+    LIBARROW_MINIMAL = "false",
+    # for verbosity
+    ARROW_R_DEV = "true"
+  )
+
+  with_makevars(
+    # make sure that we don't reference the system library locations
+    list(CPPFLAGS = "", LDFLAGS = ""),
+    with_envvar(
+      env_vars,
+      install_github(
+        repo,
+        ref = ref,
+        subdir = "r",
+        # build = FALSE is necessary so that the source package is not relocated
+        # outside of the larger arrow repo when installing.
+        build = FALSE,
+        ...
+      )
+    )
+  )
 }
 
 special_data_table_install <- function(repo_url = NULL, dev = FALSE, cran_url = NULL) {

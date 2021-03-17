@@ -106,7 +106,7 @@ known_sources <- list(
       message("Preparing data for tests. This may take a bit...")
       # remove the extra new line after the header row which causes some readers trouble
       # sed on macOS and linux is slightly different. Windows will fail here.
-      if (tolower(Sys.info()["sysname"]) == "darwin" ) {
+      if (is_macos()) {
         system(paste0("sed -i '' '/^$/d' ", filename))
       } else {
         system(paste0("sed -i '/^$/d' ", filename))

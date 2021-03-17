@@ -81,3 +81,5 @@ find_r <- function() {
     file.path(R.home("bin"), "R")
   }
 }
+
+is_macos <- function() tolower(Sys.info()["sysname"]) == "darwin"
