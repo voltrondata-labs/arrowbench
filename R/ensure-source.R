@@ -60,7 +60,7 @@ ensure_source <- function(name) {
 }
 
 source_data_file <- function(...) {
-  file.path(local_dir(), "data", ...)
+  file.path(local_data_dir(), ...)
 }
 
 temp_data_file <- function(...) {
@@ -202,7 +202,7 @@ ensure_format <- function(
   # special case if input is csv + gzip compression since we don't need to read
   # that just to compress
   file_in <- ensure_source(name)
-  if(format == "csv") {
+  if(format == "csv" & file_ext(file_in) == "csv" ) {
     if(compression == "gzip" & file_ext(file_in) == "csv") {
       # compress if the file doesn't already exist
       R.utils::gzip(file_in, file_out, remove = FALSE)

@@ -90,3 +90,10 @@ local_dir <- function() {
     unset = getOption("arrowbench.local_dir", getwd())
   )
 }
+
+local_data_dir <- function() {
+  Sys.getenv(
+    "ARROWBENCH_DATA_DIR",
+    unset = getOption("arrowbench.data_dir", getwd())
+  )
+}
