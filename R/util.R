@@ -84,6 +84,8 @@ find_r <- function() {
 
 is_macos <- function() tolower(Sys.info()["sysname"]) == "darwin"
 
+# the local_dir is the directory where results and the r library paths will be
+# stored / looked up from.
 local_dir <- function() {
   Sys.getenv(
     "ARROWBENCH_LOCAL_DIR",
@@ -91,9 +93,14 @@ local_dir <- function() {
   )
 }
 
+# the local_data_dir is a separate directory that the source data (and temp
+# data) are. Known sources and known datasets will be saved in the root, and any
+# derived data sources will be put in a directory called temp under this directory.
+# The default if no options or variables are set is under the local_dir in a dir
+# called source_data
 local_data_dir <- function() {
   Sys.getenv(
     "ARROWBENCH_DATA_DIR",
-    unset = getOption("arrowbench.data_dir", getwd())
+    unset = getOption("arrowbench.data_dir", file.path(local_dir(), "source_data"))
   )
 }
