@@ -40,7 +40,6 @@ ensure_source <- function(name) {
     }
 
     # Look up, download it
-    ext <- file_ext(filename)
     file <- source_data_file(filename)
     if (!file.exists(file)) {
       # override the timeout
@@ -173,7 +172,7 @@ source_filename <- function(name) {
 ensure_format <- function(
   name,
   format = c("csv", "parquet", "feather", "csv.gz"),
-  compression = c("uncompressed", "snappy", "zstd", "gzip", "gz", "lz4")) {
+  compression = c("uncompressed", "snappy", "zstd", "gzip", "lz4")) {
   compression <- match.arg(compression)
   format <- match.arg(format)
 
