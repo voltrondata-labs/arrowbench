@@ -53,6 +53,17 @@ test_that("Argument validation", {
   expect_true(file.exists(test_path("results/placebo/1.json")))
 })
 
+test_that("Path validation and redaction", {
+  # note: these tests will call an installed version of arrowbench as well as
+  # the one being tested (e.g. when using devtools::test())
+  expect_message(
+    run_one(placebo, cpu_count = 1, grid = "not/a/file@path"),
+    NA
+  )
+
+  expect_true(file.exists(test_path("results/placebo/1-not_a_file@path.json")))
+})
+
 test_that("form of the results", {
   expect_message(res <- run_benchmark(placebo, cpu_count = 1))
 
