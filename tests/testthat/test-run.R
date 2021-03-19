@@ -38,9 +38,6 @@ test_that("Argument validation", {
   # note: these tests will call an installed version of arrowbench as well as
   # the one being tested (e.g. when using devtools::test())
 
-  # the stderror isn't redirected correctly on windows, at least in GHA
-  skip_on_os("windows")
-
   expect_message(
     run_one(placebo, not_an_arg = 1, cpu_count = 1),
     "Error.*unused argument.*not_an_arg"
@@ -55,9 +52,6 @@ test_that("Argument validation", {
 })
 
 test_that("form of the results", {
-  # the stdout isn't redirected correctly on windows, at least in GHA
-  skip_on_os("windows")
-
   expect_message(res <- run_benchmark(placebo, cpu_count = 1))
 
   results_df <- as.data.frame(res)
