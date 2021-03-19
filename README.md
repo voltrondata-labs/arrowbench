@@ -124,8 +124,8 @@ source's provided `reader` function.
 Source files are cached in a `data` directory and are only downloaded if
 not present. This speeds up repeat benchmark runs on the same host. By default,
 `data` is assumed to be relative to the current working directory, but
-you can set `options(arrowbench.data_dir)` or the environment variable 
-`ARROWBENCH_DATA_DIR` to point to another (permanent) base directory.
+you can set the environment variable `ARROWBENCH_DATA_DIR` to point to another 
+(permanent) base directory.
 
 Similarly, there is an `ensure_lib()` function called in the `global_setup()`
 that supports a list of known `arrow` package versions, which are mapped to
@@ -136,8 +136,7 @@ all Suggested packages into that directory using the MRAN snapshot for
 test against old versions of the code and to backfill benchmark results.
 
 These versioned R package libraries are cached in an `r_libs` directory, 
-like `data` relative to the directory specified by
-`getOption("arrowbench.local_dir", ".")` or the environment variable 
+like `data` relative to the directory specified by the environment variable 
 `ARROWBENCH_LOCAL_DIR`.
 
 ## Results and caching
@@ -159,5 +158,5 @@ if you are using the default `lib_path` **and** are updating the package
 versions installed there between benchmark runs, you should clear the cache
 before starting a new run (at least deleting the cached .json files containing
 "latest" in the file name). The location of this cache is the directory 
-specified by `getOption("arrowbench.local_dir", ".")` or the environment 
-variable `ARROWBENCH_LOCAL_DIR`.
+specified by the environment variable `ARROWBENCH_LOCAL_DIR`. If no environment 
+variable is given, this will default to the current working directory.

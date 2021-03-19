@@ -34,9 +34,10 @@ ensure_source <- function(name) {
     filename <- source_filename(name)
 
     # Check for places this file might already be and return those.
-    if (file.exists(data_file(filename))) {
+    cached_file <- data_file(filename)
+    if (!is.null(cached_file)) {
       # if the file is in our temp storage or source storage, go for it there.
-      return(data_file(filename))
+      return(cached_file)
     }
 
     # Look up, download it
@@ -68,14 +69,17 @@ temp_data_file <- function(...) {
 
 #' Find a data file
 #'
-#' This looks in both the source dir ("data") as well as the temp directory
-#' ("data/temp") and returns the temp directory file if it exists, if it doesn't
-#' but the source dir exists it will return that, if neither exist it returns
-#' the temp directory path.
+#' This looks in the locations in the following order and returns the first
+#' path that exists:
+#'
+#'   * source dir ("data")
+#'   * as well as the temp directory ("data/temp")
+#'
+#' If there is not a file present in either of those, it returns NULL
 #'
 #' @param ... file path to look for
 #'
-#' @return path to the file
+#' @return path to the file (or NULL if the file doesn't exist)
 #' @keywords internal
 data_file <- function(...) {
   temp_file <- temp_data_file(...)
@@ -87,7 +91,7 @@ data_file <- function(...) {
     return(source_file)
   }
 
-  return(temp_file)
+  return(NULL)
 }
 
 is_url <- function(x) is.character(x) && length(x) == 1 && grepl("://", x)
@@ -134,7 +138,7 @@ ensure_dataset <- function(name, download = TRUE) {
   }
   known <- known_datasets[[name]]
   if (download) {
-    path <- data_file(name)
+    path <- source_data_file(name)
     if (!(dir.exists(path) && length(dir(path, recursive = TRUE)) == known$n_files)) {
       # Only download if some/all files are missing
       known$download(path)
@@ -194,9 +198,12 @@ ensure_format <- function(
 
   # exit quickly if exists already
   file_out <- data_file(file_with_ext(source_filename(name), ext))
-  if (file.exists(file_out)) {
+  if (!is.null(file_out)) {
     return(file_out)
   }
+
+  # the file hasn't been found, so we need to create it in the temp directory
+  file_out <- temp_data_file(file_with_ext(source_filename(name), ext))
 
   # special case if input is csv + gzip compression since we don't need to read
   # that just to compress
