@@ -7,7 +7,7 @@
 ensure_format(
   name,
   format = c("csv", "parquet", "feather", "csv.gz"),
-  compression = c("uncompressed", "snappy", "zstd", "gzip", "gz", "lz4")
+  compression = c("uncompressed", "snappy", "zstd", "gzip", "lz4")
 )
 }
 \arguments{
