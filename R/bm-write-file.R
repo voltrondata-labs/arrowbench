@@ -15,7 +15,6 @@ write_file <- Benchmark("write_file",
     source <- ensure_source(source)
     df <- read_source(source, as_data_frame = match.arg(input) == "data_frame")
     format <- match.arg(format)
-    compression <- match.arg(compression)
 
     # Map string param name to functions
     write_func <- get_write_function(format, compression)

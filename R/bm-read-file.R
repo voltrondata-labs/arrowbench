@@ -14,7 +14,6 @@ read_file <- Benchmark("read_file",
                    compression = c("uncompressed", "snappy", "zstd", "lz4"),
                    output = c("arrow_table", "data_frame")) {
     format <- match.arg(format)
-    compression <- match.arg(compression)
     output <- match.arg(output)
 
     # ensure that we have the right kind of file available
