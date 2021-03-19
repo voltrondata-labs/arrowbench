@@ -3,7 +3,7 @@
 #' @section Parameters:
 #' * `source` A known-file id, or a CSV(?) file path to read in
 #' * `format` One of `c("parquet", "feather", "fst")`
-#' * `compression` One of `c("uncompressed", "snappy", "zstd")`
+#' * `compression` One of `c("uncompressed", "snappy", "zstd", "lz4")`
 #' * `output` One of `c("arrow_table", "data_frame")`
 #'
 #' @export
@@ -11,7 +11,7 @@ read_file <- Benchmark("read_file",
   setup = function(source = names(known_sources),
                    # TODO: break out feather_v1 and feather_v2, feather_v2 only in >= 0.17
                    format = c("parquet", "feather", "fst"),
-                   compression = c("uncompressed", "snappy", "zstd"),
+                   compression = c("uncompressed", "snappy", "zstd", "lz4"),
                    output = c("arrow_table", "data_frame")) {
     format <- match.arg(format)
     compression <- match.arg(compression)
