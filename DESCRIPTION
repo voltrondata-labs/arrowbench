@@ -41,6 +41,7 @@ Collate:
     'bm-read-csv.R'
     'bm-read-file.R'
     'bm-write-file.R'
+    'ensure-format.R'
     'ensure-lib.R'
     'known-sources.R'
     'ensure-source.R'
