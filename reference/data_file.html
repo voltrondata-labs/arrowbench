@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Benchmark for reading a data.frame into an Arrow table — df_to_table • arrowbench</title>
+<title>Find a data file — data_file • arrowbench</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,9 @@
 
 
 
-<meta property="og:title" content="Benchmark for reading a data.frame into an Arrow table — df_to_table" />
-<meta property="og:description" content="This flexes that conversion from R data structures to Arrow data structures." />
+<meta property="og:title" content="Find a data file — data_file" />
+<meta property="og:description" content="This looks in the locations in the following order and returns the first
+path that exists:" />
 
 
 
@@ -103,29 +104,39 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Benchmark for reading a data.frame into an Arrow table</h1>
+    <h1>Find a data file</h1>
     
-    <div class="hidden name"><code>df_to_table.Rd</code></div>
+    <div class="hidden name"><code>data_file.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>This flexes that conversion from R data structures to Arrow data structures.</p>
+    <p>This looks in the locations in the following order and returns the first
+path that exists:</p>
     </div>
 
-    <pre class="usage"><span class='va'>df_to_table</span></pre>
+    <pre class="usage"><span class='fu'>data_file</span><span class='op'>(</span><span class='va'>...</span><span class='op'>)</span></pre>
 
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>...</th>
+      <td><p>file path to look for</p></td>
+    </tr>
+    </table>
 
-    <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An object of class <code>Benchmark</code> of length 8.</p>
-    <h2 class="hasAnchor" id="parameters"><a class="anchor" href="#parameters"></a>Parameters</h2>
+    <p>path to the file (or NULL if the file doesn't exist)</p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     
-
 <ul>
-<li><p><code>source</code> A known-file id to use (it will be read in to a data.frame first)</p></li>
+<li><p>source dir ("data")</p></li>
+<li><p>as well as the temp directory ("data/temp")</p></li>
 </ul>
 
+<p>If there is not a file present in either of those, it returns NULL</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

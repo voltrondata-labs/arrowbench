@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Benchmark for reading a data.frame into an Arrow table — df_to_table • arrowbench</title>
+<title>Ensure that a source has a specific format — ensure_format • arrowbench</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Benchmark for reading a data.frame into an Arrow table — df_to_table" />
-<meta property="og:description" content="This flexes that conversion from R data structures to Arrow data structures." />
+<meta property="og:title" content="Ensure that a source has a specific format — ensure_format" />
+<meta property="og:description" content="Ensure that a source has a specific format" />
 
 
 
@@ -103,29 +103,37 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Benchmark for reading a data.frame into an Arrow table</h1>
+    <h1>Ensure that a source has a specific format</h1>
     
-    <div class="hidden name"><code>df_to_table.Rd</code></div>
+    <div class="hidden name"><code>ensure_format.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>This flexes that conversion from R data structures to Arrow data structures.</p>
+    <p>Ensure that a source has a specific format</p>
     </div>
 
-    <pre class="usage"><span class='va'>df_to_table</span></pre>
+    <pre class="usage"><span class='fu'>ensure_format</span><span class='op'>(</span><span class='va'>name</span>, format <span class='op'>=</span> <span class='va'>known_formats</span>, compression <span class='op'>=</span> <span class='va'>known_compressions</span><span class='op'>)</span></pre>
 
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>name</th>
+      <td><p>name of the known source</p></td>
+    </tr>
+    <tr>
+      <th>format</th>
+      <td><p>format to be ensured</p></td>
+    </tr>
+    <tr>
+      <th>compression</th>
+      <td><p>compression to be ensured</p></td>
+    </tr>
+    </table>
 
-    <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An object of class <code>Benchmark</code> of length 8.</p>
-    <h2 class="hasAnchor" id="parameters"><a class="anchor" href="#parameters"></a>Parameters</h2>
-
-    
-
-<ul>
-<li><p><code>source</code> A known-file id to use (it will be read in to a data.frame first)</p></li>
-</ul>
-
+    <p>the file that was ensured to exist</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
