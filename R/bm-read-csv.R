@@ -17,26 +17,13 @@ read_csv <- Benchmark(
     reader <- match.arg(reader)
     compression <- match.arg(compression)
     output <- match.arg(output)
-    delim <- get_source_attr(source, "delim") %||% ","
+    # ensure the the file exists
+    input_file <- ensure_format(source, "csv", compression)
+
     # Map string param name to function
+    delim <- get_source_attr(source, "delim") %||% ","
     read_func <- get_csv_reader(reader, delim)
-
-    source <- ensure_source(match.arg(source))
     result_dim <- get_source_attr(source, "dim")
-
-    input_file <- file_with_ext(source, "csv")
-    if(compression == "gzip") {
-      input_file <- file_with_ext(source, "csv.gz")
-      if (!file.exists(input_file)) {
-        # compress if the file doesn't already exist
-        gzip(file_with_ext(source, "csv"), input_file)
-      }
-      # Check file extension, compress if not found
-      input_file <- input_file
-    } else {
-      # Check file extension, decompress if not found
-      input_file <- file_with_ext(source, "csv")
-    }
 
     BenchEnvironment(
       # Map string param name to function

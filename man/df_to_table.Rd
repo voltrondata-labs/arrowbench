@@ -11,7 +11,7 @@ An object of class \code{Benchmark} of length 8.
 df_to_table
 }
 \description{
-This flexes that converstion from R data structures to Arrow data structures.
+This flexes that conversion from R data structures to Arrow data structures.
 }
 \section{Parameters}{
 

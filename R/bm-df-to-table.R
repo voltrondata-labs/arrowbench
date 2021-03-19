@@ -1,6 +1,6 @@
 #' Benchmark for reading a data.frame into an Arrow table
 #'
-#' This flexes that converstion from R data structures to Arrow data structures.
+#' This flexes that conversion from R data structures to Arrow data structures.
 #'
 #' @section Parameters:
 #' * `source` A known-file id to use (it will be read in to a data.frame first)

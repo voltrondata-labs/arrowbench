@@ -1,32 +1,47 @@
+#' @include known-sources.R
+NULL
+
 #' Make sure a data file exists
 #'
-#' @param file A known-source id, a file path, or a URL
+#' @param name A known-source id, a file path, or a URL
 #'
 #' @return A valid path to a source file. If a known source but not present,
 #' it will be downloaded and possibly decompressed.
 #' @export
 #' @importFrom R.utils gunzip
 #' @importFrom withr with_options
-ensure_source <- function(file) {
-  if (is_url(file)) {
+ensure_source <- function(name) {
+  # if this is a direct file reference, return quickly.
+  if (is_url(name)) {
     # TODO: validate that it exists?
-    return(file)
-  } else if (file.exists(file)) {
+    return(name)
+  } else if (file.exists(name)) {
     # TODO: wrap in some object?
-    return(file)
-  } else if (file.exists(data_file(file))) {
-    return(data_file(file))
+    return(name)
   }
 
-  # Look up, download it
-  known <- known_sources[[file]]
+  # If the source doesn't exist we need to create it
+  # Make sure data dirs exist
+  if (!dir.exists(source_data_file(""))) {
+    dir.create(source_data_file(""))
+  }
+  if (!dir.exists(temp_data_file(""))) {
+    dir.create(temp_data_file(""))
+  }
+
+  known <- known_sources[[name]]
   if (!is.null(known)) {
-    if (!dir.exists(data_file(""))) {
-      # Make sure data dir exists
-      dir.create(data_file(""))
+    filename <- source_filename(name)
+
+    # Check for places this file might already be and return those.
+    cached_file <- data_file(filename)
+    if (!is.null(cached_file)) {
+      # if the file is in our temp storage or source storage, go for it there.
+      return(cached_file)
     }
-    ext <- file_ext(known$url)
-    file <- paste(data_file(file), ext, sep = ".")
+
+    # Look up, download it
+    file <- source_data_file(filename)
     if (!file.exists(file)) {
       # override the timeout
       # TODO: retry with backoff instead of just overriding? or use `curl`?
@@ -34,29 +49,49 @@ ensure_source <- function(file) {
         new = list(timeout = 600),
         utils::download.file(known$url, file, mode = "wb")
       )
-      # run the post processing only once.
-      on.exit({
-        if (!is.null(known$post_process)) {
-          known$post_process(file)
-        }
-      })
     }
-    if (ext == "csv.gz") {
-      if (!file.exists(file_with_ext(file, "csv"))) {
-        # This could be done more efficiently
-        # Could shell out to `gunzip` but that assumes the command exists
-        gunzip(file, file_with_ext(file, "csv"), remove = FALSE)
-      }
-      file <- file_with_ext(file, "csv")
-    }
+  } else if (!is.null(test_sources[[name]])) {
+    test <- test_sources[[name]]
+    file <- system.file("test_data", test$filename, package = "arrowbench")
   } else {
-    stop(file, " does not exist", call. = FALSE)
+    stop(name, " is not a known source", call. = FALSE)
   }
   file
 }
 
-data_file <- function(..., local_dir = getOption("arrowbench.local_dir", getwd())) {
-  file.path(local_dir, "source_data", ...)
+source_data_file <- function(...) {
+  file.path(local_data_dir(), ...)
+}
+
+temp_data_file <- function(...) {
+  source_data_file("temp", ...)
+}
+
+#' Find a data file
+#'
+#' This looks in the locations in the following order and returns the first
+#' path that exists:
+#'
+#'   * source dir ("data")
+#'   * as well as the temp directory ("data/temp")
+#'
+#' If there is not a file present in either of those, it returns NULL
+#'
+#' @param ... file path to look for
+#'
+#' @return path to the file (or NULL if the file doesn't exist)
+#' @keywords internal
+data_file <- function(...) {
+  temp_file <- temp_data_file(...)
+  source_file <- source_data_file(...)
+
+  if (file.exists(temp_file)) {
+    return(temp_file)
+  } else if (file.exists(source_file)) {
+    return(source_file)
+  }
+
+  return(NULL)
 }
 
 is_url <- function(x) is.character(x) && length(x) == 1 && grepl("://", x)
@@ -86,71 +121,7 @@ read_source <- function(file, ...) {
 #'
 #' @keywords internal
 #' @export
-get_source_attr <- function(file, attr) known_sources[[file_base(file)]][[attr]]
-
-#' Known data files
-#' @export
-known_sources <- list(
-  fanniemae_2016Q4 = list(
-    url = "https://ursa-qa.s3.amazonaws.com/fanniemae_loanperf/2016Q4.csv.gz",
-    reader = function(file, ...) arrow::read_delim_arrow(file, delim = "|", col_names = FALSE, ...),
-    delim = "|",
-    dim = c(22180168L, 31L)
-  ),
-  `nyctaxi_2010-01` = list(
-    url = "https://ursa-qa.s3.amazonaws.com/nyctaxi/yellow_tripdata_2010-01.csv.gz",
-    reader = function(file, ...) arrow::read_csv_arrow(file, ...),
-    delim = ",",
-    dim = c(14863778L, 18L),
-    post_process = function(filename) {
-      message("Preparing data for tests. This may take a bit...")
-      # remove the extra new line after the header row which causes some readers trouble
-      # sed on macOS and linux is slightly different. Windows will fail here.
-      if (is_macos()) {
-        system(paste0("sed -i '' '/^$/d' ", filename))
-      } else {
-        system(paste0("sed -i '/^$/d' ", filename))
-      }
-      # and then overwrite the gzipped file so that's available
-      R.utils::gzip(filename, paste0(filename, ".gz"), overwrite = TRUE, remove = FALSE)
-    }
-  ),
-  chi_traffic_2020_Q1 = list(
-    url = "https://ursa-qa.s3.amazonaws.com/chitraffic/chi_traffic_2020_Q1.parquet",
-    reader = function(file, ...) arrow::read_parquet(file, ...),
-    dim = c(13038291L, 23L)
-  ),
-  sample_strings = list(
-    url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_strings.parquet",
-    reader = function(file, ...) arrow::read_parquet(file, ...),
-    dim = c(1000000L, 5L)
-  ),
-  sample_dict = list(
-    url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_dict.parquet",
-    reader = function(file, ...) arrow::read_parquet(file, ...),
-    dim = c(1000000L, 5L)
-  ),
-  sample_integers = list(
-    url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_integers.parquet",
-    reader = function(file, ...) arrow::read_parquet(file, ...),
-    dim = c(1000000L, 5L)
-  ),
-  sample_floats = list(
-    url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_floats.parquet",
-    reader = function(file, ...) arrow::read_parquet(file, ...),
-    dim = c(1000000L, 5L)
-  ),
-  sample_nested = list(
-    url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_nested.parquet",
-    reader = function(file, ...) arrow::read_parquet(file, ...),
-    dim = c(1000000L, 4L)
-  ),
-  sample_simple_features = list(
-    url = "https://ursa-qa.s3.amazonaws.com/sample_types/sample_simple_features.parquet",
-    reader = function(file, ...) arrow::read_parquet(file, ...),
-    dim = c(1000000L, 5L)
-  )
-)
+get_source_attr <- function(file, attr) all_sources[[file_base(file)]][[attr]]
 
 #' Make sure a multi-file dataset exists
 #'
@@ -167,7 +138,7 @@ ensure_dataset <- function(name, download = TRUE) {
   }
   known <- known_datasets[[name]]
   if (download) {
-    path <- data_file(name)
+    path <- source_data_file(name)
     if (!(dir.exists(path) && length(dir(path, recursive = TRUE)) == known$n_files)) {
       # Only download if some/all files are missing
       known$download(path)
@@ -180,17 +151,14 @@ ensure_dataset <- function(name, download = TRUE) {
   ds
 }
 
-known_datasets <- list(
-  taxi_parquet = list(
-    url = "s3://ursa-labs-taxi-data",
-    download = function(path) {
-      arrow::copy_files("s3://ursa-labs-taxi-data", path)
-      invisible(path)
-    },
-    open = function(path) {
-      arrow::open_dataset(path, partitioning = c("year", "month"))
-    },
-    dim = c(1547741381L, 20L),
-    n_files = 125
-  )
-)
+source_filename <- function(name) {
+  filename <- get_source_attr(name, "url")
+
+  # if the filename is NULL, this is a test data source
+  if (is.null(filename)) {
+    filename <- get_source_attr(name, "filename")
+  }
+
+  ext <- file_ext(basename(filename))
+  paste(c(name, ext), collapse = ".")
+}

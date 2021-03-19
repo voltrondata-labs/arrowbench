@@ -1,6 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^r_libs
+^data
 ^source_data
 ^results
 ^plots

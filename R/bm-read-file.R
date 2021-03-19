@@ -17,22 +17,10 @@ read_file <- Benchmark("read_file",
     compression <- match.arg(compression)
     output <- match.arg(output)
 
-    source <- ensure_source(match.arg(source))
-    input_file <- file_with_ext(source, paste(format, compression, sep = "."))
+    # ensure that we have the right kind of file available
+    input_file <- ensure_format(source, format, compression)
     result_dim <- get_source_attr(source, "dim")
 
-    if (is.null(result_dim) || !file.exists(input_file)) {
-      tab <- read_source(source, as_data_frame = format == "fst")
-      if (is.null(result_dim)) {
-        # This means we haven't recorded the dim in known_sources, so compute it
-        result_dim <- dim(tab)
-      }
-      if (!file.exists(input_file)) {
-        # Create the file in the specified format
-        get_write_function(format, compression)(tab, input_file)
-        stopifnot(file.exists(input_file))
-      }
-    }
     BenchEnvironment(
       # Map string param name to function
       read_func = get_read_function(format),

@@ -4,10 +4,10 @@
 \alias{ensure_source}
 \title{Make sure a data file exists}
 \usage{
-ensure_source(file)
+ensure_source(name)
 }
 \arguments{
-\item{file}{A known-source id, a file path, or a URL}
+\item{name}{A known-source id, a file path, or a URL}
 }
 \value{
 A valid path to a source file. If a known source but not present,
