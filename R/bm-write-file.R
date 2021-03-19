@@ -3,14 +3,14 @@
 #' @section Parameters:
 #' * `source` A known-file id, or a CSV(?) file path to read in
 #' * `format` One of `c("parquet", "feather", "fst")`
-#' * `compression` One of `c("uncompressed", "snappy", "zstd")`
+#' * `compression` One of `c("uncompressed", "snappy", "zstd", "lz4")`
 #' * `input` One of `c("arrow_table", "data_frame")`
 #'
 #' @export
 write_file <- Benchmark("write_file",
   setup = function(source = names(known_sources),
                    format = c("parquet", "feather", "fst"),
-                   compression = c("uncompressed", "snappy", "zstd"),
+                   compression = c("uncompressed", "snappy", "zstd", "lz4"),
                    input = c("arrow_table", "data_frame")) {
     source <- ensure_source(source)
     df <- read_source(source, as_data_frame = match.arg(input) == "data_frame")
