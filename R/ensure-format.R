@@ -1,5 +1,7 @@
 known_compressions <- c("uncompressed", "snappy", "zstd", "gzip", "lz4")
 
+known_formats <- c("csv", "parquet", "feather", "fst")
+
 #' Ensure that a source has a specific format
 #'
 #' @param name name of the known source
@@ -12,7 +14,7 @@ known_compressions <- c("uncompressed", "snappy", "zstd", "gzip", "lz4")
 #' @importFrom utils write.csv
 ensure_format <- function(
   name,
-  format = c("csv", "parquet", "feather", "csv.gz"),
+  format = known_formats,
   compression = known_compressions) {
   compression <- match.arg(compression)
   format <- match.arg(format)
@@ -23,14 +25,16 @@ ensure_format <- function(
     compression <- "gzip"
   }
 
-  # generate an extension based on format + compression (with special cases for
-  # uncompressed and gzip)
-  if (compression == "gzip") {
-    ext <- paste(format, "gz", sep = ".")
-  } else if (compression == "uncompressed") {
-    ext <- format
+  # generate an extension of the form .compression.format (with special cases for
+  # csv: .csv for uncompressed and .csv.gz for gzip)
+  if (format == "csv") {
+    if (compression == "gzip") {
+      ext <- paste(format, "gz", sep = ".")
+    } else {
+      ext <- format
+    }
   } else {
-    ext <- paste(format, compression, sep = ".")
+    ext <- paste(compression, format, sep = ".")
   }
 
   # exit quickly if exists already
@@ -45,7 +49,7 @@ ensure_format <- function(
   # special case if input is csv + gzip compression since we don't need to read
   # that just to compress
   file_in <- ensure_source(name)
-  if(format == "csv" & file_ext(file_in) == "csv" ) {
+  if(format == "csv" & ( file_ext(file_in) == "csv" | file_ext(file_in) == "csv.gz" )) {
     if(compression == "gzip" & file_ext(file_in) == "csv") {
       # compress if the file doesn't already exist
       R.utils::gzip(file_in, file_out, remove = FALSE)
@@ -63,12 +67,10 @@ ensure_format <- function(
 
   # read the data in
   # TODO: read in things that are easier to read in feather > parquet >> csv?
-  source <- all_sources[[name]]
-  tab <- source$reader(ensure_source(name))
+  tab <- read_source(file_in)
 
   # write the reformatted data based on the format/ext
   write_func <- get_write_function(format, compression)
-
   write_func(tab, file_out)
 
   file_out
@@ -108,8 +110,7 @@ get_write_function <- function(format, compression) {
 #'
 #' @return `TRUE` invisibly
 #' @keywords internal
-validate_format <- function(format = c("csv", "parquet", "feather"),
-                            compression = known_compressions) {
+validate_format <- function(format = known_formats, compression = known_compressions) {
   format <- match.arg(format)
   compression <- match.arg(compression)
 
@@ -117,7 +118,7 @@ validate_format <- function(format = c("csv", "parquet", "feather"),
     csv = c("uncompressed", "gzip"),
     # could add: brotli, lzo, and bz2
     parquet = c("uncompressed", "snappy", "gzip", "zstd", "lz4"),
-    feather = c("uncompressed", "lz4", "zst"),
+    feather = c("uncompressed", "lz4", "zstd"),
     # fst is always zstd, just a question of what level of compression, the
     # write function will use level = 0 for uncompressed and 50 for zstd
     fst = c("uncompressed", "zstd")

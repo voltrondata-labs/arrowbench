@@ -4,11 +4,7 @@
 \alias{ensure_format}
 \title{Ensure that a source has a specific format}
 \usage{
-ensure_format(
-  name,
-  format = c("csv", "parquet", "feather", "csv.gz"),
-  compression = known_compressions
-)
+ensure_format(name, format = known_formats, compression = known_compressions)
 }
 \arguments{
 \item{name}{name of the known source}

@@ -7,16 +7,17 @@ withr::with_envvar(
   test_that("ensure_format", {
     # there are no temp files yet
     expect_false(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.parquet")))
-    expect_false(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.parquet.snappy")))
+    expect_false(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.uncompressed.parquet")))
+    expect_false(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.snappy.parquet")))
     expect_false(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.csv")))
     expect_false(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.csv.gz")))
 
     # we can transform from one format to another
     ensure_format("nyctaxi_sample", "parquet")
-    expect_true(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.parquet")))
+    expect_true(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.uncompressed.parquet")))
 
     ensure_format("nyctaxi_sample", "parquet", "snappy")
-    expect_true(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.parquet.snappy")))
+    expect_true(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.snappy.parquet")))
 
     ensure_format("nyctaxi_sample", "csv", "gzip")
     expect_true(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.csv.gz")))

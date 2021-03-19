@@ -4,10 +4,7 @@
 \alias{validate_format}
 \title{Validate format and compression combinations}
 \usage{
-validate_format(
-  format = c("csv", "parquet", "feather"),
-  compression = known_compressions
-)
+validate_format(format = known_formats, compression = known_compressions)
 }
 \arguments{
 \item{format}{the format of the file}
