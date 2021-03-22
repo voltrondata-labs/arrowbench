@@ -5,7 +5,7 @@
 \alias{stop_if_not_valid_format}
 \title{Validate format and compression combinations}
 \usage{
-validate_format(format = known_formats, compression = known_compressions)
+validate_format(format, compression)
 
 stop_if_not_valid_format(format, compression)
 }

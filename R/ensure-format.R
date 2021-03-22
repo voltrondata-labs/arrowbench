@@ -1,5 +1,16 @@
-known_compressions <- c("uncompressed", "snappy", "zstd", "gzip", "lz4")
 
+#' Known formats and compressions
+#'
+#' These formats and compression algorithms are known to {arrowbench}. Not all of
+#' them will work with all formats (in fact, parquet is the only one that
+#' supports all of them).
+#'
+#' @name knowns
+#' @export
+known_compressions <- c("uncompressed", "snappy", "zstd", "gzip", "lz4", "brotli", "lzo", "bz2")
+
+#' @rdname knowns
+#' @export
 known_formats <- c("csv", "parquet", "feather", "fst")
 
 #' Ensure that a source has a specific format
@@ -113,14 +124,13 @@ get_write_function <- function(format, compression) {
 #' @return `TRUE` invisibly
 #' @name validate_format
 #' @keywords internal
-validate_format <- Vectorize(function(format = known_formats, compression = known_compressions) {
-  format <- match.arg(format)
-  compression <- match.arg(compression)
+validate_format <- Vectorize(function(format, compression) {
+  format <- match.arg(format, known_formats)
+  compression <- match.arg(compression, known_compressions)
 
   valid_combos <- list(
     csv = c("uncompressed", "gzip"),
-    # could add: brotli, lzo, and bz2
-    parquet = c("uncompressed", "snappy", "gzip", "zstd", "lz4"),
+    parquet = c("uncompressed", "snappy", "gzip", "zstd", "lz4", "brotli", "lzo", "bz2"),
     feather = c("uncompressed", "lz4", "zstd"),
     # fst is always zstd, just a question of what level of compression, the
     # write function will use level = 0 for uncompressed and 50 for zstd
