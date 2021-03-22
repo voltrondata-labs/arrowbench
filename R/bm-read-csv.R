@@ -11,7 +11,7 @@
 read_csv <- Benchmark(
   "read_csv",
   setup = function(source = names(known_sources),
-                   reader = c("arrow", "data.table", "vroom", "readr"),
+                   reader = "arrow",
                    compression = c("uncompressed", "gzip"),
                    output = c("arrow_table", "data_frame")) {
     reader <- match.arg(reader)

@@ -18,7 +18,7 @@ Benchmark file writing
 \itemize{
 \item \code{source} A known-file id, or a CSV(?) file path to read in
 \item \code{format} One of \code{c("parquet", "feather", "fst")}
-\item \code{compression} One of \code{c("uncompressed", "snappy", "zstd", "lz4")}
+\item \code{compression} One of the values: uncompressed, snappy, zstd, gzip, lz4
 \item \code{input} One of \code{c("arrow_table", "data_frame")}
 }
 }
