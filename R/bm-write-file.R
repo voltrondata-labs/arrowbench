@@ -14,7 +14,7 @@ write_file <- Benchmark("write_file",
                    input = c("arrow_table", "data_frame")) {
     source <- ensure_source(source)
     df <- read_source(source, as_data_frame = match.arg(input) == "data_frame")
-    format <- match.arg(format)
+    format <- match.arg(format, c("parquet", "feather", "fst"))
 
     # Map string param name to functions
     write_func <- get_write_function(format, compression)

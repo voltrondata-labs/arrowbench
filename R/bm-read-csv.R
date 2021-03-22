@@ -14,7 +14,7 @@ read_csv <- Benchmark(
                    reader = "arrow",
                    compression = c("uncompressed", "gzip"),
                    output = c("arrow_table", "data_frame")) {
-    reader <- match.arg(reader)
+    reader <- match.arg(reader, c("arrow", "data.table", "vroom", "readr"))
     compression <- match.arg(compression)
     output <- match.arg(output)
     # ensure the the file exists

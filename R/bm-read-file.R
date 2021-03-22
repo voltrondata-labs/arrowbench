@@ -13,7 +13,7 @@ read_file <- Benchmark("read_file",
                    format = c("parquet", "feather"),
                    compression = c("uncompressed", "snappy", "zstd", "lz4"),
                    output = c("arrow_table", "data_frame")) {
-    format <- match.arg(format)
+    format <- match.arg(format, c("parquet", "feather", "fst"))
     output <- match.arg(output)
 
     # ensure that we have the right kind of file available
