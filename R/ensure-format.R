@@ -1,5 +1,16 @@
-known_compressions <- c("uncompressed", "snappy", "zstd", "gzip", "lz4")
 
+#' Known formats and compressions
+#'
+#' These formats and compression algorithms are known to {arrowbench}. Not all of
+#' them will work with all formats (in fact, parquet is the only one that
+#' supports all of them).
+#'
+#' @name knowns
+#' @export
+known_compressions <- c("uncompressed", "snappy", "zstd", "gzip", "lz4", "brotli", "lzo", "bz2")
+
+#' @rdname knowns
+#' @export
 known_formats <- c("csv", "parquet", "feather", "fst")
 
 #' Ensure that a source has a specific format
@@ -63,7 +74,7 @@ ensure_format <- function(
   }
 
   # validate that the format + compression is something that file writing knows about
-  validate_format(format, compression)
+  stop_if_not_valid_format(format, compression)
 
   # read the data in
   # TODO: read in things that are easier to read in feather > parquet >> csv?
@@ -102,31 +113,40 @@ get_write_function <- function(format, compression) {
 
 #' Validate format and compression combinations
 #'
-#' For a given format + compression, this will `stop` if the combo is not valid
-#' and will return `TRUE` invisibly if it is.
+#' For a given format + compression, determine if the combination is valid.
+#' `validate_format()` returns a vector of `TRUE`/`FALSE` if the formats are
+#' valid. `stop_if_not_valid_format()` will stop if any of the format + compressions
+#' are not valid.
 #'
 #' @param format the format of the file
 #' @param compression the compression codec
 #'
 #' @return `TRUE` invisibly
+#' @name validate_format
 #' @keywords internal
-validate_format <- function(format = known_formats, compression = known_compressions) {
-  format <- match.arg(format)
-  compression <- match.arg(compression)
+validate_format <- Vectorize(function(format, compression) {
+  format <- match.arg(format, known_formats)
+  compression <- match.arg(compression, known_compressions)
 
   valid_combos <- list(
     csv = c("uncompressed", "gzip"),
-    # could add: brotli, lzo, and bz2
-    parquet = c("uncompressed", "snappy", "gzip", "zstd", "lz4"),
+    parquet = c("uncompressed", "snappy", "gzip", "zstd", "lz4", "brotli", "lzo", "bz2"),
     feather = c("uncompressed", "lz4", "zstd"),
     # fst is always zstd, just a question of what level of compression, the
     # write function will use level = 0 for uncompressed and 50 for zstd
     fst = c("uncompressed", "zstd")
   )
+  compression %in% valid_combos[[format]]
+}, vectorize.args = c("format", "compression"), USE.NAMES = FALSE)
 
-  if (!(compression %in% valid_combos[[format]])) {
+
+#' @rdname validate_format
+stop_if_not_valid_format <- function(format, compression) {
+  is_valid <- validate_format(format, compression)
+
+  if (any(!is_valid)) {
     stop("The format ", format, " does not support ", compression, " compression.", call. = FALSE)
   }
 
-  return(invisible(TRUE))
+  invisible(is_valid)
 }

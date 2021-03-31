@@ -2,9 +2,12 @@
 % Please edit documentation in R/ensure-format.R
 \name{validate_format}
 \alias{validate_format}
+\alias{stop_if_not_valid_format}
 \title{Validate format and compression combinations}
 \usage{
-validate_format(format = known_formats, compression = known_compressions)
+validate_format(format, compression)
+
+stop_if_not_valid_format(format, compression)
 }
 \arguments{
 \item{format}{the format of the file}
@@ -15,7 +18,9 @@ validate_format(format = known_formats, compression = known_compressions)
 \code{TRUE} invisibly
 }
 \description{
-For a given format + compression, this will \code{stop} if the combo is not valid
-and will return \code{TRUE} invisibly if it is.
+For a given format + compression, determine if the combination is valid.
+\code{validate_format()} returns a vector of \code{TRUE}/\code{FALSE} if the formats are
+valid. \code{stop_if_not_valid_format()} will stop if any of the format + compressions
+are not valid.
 }
 \keyword{internal}

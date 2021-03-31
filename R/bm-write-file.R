@@ -3,19 +3,18 @@
 #' @section Parameters:
 #' * `source` A known-file id, or a CSV(?) file path to read in
 #' * `format` One of `c("parquet", "feather", "fst")`
-#' * `compression` One of `c("uncompressed", "snappy", "zstd", "lz4")`
+#' * `compression` One of the values: `r paste(known_compressions, collapse = ", ")`
 #' * `input` One of `c("arrow_table", "data_frame")`
 #'
 #' @export
 write_file <- Benchmark("write_file",
   setup = function(source = names(known_sources),
-                   format = c("parquet", "feather", "fst"),
+                   format = c("parquet", "feather"),
                    compression = c("uncompressed", "snappy", "zstd", "lz4"),
                    input = c("arrow_table", "data_frame")) {
     source <- ensure_source(source)
     df <- read_source(source, as_data_frame = match.arg(input) == "data_frame")
-    format <- match.arg(format)
-    compression <- match.arg(compression)
+    format <- match.arg(format, c("parquet", "feather", "fst"))
 
     # Map string param name to functions
     write_func <- get_write_function(format, compression)
@@ -38,7 +37,7 @@ write_file <- Benchmark("write_file",
     unlink(result_file)
   },
   valid_params = function(params) {
-    drop <- params$format != "parquet" & params$compression == "snappy" |
+    drop <- !validate_format(params$format, params$compression) |
       params$format == "fst" & params$input == "arrow_table"
     params[!drop,]
   },

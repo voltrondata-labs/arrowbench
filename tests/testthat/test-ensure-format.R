@@ -30,11 +30,26 @@ withr::with_envvar(
   })
 )
 
-test_that("format + compression validatoin", {
-  expect_true(validate_format("csv", "gzip"))
+test_that("format + compression validation with a df", {
+  df <- expand.grid(
+    source = "a source",
+    lib_path = "some/path",
+    format = c("csv", "parquet", "fst"),
+    compression = c("gzip", "zstd", "snappy"),
+    stringsAsFactors = FALSE
+  )
+
+  expect_identical(
+    validate_format(df$format, df$compression),
+    c(TRUE, TRUE, FALSE, FALSE, TRUE, TRUE, FALSE, TRUE, FALSE)
+  )
+})
+
+test_that("format + compression validation", {
+  expect_true(stop_if_not_valid_format("csv", "gzip"))
 
   expect_error(
-    validate_format("csv", "snappy"),
+    stop_if_not_valid_format("csv", "snappy"),
     "The format csv does not support snappy compression"
-    )
+  )
 })
