@@ -40,10 +40,8 @@
 
 
 <meta property="og:title" content="Validate format and compression combinations — validate_format" />
-<meta property="og:description" content="For a given format + compression, determine if the combination is valid.
-validate_format() returns a vector of TRUE/FALSE if the formats are
-valid. stop_if_not_valid_format() will stop if any of the format + compressions
-are not valid." />
+<meta property="og:description" content="For a given format + compression, this will stop if the combo is not valid
+and will return TRUE invisibly if it is." />
 
 
 
@@ -112,15 +110,11 @@ are not valid." />
     </div>
 
     <div class="ref-description">
-    <p>For a given format + compression, determine if the combination is valid.
-<code>validate_format()</code> returns a vector of <code>TRUE</code>/<code>FALSE</code> if the formats are
-valid. <code>stop_if_not_valid_format()</code> will stop if any of the format + compressions
-are not valid.</p>
+    <p>For a given format + compression, this will <code>stop</code> if the combo is not valid
+and will return <code>TRUE</code> invisibly if it is.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>validate_format</span><span class='op'>(</span><span class='va'>format</span>, <span class='va'>compression</span><span class='op'>)</span>
-
-<span class='fu'>stop_if_not_valid_format</span><span class='op'>(</span><span class='va'>format</span>, <span class='va'>compression</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>validate_format</span><span class='op'>(</span>format <span class='op'>=</span> <span class='va'>known_formats</span>, compression <span class='op'>=</span> <span class='va'>known_compressions</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
