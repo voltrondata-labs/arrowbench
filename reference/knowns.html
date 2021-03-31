@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Benchmark file reading — read_file • arrowbench</title>
+<title>Known formats and compressions — knowns • arrowbench</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,10 @@
 
 
 
-<meta property="og:title" content="Benchmark file reading — read_file" />
-<meta property="og:description" content="Benchmark file reading" />
+<meta property="og:title" content="Known formats and compressions — knowns" />
+<meta property="og:description" content="These formats and compression algorithms are known to arrowbench. Not all of
+them will work with all formats (in fact, parquet is the only one that
+supports all of them)." />
 
 
 
@@ -103,32 +105,26 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Benchmark file reading</h1>
+    <h1>Known formats and compressions</h1>
     
-    <div class="hidden name"><code>read_file.Rd</code></div>
+    <div class="hidden name"><code>knowns.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Benchmark file reading</p>
+    <p>These formats and compression algorithms are known to arrowbench. Not all of
+them will work with all formats (in fact, parquet is the only one that
+supports all of them).</p>
     </div>
 
-    <pre class="usage"><span class='va'>read_file</span></pre>
+    <pre class="usage"><span class='va'>known_compressions</span>
+
+<span class='va'>known_formats</span></pre>
 
 
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
-    <p>An object of class <code>Benchmark</code> of length 8.</p>
-    <h2 class="hasAnchor" id="parameters"><a class="anchor" href="#parameters"></a>Parameters</h2>
-
-    
-
-<ul>
-<li><p><code>source</code> A known-file id, or a CSV(?) file path to read in</p></li>
-<li><p><code>format</code> One of <code><a href='https://rdrr.io/r/base/c.html'>c("parquet", "feather", "fst")</a></code></p></li>
-<li><p><code>compression</code> One of the values: uncompressed, snappy, zstd, gzip, lz4, brotli, lzo, bz2</p></li>
-<li><p><code>output</code> One of <code><a href='https://rdrr.io/r/base/c.html'>c("arrow_table", "data_frame")</a></code></p></li>
-</ul>
-
+    <p>An object of class <code>character</code> of length 8.</p>
+<p>An object of class <code>character</code> of length 4.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
