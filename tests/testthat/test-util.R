@@ -11,3 +11,17 @@ test_that("find_r()", {
   expect_warning(error_out <- system(paste(find_r(), "--no-save -s 2>&1"), intern = TRUE, input = "stop('this is an error')\n"))
   expect_match(error_out[[1]], "this is an error")
 })
+
+test_that("get_default_args", {
+  func <- function(
+    one = 1,
+    a_few = c(1, 2, 3),
+    null = NULL,
+    none
+  ) NULL
+
+  expect_identical(
+    get_default_args(func),
+    list(one = 1, a_few = c(1, 2, 3))
+  )
+})
