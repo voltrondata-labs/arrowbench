@@ -48,7 +48,7 @@ dataset_taxi_parquet <- Benchmark("dataset_taxi_parquet",
     payment_type_3 = list(
       query = function(ds) {
         ds %>%
-          filter(payment_type == 3) %>%
+          filter(payment_type == "3") %>%
           select(year, month, passenger_count) %>%
           group_by(year, month) %>%
           collect() %>%
