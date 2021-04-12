@@ -87,9 +87,11 @@ collects the results. `run_one()` generates an R script and then shells out
 to a separate R process to execute the benchmark, then collects the results
 from it.
 
-You may call `run_one()` directly. It take some options, which may be passed
+You may call `run_one()` directly. It takes some options, which may be passed
 from `run_benchmark()` (both default `FALSE`):
 
+
+* `n_iter`: the number of iterations to run the specific benchmark (default: 3) 
 * `dry_run`: logical, returns the R script instead of executing it. Useful for
   debugging, though you probably don't want to execute the script yourself in
   order to do the benchmarking: `run_script()`, which `run_one()` calls when
@@ -102,6 +104,8 @@ from `run_benchmark()` (both default `FALSE`):
   function, this won't tell you what exactly, but it can help rule things out.
   If `TRUE`, the result data will contain a `prof_file` field, which you can 
   read in with `profvis::profvis(prof_input = file)`. 
+* `read_only`: don't actually run benchmarks, but read any results that are in 
+  the results directory.
 
 ## Defining benchmarks
 
@@ -215,6 +219,10 @@ run_benchmark(
 ```
 
 ### Enabling benchmarks to be run on conbench
+
+[Conbench](https://conbench.ursa.dev/) is a service that runs benchmarks continuously on a repo. We have a conbench
+service setup to run benchmarks on the apache/arrow repository (and pull requests, 
+if requested).
 
 Before a benchmark can be run on conbench, one must add a (or extend an existing)
 benchmark in the [benchmarks python package](https://github.com/ursacomputing/benchmarks).
