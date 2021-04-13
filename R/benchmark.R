@@ -63,7 +63,7 @@
 #' the `teardown()` function.
 #'
 #' @param name string identifier for the benchmark, included in results
-#' @param setup function having as its arguments the benchmark parameters. See 
+#' @param setup function having as its arguments the benchmark parameters. See
 #' the `Parametrizing benchmarks` section. This function is called once
 #' to initialize the benchmark context for a given set of parameters.
 #' It should return [BenchEnvironment()] with any parameter values or resources
@@ -138,7 +138,7 @@ default_params <- function(bm, ...) {
   if (!is.null(params$mem_alloc)) {
     # a bit of a hack, we can test memory allocators on devel or latest, but
     # "4.0" <= "devel" and "4.0" <= "latest" are both true.
-    out[!is_arrow_package(out, "4.0"), "mem_alloc"] <- NA
+    out[!is_arrow_package(out, "4.0", bm$packages_used), "mem_alloc"] <- NA
     out <- unique(out)
   }
 

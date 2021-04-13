@@ -49,7 +49,7 @@ read_file <- Benchmark("read_file",
       "parquet" = "arrow",
       "fst" = "fst"
     )
-    unique(pkg_map[params$format])
+    pkg_map[params$format]
   }
 )
 

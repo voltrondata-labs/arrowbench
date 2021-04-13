@@ -66,7 +66,7 @@ read_csv <- Benchmark(
     params[!drop,]
   },
   packages_used = function(params) {
-    unique(params$reader)
+    params$reader
   }
 )
 

@@ -2,7 +2,11 @@
 #' @importFrom stats setNames
 get_default_args <- function(FUN) {
   forms <- formals(FUN)
-  keep <- names(forms)[map_int(forms, length) > 1]
+  # Don't keep any of the formals that are length 0 (e.g. NULL)
+  non_zero <- map_int(forms, length) > 0
+  # Don't keep any of the formals that are symbols (which happens if there is no default)
+  not_symbol <- map_lgl(forms, Negate(is.symbol))
+  keep <- names(forms)[non_zero & not_symbol]
   setNames(lapply(keep, function(x) eval(forms[[x]])), keep)
 }
 
@@ -71,9 +75,8 @@ confirm_mem_alloc <- function(mem_alloc) {
 
 is.na.null <- function(x) is.null(x) || is.na(x)
 
-is_arrow_package <- function(params, min_version = "0.17") {
-  (params$reader %||% FALSE == "arrow" | params$format %||% "fst" != "fst" ) &
-    params$lib_path >= min_version
+is_arrow_package <- function(params, min_version = "0.17", packages_used_func = function(x) NULL) {
+  "arrow" %in% packages_used_func(params) %||% TRUE & params$lib_path >= min_version
 }
 
 find_r <- function() {

@@ -49,7 +49,7 @@ run_benchmark <- function(bm,
     profiling = profiling,
     progress_bar = progress_bar,
     read_only = read_only,
-    test_packages = bm$packages_used(params)
+    test_packages = unique(bm$packages_used(params))
   )
 
   if (dry_run) {
@@ -100,7 +100,10 @@ run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, pro
 
   # start with the global setup with parameters that are only used at the global
   # level along with the packages needed to test
-  setup_script <- do.call(global_setup, append(global_params, list(test_packages = test_packages)))
+  setup_script <- do.call(
+    global_setup,
+    append(global_params, list(test_packages = test_packages, dry_run = dry_run))
+  )
 
   # add in other arguments as parameters
   args <- modifyList(
@@ -186,9 +189,11 @@ run_iteration <- function(bm, ctx, profiling = FALSE) {
   out
 }
 
-global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL, test_packages = NULL) {
+global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL, test_packages = NULL, dry_run = FALSE) {
   script <- ""
-  lib_path <- ensure_lib(lib_path, test_packages = test_packages)
+  if (!dry_run) {
+    lib_path <- ensure_lib(lib_path, test_packages = test_packages)
+  }
   if (!is.null(lib_path)) {
     script <- c(
       script,
