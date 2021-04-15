@@ -87,6 +87,14 @@ dataset_taxi_parquet <- Benchmark("dataset_taxi_parquet",
           identical(sum(result$n), 3069271L)
         )
       }
+    ),
+    count_rows = list(
+      query = function(ds) {
+        dim(ds)
+      },
+      assert = function(result) {
+        stopifnot(identical(result, c(1547741381L, 20L)))
+      }
     )
   ),
   packages_used = function(params) {
