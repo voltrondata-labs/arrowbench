@@ -93,7 +93,7 @@ dataset_taxi_parquet <- Benchmark("dataset_taxi_parquet",
         dim(ds)
       },
       assert = function(result) {
-        stopifnot(identical(result, c(1547741381L, 20L)))
+        stopifnot("dims does not match" = identical(result, c(1547741381L, 20L)))
       }
     )
   ),
