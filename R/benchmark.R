@@ -119,7 +119,10 @@ BenchEnvironment <- function(...) list2env(list(...))
 default_params <- function(bm, ...) {
   # This takes the expansion of the default parameters in the function signature
   # perhaps restricted by the ... params
-  params <- modifyList(get_default_args(bm$setup), list(...))
+  # This is ~ a non-recursive modifyList() though, note it won't do unnammed arguments
+  params <- get_default_args(bm$setup)
+  specified <- list(...)
+  params[names(specified)] <- specified
   if (identical(params$lib_path, "all")) {
     # Default for lib_path is just "latest", if omitted
     # "all" means all old versions

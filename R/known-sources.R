@@ -82,7 +82,7 @@ known_datasets <- list(
       invisible(path)
     },
     open = function(path) {
-      arrow::open_dataset(path, partitioning = c("year", "month"))
+      arrow::open_dataset(path, partitioning = c("year", "month"), unify_schema = TRUE)
     },
     dim = c(1547741381L, 20L),
     n_files = 125

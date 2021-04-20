@@ -36,6 +36,7 @@ Roxygen: list(markdown = TRUE, load = "source")
 Collate: 
     'benchmark.R'
     'bm-dataset-taxi-parquet.R'
+    'bm-dataset-write.R'
     'bm-df-to-table.R'
     'bm-placebo.R'
     'bm-read-csv.R'
