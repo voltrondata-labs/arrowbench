@@ -83,15 +83,10 @@
 <p>The quickest and easiest way to install is to run <code><a href="https://remotes.r-lib.org/reference/install_github.html">remotes::install_github("ursacomputing/arrowbench", dependencies = TRUE)</a></code> in R. If you need to install remotes you can <code><a href="https://rdrr.io/r/utils/install.packages.html">install.packages("remotes")</a></code>.</p>
 <p>If you’ve downloaded the source, or you’re making changes to arrow bench you should make sure that you have the dependencies with <code><a href="https://remotes.r-lib.org/reference/install_deps.html">remotes::install_deps(".", dependencies = TRUE)</a></code> in R (this will also install the arrow package along with other packages that can be benchmarked with arrowbench. And then running <code>R CMD INSTALL .</code> in a terminal (for both, you should do this in the root directory of arrowbench, or pass the path to arrowbench instead of <code>.</code>).</p>
 </div>
-<div id="defining-benchmarks" class="section level2">
-<h2 class="hasAnchor">
-<a href="#defining-benchmarks" class="anchor"></a>Defining benchmarks</h2>
-<p>Benchmarks are constructed by <code><a href="reference/Benchmark.html">Benchmark()</a></code>, which takes expressions that handle setup, teardown, and the actual work that we want to measure. See its documentation for details, and see <code>read_file</code> and <code>write_file</code> for examples.</p>
-</div>
 <div id="running-benchmarks" class="section level2">
 <h2 class="hasAnchor">
 <a href="#running-benchmarks" class="anchor"></a>Running benchmarks</h2>
-<p>Pass a Benchmark to <code><a href="reference/run_benchmark.html">run_benchmark()</a></code> and it will run it across the range of parameters specified. For parameters specified in <code>bm$setup</code> that are omitted when calling <code><a href="reference/run_benchmark.html">run_benchmark(bm)</a></code>, it will test across all combinations of them. If some parameter combinations are not valid, define a <code>bm$valid_params(params)</code> function that will filter that expanded <code>data.frame</code> of parameters down to the valid set.</p>
+<p>Pass a Benchmark to <code><a href="reference/run_benchmark.html">run_benchmark()</a></code> and it will run it across the range of parameters specified. For parameters specified in <code>bm$setup</code> that are omitted when calling <code><a href="reference/run_benchmark.html">run_benchmark(bm)</a></code>, it will test across all combinations of them (what we call a benchmark matrix). If some parameter combinations are not valid, define a <code>bm$valid_params(params)</code> function that will filter that expanded <code>data.frame</code> of parameters down to the valid set.</p>
 <p>For example,</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">arrowbench</span><span class="op">)</span>
@@ -110,13 +105,119 @@
 <h3 class="hasAnchor">
 <a href="#run-options" class="anchor"></a>Run options</h3>
 <p><code><a href="reference/run_benchmark.html">run_benchmark()</a></code> handles executing benchmarks across a range of parameters. After determining the valid parameters, it calls <code><a href="reference/run_one.html">run_one()</a></code> on each and collects the results. <code><a href="reference/run_one.html">run_one()</a></code> generates an R script and then shells out to a separate R process to execute the benchmark, then collects the results from it.</p>
-<p>You may call <code><a href="reference/run_one.html">run_one()</a></code> directly. It take some options, which may be passed from <code><a href="reference/run_benchmark.html">run_benchmark()</a></code> (both default <code>FALSE</code>):</p>
+<p>You may call <code><a href="reference/run_one.html">run_one()</a></code> directly. It takes some options, which may be passed from <code><a href="reference/run_benchmark.html">run_benchmark()</a></code> (both default <code>FALSE</code>):</p>
 <ul>
+<li>
+<code>n_iter</code>: the number of iterations to run the specific benchmark (default: 3)</li>
 <li>
 <code>dry_run</code>: logical, returns the R script instead of executing it. Useful for debugging, though you probably don’t want to execute the script yourself in order to do the benchmarking: <code>run_script()</code>, which <code><a href="reference/run_one.html">run_one()</a></code> calls when <code>dry_run = FALSE</code>, has some useful wrapping for caching and collecting results.</li>
 <li>
 <code>profiling</code>: logical, allows you you instrument the R code and collect profiling data. You don’t want to do this if you’re collecting benchmark data because the profiler can add to the run time, but if you see something slow and want to explore why, this can be a good start. Note that this doesn’t do profiling at the C++ level, so if something is slow inside an arrow C++ function, this won’t tell you what exactly, but it can help rule things out. If <code>TRUE</code>, the result data will contain a <code>prof_file</code> field, which you can read in with <code>profvis::profvis(prof_input = file)</code>.</li>
+<li>
+<code>read_only</code>: don’t actually run benchmarks, but read any results that are in the results directory.</li>
 </ul>
+</div>
+</div>
+<div id="defining-benchmarks" class="section level2">
+<h2 class="hasAnchor">
+<a href="#defining-benchmarks" class="anchor"></a>Defining benchmarks</h2>
+<p>Benchmarks are constructed by <code><a href="reference/Benchmark.html">Benchmark()</a></code>, which takes expressions that handle setup, teardown, and the actual work that we want to measure. See its documentation for details, and see <code>read_file</code> and <code>write_file</code> for examples.</p>
+<div id="a-contrived-example" class="section level3">
+<h3 class="hasAnchor">
+<a href="#a-contrived-example" class="anchor"></a>A (contrived) example</h3>
+<p>Here we create a new kind of csv benchmark that uses <code><a href="https://arrow.apache.org/docs/r//reference/read_delim_arrow.html">arrow::read_csv_arrow()</a></code> and varies the arguments <code>as_data_frame</code> and <code>skip_empty_rows</code>. This is a bit of a contrived example, see <code>read_csv</code> for how we actually test csv reading. There are comments in the code block explaining what each section does.</p>
+<pre><code>new_csv_benchmark &lt;- Benchmark(
+  "new_csv_benchmark",
+  # This setup block will be run before the benchmark is started. This is run
+  # before each case / single item in the benchmark matrix, so is a good time
+  # to setup case- or source-specific properties (see `result_dim` below).
+  setup = function(source = names(known_sources),
+                   as_data_frame = c(TRUE, FALSE),
+                   skip_empty_rows = TRUE)) {
+    # Validate the parameters
+    # For our benchmark: as_data_frame defaults to TRUE and FALSE (so if it is 
+    # unspecified you will get both TRUE and FALSE in the benchmark matrix)
+    as_data_frame &lt;- match.arg(as_data_frame)
+
+    # For our benchmark: skip_empty_rows defaults to TRUE (so if it is 
+    # unspecified you will only get TRUE in the benchmark matrix), but it can 
+    # accept TRUE or FALSE, so we validate that it is one of those.
+    skip_empty_rows &lt;- match.arg(skip_empty_rows, c(TRUE, FALSE))
+
+    # Ensure the file exists as an uncompressed csv
+    input_file &lt;- ensure_format(source, "csv", "uncompressed")
+
+    # Extract the dim attribute from a data source for validation later
+    result_dim &lt;- get_source_attr(source, "dim")
+
+    # Finally we return a `BenchEnvironment` with the parameters we defined 
+    # above that are needed
+    BenchEnvironment(
+      input_file = input_file,
+      result_dim = result_dim,
+      as_data_frame = as_data_frame,
+      skip_empty_rows = skip_empty_rows
+    )
+  },
+  # This is run before each iteration. 
+  before_each = {
+    # Make sure the result is cleared
+    result &lt;- NULL
+  },
+  # This is the only part of the code that is actually measured when the benchmark 
+  # is run. It should include all and only the code you are interested in benchmarking.
+  run = {
+    result &lt;- read_csv_arrow(
+      input_file, 
+      as_data_frame = as_data_frame, 
+      skip_empty_rows = skip_empty_rows
+    )
+  },
+  # This is run after each iteration. This is a good time to validate that the
+  # benchmark ran correctly.
+  after_each = {
+    stopifnot(
+      "The dimensions do not match" = all.equal(dim(result), result_dim)
+    )
+    result &lt;- NULL
+  },
+  # This defines if the parameters are valid. If there are certain combinations
+  # that are not valid, add them to drop and they will be excluded from the 
+  # benchmark matrix
+  valid_params = function(params) {
+  
+    # Do not allow both skip_empty_rows == FALSE and as_data_frame == TRUE at 
+    # the same time
+    drop &lt;- ( params$skip_empty_rows == FALSE &amp; params$as_data_frame == TRUE ) 
+    
+    params[!drop,]
+  },
+  # This lists any packages that are used by this benchmark so that they can 
+  # be installed prior to starting the run. Typically this will be simply "arrow"
+  packages_used = function(params) {
+    "arrow"
+  }
+)</code></pre>
+<p>And now we could run our benchmark with the following for the default matrix, using 4 cpu cores and 5 iterations per case.</p>
+<pre><code><a href="reference/run_benchmark.html">run_benchmark(
+  new_csv_benchmark,
+  cpu_count = 4,
+  n_iter = 5
+)</a></code></pre>
+<p>Or specify parameters (including non-default parameters) with:</p>
+<pre><code><a href="reference/run_benchmark.html">run_benchmark(
+  new_csv_benchmark,
+  as_data_frame = c(TRUE, FALSE),
+  skip_empty_rows = c(TRUE, FALSE),
+  cpu_count = 4,
+  n_iter = 5
+)</a></code></pre>
+</div>
+<div id="enabling-benchmarks-to-be-run-on-conbench" class="section level3">
+<h3 class="hasAnchor">
+<a href="#enabling-benchmarks-to-be-run-on-conbench" class="anchor"></a>Enabling benchmarks to be run on conbench</h3>
+<p><a href="https://conbench.ursa.dev/">Conbench</a> is a service that runs benchmarks continuously on a repo. We have a conbench service setup to run benchmarks on the apache/arrow repository (and pull requests, if requested).</p>
+<p>Before a benchmark can be run on conbench, one must add a (or extend an existing) benchmark in the <a href="https://github.com/ursacomputing/benchmarks">benchmarks python package</a>. If you are adding a new benchmark <a href="https://github.com/ursacomputing/benchmarks#example-external-benchmarks">see the R-only example external benchmarks</a> in benchmarks. An example of adding an R-only benchmark is <a href="https://github.com/ursacomputing/benchmarks/pull/14">benchmarks#14</a></p>
 </div>
 </div>
 <div id="known-data-sources-and-versions" class="section level2">
