@@ -41,20 +41,14 @@ can be benchmarked with arrowbench. And then running `R CMD INSTALL .` in a
 terminal (for both, you should do this in the root directory of arrowbench, or 
 pass the path to arrowbench instead of `.`).
 
-## Defining benchmarks
-
-Benchmarks are constructed by `Benchmark()`, which takes expressions that handle 
-setup, teardown, and the actual work that we want to measure. See its 
-documentation for details, and see `read_file` and `write_file` for examples.
-
 ## Running benchmarks
 
 Pass a Benchmark to `run_benchmark()` and it will run it across the range of 
 parameters specified. For parameters specified in `bm$setup` that are omitted
-when calling `run_benchmark(bm)`, it will test across all combinations of them. 
-If some parameter combinations are not valid, define a 
-`bm$valid_params(params)` function that will filter that expanded `data.frame` 
-of parameters down to the valid set.
+when calling `run_benchmark(bm)`, it will test across all combinations of them 
+(what we call a benchmark matrix). If some parameter combinations are not valid,
+define a  `bm$valid_params(params)` function that will filter that expanded 
+`data.frame` of parameters down to the valid set.
 
 For example,
 
@@ -93,9 +87,11 @@ collects the results. `run_one()` generates an R script and then shells out
 to a separate R process to execute the benchmark, then collects the results
 from it.
 
-You may call `run_one()` directly. It take some options, which may be passed
+You may call `run_one()` directly. It takes some options, which may be passed
 from `run_benchmark()` (both default `FALSE`):
 
+
+* `n_iter`: the number of iterations to run the specific benchmark (default: 3) 
 * `dry_run`: logical, returns the R script instead of executing it. Useful for
   debugging, though you probably don't want to execute the script yourself in
   order to do the benchmarking: `run_script()`, which `run_one()` calls when
@@ -108,6 +104,130 @@ from `run_benchmark()` (both default `FALSE`):
   function, this won't tell you what exactly, but it can help rule things out.
   If `TRUE`, the result data will contain a `prof_file` field, which you can 
   read in with `profvis::profvis(prof_input = file)`. 
+* `read_only`: don't actually run benchmarks, but read any results that are in 
+  the results directory.
+
+## Defining benchmarks
+
+Benchmarks are constructed by `Benchmark()`, which takes expressions that handle 
+setup, teardown, and the actual work that we want to measure. See its 
+documentation for details, and see `read_file` and `write_file` for examples.
+
+### A (contrived) example
+
+Here we create a new kind of csv benchmark that uses `arrow::read_csv_arrow()`
+and varies the arguments `as_data_frame` and `skip_empty_rows`. This is a bit of 
+a contrived example, see `read_csv` for how we actually test csv reading. There
+are comments in the code block explaining what each section does.
+
+```
+new_csv_benchmark <- Benchmark(
+  "new_csv_benchmark",
+  # This setup block will be run before the benchmark is started. This is run
+  # before each case / single item in the benchmark matrix, so is a good time
+  # to setup case- or source-specific properties (see `result_dim` below).
+  setup = function(source = names(known_sources),
+                   as_data_frame = c(TRUE, FALSE),
+                   skip_empty_rows = TRUE)) {
+    # Validate the parameters
+    # For our benchmark: as_data_frame defaults to TRUE and FALSE (so if it is 
+    # unspecified you will get both TRUE and FALSE in the benchmark matrix)
+    as_data_frame <- match.arg(as_data_frame)
+
+    # For our benchmark: skip_empty_rows defaults to TRUE (so if it is 
+    # unspecified you will only get TRUE in the benchmark matrix), but it can 
+    # accept TRUE or FALSE, so we validate that it is one of those.
+    skip_empty_rows <- match.arg(skip_empty_rows, c(TRUE, FALSE))
+
+    # Ensure the file exists as an uncompressed csv
+    input_file <- ensure_format(source, "csv", "uncompressed")
+
+    # Extract the dim attribute from a data source for validation later
+    result_dim <- get_source_attr(source, "dim")
+
+    # Finally we return a `BenchEnvironment` with the parameters we defined 
+    # above that are needed
+    BenchEnvironment(
+      input_file = input_file,
+      result_dim = result_dim,
+      as_data_frame = as_data_frame,
+      skip_empty_rows = skip_empty_rows
+    )
+  },
+  # This is run before each iteration. 
+  before_each = {
+    # Make sure the result is cleared
+    result <- NULL
+  },
+  # This is the only part of the code that is actually measured when the benchmark 
+  # is run. It should include all and only the code you are interested in benchmarking.
+  run = {
+    result <- read_csv_arrow(
+      input_file, 
+      as_data_frame = as_data_frame, 
+      skip_empty_rows = skip_empty_rows
+    )
+  },
+  # This is run after each iteration. This is a good time to validate that the
+  # benchmark ran correctly.
+  after_each = {
+    stopifnot(
+      "The dimensions do not match" = all.equal(dim(result), result_dim)
+    )
+    result <- NULL
+  },
+  # This defines if the parameters are valid. If there are certain combinations
+  # that are not valid, add them to drop and they will be excluded from the 
+  # benchmark matrix
+  valid_params = function(params) {
+  
+    # Do not allow both skip_empty_rows == FALSE and as_data_frame == TRUE at 
+    # the same time
+    drop <- ( params$skip_empty_rows == FALSE & params$as_data_frame == TRUE ) 
+    
+    params[!drop,]
+  },
+  # This lists any packages that are used by this benchmark so that they can 
+  # be installed prior to starting the run. Typically this will be simply "arrow"
+  packages_used = function(params) {
+    "arrow"
+  }
+)
+```
+
+And now we could run our benchmark with the following for the default matrix, 
+using 4 cpu cores and 5 iterations per case.
+
+```
+run_benchmark(
+  new_csv_benchmark,
+  cpu_count = 4,
+  n_iter = 5
+)
+```
+
+Or specify parameters (including non-default parameters) with:
+
+```
+run_benchmark(
+  new_csv_benchmark,
+  as_data_frame = c(TRUE, FALSE),
+  skip_empty_rows = c(TRUE, FALSE),
+  cpu_count = 4,
+  n_iter = 5
+)
+```
+
+### Enabling benchmarks to be run on conbench
+
+[Conbench](https://conbench.ursa.dev/) is a service that runs benchmarks continuously on a repo. We have a conbench
+service setup to run benchmarks on the apache/arrow repository (and pull requests, 
+if requested).
+
+Before a benchmark can be run on conbench, one must add a (or extend an existing)
+benchmark in the [benchmarks python package](https://github.com/ursacomputing/benchmarks).
+If you are adding a new benchmark [see the R-only example external benchmarks](https://github.com/ursacomputing/benchmarks#example-external-benchmarks) 
+in benchmarks. An example of adding an R-only benchmark is [benchmarks#14](https://github.com/ursacomputing/benchmarks/pull/14)
 
 ## Known data sources and versions
 
