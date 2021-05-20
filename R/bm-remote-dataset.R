@@ -2,9 +2,9 @@
 #'
 #' @export
 remote_dataset <- Benchmark("remote_dataset",
-  setup = function(source = names(known_remote_datasets)) {
+  setup = function(source = c("taxi_file_list_parquet", "taxi_file_list_feather")) {
     library("dplyr")
-    dataset_params <- ensure_remote_dataset(source)
+    dataset <- ensure_dataset(source, download = FALSE)
 
     BenchEnvironment(
       dataset = dataset_params$dataset,

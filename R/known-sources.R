@@ -74,6 +74,29 @@ test_sources <- list(
 
 all_sources <- c(known_sources, test_sources)
 
+taxi_schema <- function() {
+  arrow::schema(
+    vendor_id = arrow::string(),
+    pickup_at = arrow::timestamp(unit = "us"),
+    dropoff_at = arrow::timestamp(unit = "us"),
+    passenger_count = arrow::int8(),
+    trip_distance = arrow::float(),
+    pickup_longitude = arrow::float(),
+    pickup_latitude = arrow::float(),
+    rate_code_id = arrow::null(),
+    store_and_fwd_flag = arrow::string(),
+    dropoff_longitude = arrow::float(),
+    dropoff_latitude = arrow::float(),
+    payment_type = arrow::string(),
+    fare_amount = arrow::float(),
+    extra = arrow::float(),
+    mta_tax = arrow::float(),
+    tip_amount = arrow::float(),
+    tolls_amount = arrow::float(),
+    total_amount = arrow::float()
+  )
+}
+
 known_datasets <- list(
   taxi_parquet = list(
     url = "s3://ursa-labs-taxi-data",
@@ -81,62 +104,53 @@ known_datasets <- list(
       arrow::copy_files("s3://ursa-labs-taxi-data", path)
       invisible(path)
     },
-    open = function(path) {
-      arrow::open_dataset(path, partitioning = c("year", "month"))
+    open = function(paths, ...) {
+      arrow::open_dataset(paths, partitioning = c("year", "month"))
     },
     dim = c(1547741381L, 20L),
     n_files = 125
-  )
-)
-
-known_remote_datasets <- list(
-  taxi_parquet = list(
+  ),
+  taxi_file_list_parquet = list(
     url = "s3://ursa-labs-taxi-data",
     files = c(
       "/2009/01/data.parquet",
       "/2009/02/data.parquet"
     ),
-    schema_file="/2009/01/data.parquet",
-    format = "parquet",
-    expected_dim = c(27472535, 18)
-    region = "us-east-2"
+    download = function(path) {
+      # TODO, find a way to do this if we ever want to download these.
+      stop("Can't do that")
+    },
+    open = function(paths) {
+      arrow::open_dataset(
+        paths,
+        schema = taxi_schema(),
+        partitioning = c("year", "month"),
+        format = "parquet"
+      )
+    },
+    n_files = 2,
+    region = "us-east-2",
+    dim = c(27472535L, 18L) # TODO: fix
   ),
-  taxi_ipc = list(
+  taxi_file_list_feather = list(
     url = "s3://ursa-labs-taxi-data-ipc",
-    files = c(
-      "/2013/01/data.feather",
-      "/2013/02/data.feather"
-    ),
-    schema_file="/2013/01/data.feather",
-    format = "ipc",
-    expected_dim = c(28766791, 18),
-    region = "us-east-2"
-  )
-)
-
-test_remote_datasets <- list(
-  taxi_parquet_sample = list(
-    url = "s3://ursa-labs-taxi-data-sample",
-    files = c(
-      "/2009/01/data.parquet",
-      "/2009/02/data.parquet"
-    ),
-    schema_file = "/2009/02/data.parquet",
-    format = "parquet",
-    expected_dim = c(2000, 18),
-    region = "us-east-2"
-  ),
-  taxi_ipc_sample = list(
-    url = "s3://ursa-labs-taxi-data-sample-ipc",
     files = c(
       "/2009/01/data.feather",
       "/2009/02/data.feather"
     ),
-    schema_file = "/2009/02/data.feather",
-    format = "ipc",
-    expected_dim = c(2000, 18),
-    region = "us-east-2"
+    download = function(path) {
+      # TODO, find a way to do this if we ever want to download these.
+      stop("Can't do that")
+    },
+    open = function(paths) {
+      arrow::open_dataset(
+        paths,
+        schema = taxi_schema(),
+        partitioning = c("year", "month"),
+        format = "feather"
+      )    },
+    n_files = 2,
+    region = "us-east-2",
+    dim = c(27472535L, 18L) # TODO: fix
   )
 )
-
-all_remote_datasets = c(known_remote_datasets, test_remote_datasets)

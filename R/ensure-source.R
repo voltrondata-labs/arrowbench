@@ -143,36 +143,15 @@ ensure_dataset <- function(name, download = TRUE) {
       # Only download if some/all files are missing
       known$download(path)
     }
+  } else if (!is.null(known$files)) {
+    # TODO: split out the region addition to a separate if clause
+    path <- paste(known$url, known$files, "?region=", known$region, sep="")
   } else {
     path <- known$url
   }
   ds <- known$open(path)
   # stopifnot(identical(dim(ds), known$dim))
   ds
-}
-
-open_remote_dataset <- function(remote_dataset, files, schema = NULL) {
-  url = remote_dataset$url
-  region = remote_dataset$region
-  full_urls <- paste(url, files, "?region=", region, sep="")
-  format = arrow::FileFormat$create(remote_dataset$format)
-  arrow::open_dataset(full_urls, schema = schema, partitioning = c("year", "month"), format = format)
-}
-
-get_remote_dataset_schema <- function(remote_dataset) {
-  schema_files = c(remote_dataset$schema_file)
-  schema_ds <- open_remote_dataset(remote_dataset, schema_files)
-  schema <- schema_ds$schema
-}
-
-ensure_remote_dataset <- function(name) {
-  if (!name %in% names(all_remote_datasets)) {
-    stop("Unknown dataset: ", name, call. = FALSE)
-  }
-  remote_dataset <- all_remote_datasets[[name]]
-  schema <- get_remote_dataset_schema(remote_dataset)
-  dataset <- open_remote_dataset(remote_dataset, remote_dataset$files, schema = schema)
-  dataset_params <- list("dataset" = dataset, "expected_dim" = remote_dataset$expected_dim)
 }
 
 source_filename <- function(name) {
