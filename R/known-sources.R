@@ -98,6 +98,7 @@ known_remote_datasets <- list(
     ),
     schema_file="/2009/01/data.parquet",
     format = "parquet",
+    expected_dim = c(27472535, 18)
     region = "us-east-2"
   ),
   taxi_ipc = list(
@@ -108,6 +109,7 @@ known_remote_datasets <- list(
     ),
     schema_file="/2013/01/data.feather",
     format = "ipc",
+    expected_dim = c(28766791, 18),
     region = "us-east-2"
   )
 )
@@ -121,6 +123,7 @@ test_remote_datasets <- list(
     ),
     schema_file = "/2009/02/data.parquet",
     format = "parquet",
+    expected_dim = c(2000, 18),
     region = "us-east-2"
   ),
   taxi_ipc_sample = list(
@@ -131,6 +134,7 @@ test_remote_datasets <- list(
     ),
     schema_file = "/2009/02/data.feather",
     format = "ipc",
+    expected_dim = c(2000, 18),
     region = "us-east-2"
   )
 )

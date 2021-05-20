@@ -172,7 +172,7 @@ ensure_remote_dataset <- function(name) {
   remote_dataset <- all_remote_datasets[[name]]
   schema <- get_remote_dataset_schema(remote_dataset)
   dataset <- open_remote_dataset(remote_dataset, remote_dataset$files, schema = schema)
-  dataset
+  dataset_params <- list("dataset" = dataset, "expected_dim" = remote_dataset$expected_dim)
 }
 
 source_filename <- function(name) {
