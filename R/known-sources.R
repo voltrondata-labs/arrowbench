@@ -88,3 +88,47 @@ known_datasets <- list(
     n_files = 125
   )
 )
+
+known_remote_datasets <- list(
+  taxi_parquet = list(
+    url = "s3://ursa-labs-taxi-data",
+    files = c(
+      "/2009/01/data.parquet",
+      "/2009/02/data.parquet"
+    ),
+    format = "parquet",
+    region = "us-east-2"
+  ),
+  taxi_ipc = list(
+    url = "s3://ursa-labs-taxi-data-ipc",
+    files = c(
+      "/2013/01/data.feather",
+      "/2013/02/data.feather"
+    ),
+    format = "ipc",
+    region = "us-east-2"
+  )
+)
+
+test_remote_datasets <- list(
+  taxi_parquet_sample = list(
+    url = "s3://ursa-labs-taxi-data-sample",
+    files = c(
+      "/2009/01/data.parquet",
+      "/2009/02/data.parquet"
+    ),
+    format = "parquet",
+    region = "us-east-2"
+  ),
+  taxi_ipc_sample = list(
+    url = "s3://ursa-labs-taxi-data-sample-ipc",
+    files = c(
+      "/2009/01/data.feather",
+      "/2009/02/data.feather"
+    ),
+    format = "ipc",
+    region = "us-east-2"
+  )
+)
+
+all_remote_datasets = c(known_remote_datasets, test_remote_datasets)

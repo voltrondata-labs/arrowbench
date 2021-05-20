@@ -151,6 +151,24 @@ ensure_dataset <- function(name, download = TRUE) {
   ds
 }
 
+open_remote_dataset <- function(remote_dataset) {
+  url = remote_dataset$url
+  files = remote_dataset$files
+  region = remote_dataset$region
+  full_urls <- paste(url, files, "?region=", region, sep="")
+  format = arrow::FileFormat$create(remote_dataset$format)
+  arrow::open_dataset(full_urls, partitioning = c("year", "month"), format = format)
+}
+
+ensure_remote_dataset <- function(name) {
+  if (!name %in% names(all_remote_datasets)) {
+    stop("Unknown dataset: ", name, call. = FALSE)
+  }
+  remote_dataset <- all_remote_datasets[[name]]
+  dataset = open_remote_dataset(remote_dataset)
+  dataset
+}
+
 source_filename <- function(name) {
   filename <- get_source_attr(name, "url")
 
