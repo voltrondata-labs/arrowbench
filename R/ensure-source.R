@@ -151,13 +151,18 @@ ensure_dataset <- function(name, download = TRUE) {
   ds
 }
 
-open_remote_dataset <- function(remote_dataset) {
+open_remote_dataset <- function(remote_dataset, files, schema = NULL) {
   url = remote_dataset$url
-  files = remote_dataset$files
   region = remote_dataset$region
   full_urls <- paste(url, files, "?region=", region, sep="")
   format = arrow::FileFormat$create(remote_dataset$format)
-  arrow::open_dataset(full_urls, partitioning = c("year", "month"), format = format)
+  arrow::open_dataset(full_urls, schema = schema, partitioning = c("year", "month"), format = format)
+}
+
+get_remote_dataset_schema <- function(remote_dataset) {
+  schema_files = c(remote_dataset$schema_file)
+  schema_ds <- open_remote_dataset(remote_dataset, schema_files)
+  schema <- schema_ds$schema
 }
 
 ensure_remote_dataset <- function(name) {
@@ -165,7 +170,8 @@ ensure_remote_dataset <- function(name) {
     stop("Unknown dataset: ", name, call. = FALSE)
   }
   remote_dataset <- all_remote_datasets[[name]]
-  dataset = open_remote_dataset(remote_dataset)
+  schema <- get_remote_dataset_schema(remote_dataset)
+  dataset <- open_remote_dataset(remote_dataset, remote_dataset$files, schema = schema)
   dataset
 }
 

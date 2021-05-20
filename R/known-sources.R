@@ -96,6 +96,7 @@ known_remote_datasets <- list(
       "/2009/01/data.parquet",
       "/2009/02/data.parquet"
     ),
+    schema_file="/2009/01/data.parquet",
     format = "parquet",
     region = "us-east-2"
   ),
@@ -105,6 +106,7 @@ known_remote_datasets <- list(
       "/2013/01/data.feather",
       "/2013/02/data.feather"
     ),
+    schema_file="/2013/01/data.feather",
     format = "ipc",
     region = "us-east-2"
   )
@@ -117,6 +119,7 @@ test_remote_datasets <- list(
       "/2009/01/data.parquet",
       "/2009/02/data.parquet"
     ),
+    schema_file = "/2009/02/data.parquet",
     format = "parquet",
     region = "us-east-2"
   ),
@@ -126,6 +129,7 @@ test_remote_datasets <- list(
       "/2009/01/data.feather",
       "/2009/02/data.feather"
     ),
+    schema_file = "/2009/02/data.feather",
     format = "ipc",
     region = "us-east-2"
   )

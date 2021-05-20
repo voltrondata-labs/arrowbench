@@ -15,14 +15,7 @@ remote_dataset <- Benchmark("remote_dataset",
     result <- NULL
   },
   run = {
-    dataset %>%
-        select(tip_amount, total_amount, passenger_count) %>%
-        group_by(passenger_count) %>%
-        collect() %>%
-        summarize(
-            tip_pct = median(100 * tip_amount / total_amount),
-            n = n()
-        )
+    collect(dataset)
   },
   after_each = {
     # Restore default value in case local benchmarks are going to run later

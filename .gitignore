@@ -4,4 +4,4 @@
 .Ruserdata
 tests/testthat/results
 .DS_Store
-
+results/
