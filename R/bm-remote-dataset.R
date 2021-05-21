@@ -5,10 +5,11 @@ remote_dataset <- Benchmark("remote_dataset",
   setup = function(source = c("taxi_file_list_parquet", "taxi_file_list_feather")) {
     library("dplyr")
     dataset <- ensure_dataset(source, download = FALSE)
+    result_dim <- get_dataset_attr(source, "dim")
 
     BenchEnvironment(
-      dataset = dataset_params$dataset,
-      expected_dim = dataset_params$expected_dim
+      dataset = dataset,
+      expected_dim = result_dim
     )
   },
   before_each = {
@@ -19,7 +20,6 @@ remote_dataset <- Benchmark("remote_dataset",
     result <- collect(dataset)
   },
   after_each = {
-    print(dim(result))
     stopifnot(
       "The dimensions do not match" = all.equal(dim(result), expected_dim)
     )

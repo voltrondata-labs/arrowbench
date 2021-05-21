@@ -123,7 +123,10 @@ run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, pro
     setup_script,
     eval_script,
     paste0('cat("', results_sentinel, '\n")'),
-    "cat(jsonlite::toJSON(unclass(out), digits = 15))"
+    # The end _should_ include only the json, but sometimes `open_dataset()`
+    # results in * Closing connection n being printed at the end which breaks
+    # the json read in, so use an ending sentinel too.
+    paste0('cat("\n', results_sentinel_end, '\n")')
   )
 
   if (dry_run) {
@@ -273,6 +276,8 @@ run_script <- function(lines, cmd = find_r(), ..., progress_bar, read_only = FAL
   if (length(find_results)) {
     # Keep everything after the sentinel
     result <- tail(result, -find_results)
+    # But only that which is before the end sentinal
+    result <- head(result, which(result == results_sentinel_end) - 1)
     # Cache the result so we don't have to re-run it
     if (!dir.exists(dirname(file))) {
       dir.create(dirname(file))
@@ -296,3 +301,4 @@ run_script <- function(lines, cmd = find_r(), ..., progress_bar, read_only = FAL
 }
 
 results_sentinel <- "##### RESULTS FOLLOW"
+results_sentinel_end <- "##### RESULTS END"

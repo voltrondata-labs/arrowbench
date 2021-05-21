@@ -83,7 +83,7 @@ taxi_schema <- function() {
     trip_distance = arrow::float(),
     pickup_longitude = arrow::float(),
     pickup_latitude = arrow::float(),
-    rate_code_id = arrow::null(),
+    rate_code_id = arrow::string(),
     store_and_fwd_flag = arrow::string(),
     dropoff_longitude = arrow::float(),
     dropoff_latitude = arrow::float(),
@@ -135,8 +135,8 @@ known_datasets <- list(
   taxi_file_list_feather = list(
     url = "s3://ursa-labs-taxi-data-ipc",
     files = c(
-      "/2009/01/data.feather",
-      "/2009/02/data.feather"
+      "/2013/01/data.feather",
+      "/2013/02/data.feather"
     ),
     download = function(path) {
       # TODO, find a way to do this if we ever want to download these.
@@ -151,6 +151,6 @@ known_datasets <- list(
       )    },
     n_files = 2,
     region = "us-east-2",
-    dim = c(27472535L, 18L) # TODO: fix
+    dim = c(28766791L, 18L) # TODO: fix
   )
 )
