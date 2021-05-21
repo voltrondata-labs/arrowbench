@@ -104,7 +104,7 @@ known_datasets <- list(
       arrow::copy_files("s3://ursa-labs-taxi-data", path)
       invisible(path)
     },
-    open = function(paths, ...) {
+    open = function(paths) {
       arrow::open_dataset(paths, partitioning = c("year", "month"))
     },
     dim = c(1547741381L, 20L),
