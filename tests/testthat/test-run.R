@@ -87,6 +87,7 @@ test_that("form of the results during a dry run", {
 
   expect_true(all(sapply(res[[1]], class) == "character"))
   expect_true("cat(\"##### RESULTS FOLLOW\n\")" %in% res[[1]])
+  expect_true("cat(\"\n##### RESULTS END\n\")" %in% res[[length(res)]])
 })
 
 wipe_results()
