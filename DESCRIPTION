@@ -41,6 +41,7 @@ Collate:
     'bm-read-csv.R'
     'bm-read-file.R'
     'bm-remote-dataset.R'
+    'bm-table-to-df.R'
     'bm-write-file.R'
     'ensure-format.R'
     'ensure-lib.R'
