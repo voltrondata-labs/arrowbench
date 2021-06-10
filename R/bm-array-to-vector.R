@@ -1,0 +1,91 @@
+#' Benchmark for reading an Arrow table to a data.frame
+#'
+#' This flexes that conversion to R data structures from Arrow data structures.
+#'
+#' @section Parameters:
+#' * `source` A known-file id to use (it will be read in to a data.frame first)
+#'
+#' @importFrom purrr map flatten
+#' @export
+array_to_vector <- Benchmark("array_to_vector",
+  setup = function(
+      # the only datasets that have any no-null numerics are
+      source = c("type_integers", "type_floats"),
+      chunked_arrays = FALSE,
+      exclude_nulls = TRUE,
+      alt_rep = c(TRUE, FALSE)
+      ) {
+    stopifnot(
+      is.logical(chunked_arrays),
+      is.logical(exclude_nulls),
+      is.logical(alt_rep)
+    )
+    source <- match.arg(source, names(known_sources))
+    source <- ensure_source(source)
+    result_dim <- get_source_attr(source, "dim")
+    table <- read_source(source, as_data_frame = FALSE)
+
+    if (exclude_nulls) {
+      cols_without_nulls <- unlist(lapply(colnames(table), function(x) table[[x]]$null_count == 0))
+      table <- table[which(cols_without_nulls)]
+      result_dim[2] <- sum(cols_without_nulls)
+    }
+
+    # extract the arrays
+    arrays <- purrr::map(colnames(table), ~table[[.]])
+
+    # If we can operate on arrays, then pull the chunks out and flatten
+    if (!chunked_arrays) {
+      arrays <- purrr::flatten(purrr::map(arrays, function (array) {
+        n_chunks <- array$num_chunks
+        purrr::map(seq_len(n_chunks) - 1L, ~array$chunk(.))
+      }))
+    }
+
+    array_lengths <- lapply(arrays, function(array) array$length())
+
+    as_vector_func <- function(array) as.vector(array)
+
+    BenchEnvironment(
+      as_vector_func = as_vector_func,
+      array_lengths = array_lengths,
+      arrays = arrays,
+      alt_rep = alt_rep
+    )
+  },
+  before_each = {
+    result <- NULL
+    options(arrow.use_altrep = alt_rep)
+  },
+  run = {
+    result <- lapply(arrays, as_vector_func)
+  },
+  after_each = {
+    # TODO altrep checking?
+    is_altrep <- unlist(purrr::map(
+      result,
+      ~grepl("shared_ptr<arrow::Array", capture.output(.Internal(inspect(.))))
+    ))
+    if (alt_rep) {
+      altrep_ok <- all(is_altrep)
+    } else {
+      altrep_ok <- all(!is_altrep)
+    }
+
+    stopifnot(
+      "The array lengths do not match" = all.equal(lapply(result, length), array_lengths),
+      "The objects do not match the altrep parameter" = altrep_ok
+      )
+
+    # reset the altrep option
+    options(arrow.use_altrep = NULL)
+    result <- NULL
+  },
+  valid_params = function(params) {
+    # TODO: remove this when this PR is merged
+    drop <- ( !grepl("ARROW_9140_zero_copy", params$lib_path) & params$alt_rep == TRUE )
+    params[!drop,]
+  },
+  packages_used = function(params) "arrow"
+)
+
