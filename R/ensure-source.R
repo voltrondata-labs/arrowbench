@@ -123,6 +123,16 @@ read_source <- function(file, ...) {
 #' @export
 get_source_attr <- function(file, attr) all_sources[[file_base(file)]][[attr]]
 
+
+#' Get dataset attributes
+#'
+#' @param dataset the file to get attributes for
+#' @param attr the attribute to get
+#'
+#' @keywords internal
+#' @export
+get_dataset_attr <- function(name, attr) known_datasets[[name]][[attr]]
+
 #' Make sure a multi-file dataset exists
 #'
 #' @param name A known-dataset id. See `known_datasets`.
@@ -143,6 +153,9 @@ ensure_dataset <- function(name, download = TRUE) {
       # Only download if some/all files are missing
       known$download(path)
     }
+  } else if (!is.null(known$files)) {
+    # TODO: split out the region addition to a separate if clause
+    path <- paste(known$url, known$files, "?region=", known$region, sep="")
   } else {
     path <- known$url
   }
