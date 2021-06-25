@@ -11,7 +11,7 @@ read_file <- Benchmark("read_file",
   setup = function(source = names(known_sources),
                    # TODO: break out feather_v1 and feather_v2, feather_v2 only in >= 0.17
                    format = c("parquet", "feather"),
-                   compression = c("uncompressed", "snappy", "zstd", "lz4"),
+                   compression = c("uncompressed", "snappy", "lz4"),
                    output = c("arrow_table", "data_frame")) {
     # format defaults to parquet or feather, but can accept fst as well
     format <- match.arg(format, c("parquet", "feather", "fst"))
