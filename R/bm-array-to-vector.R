@@ -1,9 +1,12 @@
-#' Benchmark for reading an Arrow table to a data.frame
+#' Benchmark for reading an Arrow array to a vector
 #'
-#' This flexes that conversion to R data structures from Arrow data structures.
+#' This flexes a lower level conversion to R data structures from Arrow data structures.
 #'
 #' @section Parameters:
 #' * `source` A known-file id to use (it will be read in to a data.frame first)
+#' * `chunked_arrays` logical, should the arrays converted be `ChunkedArrays` or `Arrays`?
+#' * `exclude_nulls` logical, should any columns with any `NULL`s or `NA`s in them be removed?
+#' * `alt_rep` logical, should the altrep option be set? (`TRUE` to enable it, `FALSE` to disable)
 #'
 #' @importFrom purrr map flatten
 #' @export
@@ -82,9 +85,8 @@ array_to_vector <- Benchmark("array_to_vector",
     result <- NULL
   },
   valid_params = function(params) {
-    # TODO: remove this when this PR is merged
-    drop <- ( !grepl("ARROW_9140_zero_copy", params$lib_path) & params$alt_rep == TRUE )
-    params[!drop,]
+    # TODO: only enable on >5.0.0?
+    params
   },
   packages_used = function(params) "arrow"
 )
