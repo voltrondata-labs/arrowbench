@@ -31,16 +31,18 @@ Suggests:
     fst,
     readr,
     vroom
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.1.9001
 Roxygen: list(markdown = TRUE, load = "source")
 Collate: 
     'benchmark.R'
+    'bm-array-to-vector.R'
     'bm-dataset-taxi-parquet.R'
     'bm-df-to-table.R'
     'bm-placebo.R'
     'bm-read-csv.R'
     'bm-read-file.R'
     'bm-remote-dataset.R'
+    'bm-table-to-df.R'
     'bm-write-file.R'
     'ensure-format.R'
     'ensure-lib.R'
