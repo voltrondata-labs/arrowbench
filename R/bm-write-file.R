@@ -10,7 +10,7 @@
 write_file <- Benchmark("write_file",
   setup = function(source = names(known_sources),
                    format = c("parquet", "feather"),
-                   compression = c("uncompressed", "snappy", "zstd", "lz4"),
+                   compression = c("uncompressed", "snappy", "lz4"),
                    input = c("arrow_table", "data_frame")) {
     # source defaults are retrieved from the function definition (all available
     # known_sources) and then read the source in as a data.frame
