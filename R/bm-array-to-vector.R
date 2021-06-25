@@ -64,10 +64,10 @@ array_to_vector <- Benchmark("array_to_vector",
     result <- lapply(arrays, as_vector_func)
   },
   after_each = {
-    # TODO altrep checking?
+    # altrep checking
     is_altrep <- unlist(purrr::map(
       result,
-      ~grepl("shared_ptr<arrow::Array", capture.output(.Internal(inspect(.))))
+      ~any(grepl("arrow::Array", capture.output(.Internal(inspect(.)))))
     ))
     if (alt_rep) {
       altrep_ok <- all(is_altrep)
