@@ -16,8 +16,13 @@ ensure_lib <- function(lib = NULL, test_packages = unlist(strsplit(packageDescri
   # on packages that are (and mis-match). For example: purrr suggests tibble
   # and the most recent version of tibble requires vctrs >= 0.3.2. *But* the
   # snapshot version of vctrs at that point is 0.3.0 causing a conflict.
-  # TODO: maybe we should install all of the arrowbench dependencies?
-  test_packages <- c(test_packages, "purrr", "tibble")
+  # So we install all of the arrowbench dependencies so that there aren't any
+  # mismatches at run-time
+  arrowbench_deps <- tools::package_dependencies("arrowbench", db = installed.packages())$arrowbench
+  # remove the base packages
+  base_pkgs <- names(which(installed.packages()[ ,"Priority"] == "base", ))
+  arrowbench_deps <- arrowbench_deps[!arrowbench_deps %in% base_pkgs]
+  test_packages <- c(test_packages, arrowbench_deps)
 
   if (is.null(lib) || identical(lib, "latest")) {
     return(NULL)
@@ -36,7 +41,7 @@ ensure_lib <- function(lib = NULL, test_packages = unlist(strsplit(packageDescri
     dir.create(lib_dir_path, recursive = TRUE)
 
     # copy base, utils, and methods since they aren't installed from CRAN
-    for (pkg in names(which(installed.packages()[ ,"Priority"] == "base", ))) {
+    for (pkg in base_pkgs) {
       old_path <- system.file(package = pkg)
       file.copy(from = old_path, to = lib_dir_path, recursive = TRUE)
     }
