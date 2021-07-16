@@ -102,7 +102,7 @@ run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, pro
   # level along with the packages needed to test
   setup_script <- do.call(
     global_setup,
-    append(global_params, list(test_packages = test_packages, dry_run = dry_run))
+    append(global_params, list(test_packages = test_packages, dry_run = dry_run, read_only = read_only))
   )
 
   # add in other arguments as parameters
@@ -193,9 +193,9 @@ run_iteration <- function(bm, ctx, profiling = FALSE) {
   out
 }
 
-global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL, test_packages = NULL, dry_run = FALSE) {
+global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL, test_packages = NULL, dry_run = FALSE, read_only = FALSE) {
   script <- ""
-  if (!dry_run) {
+  if (!dry_run & !read_only) {
     lib_path <- ensure_lib(lib_path, test_packages = test_packages)
   }
   if (!is.null(lib_path)) {
