@@ -15,8 +15,8 @@ array_to_vector <- Benchmark("array_to_vector",
       # the only datasets that have any no-null numerics are
       source = c("type_integers", "type_floats"),
       chunked_arrays = FALSE,
-      exclude_nulls = TRUE,
-      alt_rep = c(TRUE, FALSE)
+      exclude_nulls = FALSE,
+      alt_rep = TRUE
       ) {
     stopifnot(
       is.logical(chunked_arrays),
