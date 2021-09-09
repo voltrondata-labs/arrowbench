@@ -60,7 +60,7 @@ tpc_h <- Benchmark("tpc_h",
       # get the correct read function for the input format
       input_func = input_functions[[engine]],
       tpch_filenames = tpch_filenames,
-      query = tpc_h_queries[[query_num]],
+      query = tpc_h_queries[[as.character(query_num)]],
       engine = engine,
       con = con
     )
@@ -92,7 +92,7 @@ tpc_h <- Benchmark("tpc_h",
 # referencing the table needed.
 #' @export
 tpc_h_queries <- list(
-  one = function(input_func) {
+  "1" = function(input_func) {
     input_func("lineitem") %>%
       select(l_shipdate, l_returnflag, l_linestatus, l_quantity,
              l_extendedprice, l_discount, l_tax) %>%
@@ -112,11 +112,12 @@ tpc_h_queries <- list(
       arrange(l_returnflag, l_linestatus) %>%
       collect()
   },
-  six = function(input_func) {
+  "6" = function(input_func) {
       input_func("lineitem") %>%
         select(l_shipdate, l_extendedprice, l_discount, l_quantity) %>%
-        filter(l_shipdate >= "1994-01-01",
-               l_shipdate < "1995-01-01",
+        filter(l_shipdate >= as.Date("1994-01-01"),
+               l_shipdate < as.Date("1995-01-01"),
+               # discounts are saved as decimals
                l_discount >= 0.05,
                l_discount <= 0.07,
                l_quantity < 24) %>%
