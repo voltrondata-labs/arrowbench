@@ -29,17 +29,6 @@ tpc_h <- Benchmark("tpc_h",
         return(arrow::read_parquet(file, as_data_frame = FALSE))
       },
       duckdb = function(name) {
-        file <- path.expand(tpch_filenames[[name]])
-
-        # have to create a VIEW in order to reference it by name
-        # This view is the most accurate comparison to Arrow, however it will
-        # penalize duckdb since AFAICT `parquet_scan` is not parallelized and
-        # ends up being the bottleneck
-        DBI::dbExecute(
-          con,
-          paste0("CREATE VIEW ", name, " AS SELECT * FROM parquet_scan('", file, "');")
-        )
-
         return(tbl(con, name))
       }
     )
@@ -50,6 +39,19 @@ tpc_h <- Benchmark("tpc_h",
       con <- DBI::dbConnect(duckdb::duckdb())
       # set parallelism for duckdb
       DBI::dbExecute(con, paste0("PRAGMA threads=", getOption("Ncpus")))
+
+      for (name in tpch_tables) {
+        file <- path.expand(tpch_filenames[[name]])
+
+        # have to create a VIEW in order to reference it by name
+        # This view is the most accurate comparison to Arrow, however it will
+        # penalize duckdb since AFAICT `parquet_scan` is not parallelized and
+        # ends up being the bottleneck
+        DBI::dbExecute(
+          con,
+          paste0("CREATE VIEW ", name, " AS SELECT * FROM parquet_scan('", file, "');")
+        )
+      }
     }
 
     # put the necessary variables into a BenchmarkEnvironment to be used when the

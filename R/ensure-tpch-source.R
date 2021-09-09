@@ -1,3 +1,4 @@
+#' @export
 tpch_tables <- c("customer", "lineitem", "nation", "orders", "part", "partsupp", "region", "supplier")
 
 generate_tpch <- function(scale = 1) {
