@@ -20,6 +20,7 @@ Imports:
   progress,
   purrr,
   remotes,
+  rlang,
   R.utils,
   sessioninfo,
   utils,
@@ -28,7 +29,10 @@ Suggests:
     testthat (>= 3.0.0),
     arrow,
     data.table,
+    DBI,
+    duckdb,
     fst,
+    mockery,
     readr,
     vroom
 RoxygenNote: 7.1.1.9001
@@ -43,11 +47,13 @@ Collate:
     'bm-read-file.R'
     'bm-remote-dataset.R'
     'bm-table-to-df.R'
+    'bm-tpc-h.R'
     'bm-write-file.R'
     'ensure-format.R'
     'ensure-lib.R'
     'known-sources.R'
     'ensure-source.R'
+    'ensure-tpch-source.R'
     'measure.R'
     'result.R'
     'run.R'

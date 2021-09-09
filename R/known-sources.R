@@ -47,6 +47,12 @@ known_sources <- list(
     url = "https://ursa-qa.s3.amazonaws.com/single_types/type_simple_features.parquet",
     reader = function(file, ...) arrow::read_parquet(file, ...),
     dim = c(1000000L, 5L)
+  ),
+  tpch = list(
+    generator = function(...) generate_tpch(...),
+    locator = function(...) ensure_tpch(...),
+    reader = function(file, ...) arrow::read_feather(file, ...),
+    dim = c(1000000L, 5L)
   )
 )
 

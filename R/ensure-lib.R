@@ -236,3 +236,20 @@ lib_dir <- function(lib) {
   r_version <- paste0(c(getRversion()$major, getRversion()$minor), collapse = ".")
   file.path(local_dir(), "r_libs", paste0("R-", r_version),  lib)
 }
+
+ensure_custom_duckdb <- function() {
+  tryCatch({
+    # The default for duckdb in R is to not have the TPC-H extension built or
+    # enabled, so test if one can use the extension, and if not use the custom
+    # fork that does.
+    con <- DBI::dbConnect(duckdb::duckdb())
+    DBI::dbExecute(con, "CALL dbgen(sf=0.00001);")
+    DBI::dbDisconnect(con, shutdown = TRUE)
+  },
+  error = function(e) {
+    message("Installing duckdb with the ability to generate tpc-h datasets")
+    # build = false so that the duckdb cpp source is available when the R package
+    # is compiling itself
+    remotes::install_github("jonkeane/duckdb/tools/rpkg@tpc-h-extension", build = FALSE)
+  })
+}
