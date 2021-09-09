@@ -2,7 +2,7 @@
 #'
 #' @section Parameters:
 #' * `engine` One of `c("arrow", "duckdb", "dplyr)`
-#' * `query_num` integer, 1-19
+#' * `query_num` integer, 1-22
 #' * `scale` Scale factor to use for data generation
 #'
 #' @export
@@ -15,7 +15,7 @@ tpc_h <- Benchmark("tpc_h",
     # query_num defaults to 1 for now
     stopifnot(
       "query_num must be an int" = query_num %% 1 == 0,
-      "query_num must 1-19" = query_num >= 1 & query_num <= 19
+      "query_num must 1-19" = query_num >= 1 & query_num <= 22
     )
 
     library("dplyr")
@@ -111,6 +111,18 @@ tpc_h_queries <- list(
       ) %>%
       arrange(l_returnflag, l_linestatus) %>%
       collect()
+  },
+  six = function(input_func) {
+      input_func("lineitem") %>%
+        select(l_shipdate, l_extendedprice, l_discount, l_quantity) %>%
+        filter(l_shipdate >= "1994-01-01",
+               l_shipdate < "1995-01-01",
+               l_discount >= 0.05,
+               l_discount <= 0.07,
+               l_quantity < 24) %>%
+        select(l_extendedprice, l_discount) %>%
+        summarise(revenue = sum(l_extendedprice * l_discount)) %>%
+        collect()
   }
 )
 

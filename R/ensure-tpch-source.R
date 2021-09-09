@@ -2,6 +2,9 @@
 tpch_tables <- c("customer", "lineitem", "nation", "orders", "part", "partsupp", "region", "supplier")
 
 generate_tpch <- function(scale = 1) {
+  # Ensure that we have our custom duckdb that has the TPC-H extension built.
+  ensure_custom_duckdb()
+
   con <- DBI::dbConnect(duckdb::duckdb())
   on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
   DBI::dbExecute(con, paste0("CALL dbgen(sf=", scale, ");"))
