@@ -250,6 +250,9 @@ ensure_custom_duckdb <- function() {
     message("Installing duckdb with the ability to generate tpc-h datasets")
     # build = false so that the duckdb cpp source is available when the R package
     # is compiling itself
-    remotes::install_github("jonkeane/duckdb/tools/rpkg@tpc-h-extension", build = FALSE)
+    withr::with_envvar(
+      DUCKDB_R_EXTENSIONS = "tpch",
+      remotes::install_github("jonkeane/duckdb/tools/rpkg@tpc-h-extension", build = FALSE)
+    )
   })
 }
