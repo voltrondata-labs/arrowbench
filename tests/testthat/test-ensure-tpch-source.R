@@ -1,3 +1,5 @@
+skip_on_covr("This doesn't work under coverage correctly")
+
 temp_dir <- tempfile()
 dir.create(temp_dir)
 
