@@ -1,4 +1,7 @@
-skip_on_covr("This doesn't work under coverage correctly")
+# This test (might) include installing a custom version of DuckDB that has the
+# tpc-h extension built. This doesn't work well when coverage is running, so
+# skip these tests when generating coverage.
+skip_on_covr()
 
 temp_dir <- tempfile()
 dir.create(temp_dir)
