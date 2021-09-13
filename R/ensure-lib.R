@@ -251,8 +251,9 @@ ensure_custom_duckdb <- function() {
     # build = false so that the duckdb cpp source is available when the R package
     # is compiling itself
     withr::with_envvar(
-      DUCKDB_R_EXTENSIONS = "tpch",
-      remotes::install_github("jonkeane/duckdb/tools/rpkg@tpc-h-extension", build = FALSE)
+      list(DUCKDB_R_EXTENSIONS = "tpch"),
+      # build duckdb with tpch enabled
+      remotes::install_github("duckdb/duckdb/tools/rpkg", build = FALSE)
     )
   })
 }
