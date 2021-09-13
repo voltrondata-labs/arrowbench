@@ -49,13 +49,22 @@ ensure_format <- function(
   }
 
   # exit quickly if exists already
-  file_out <- data_file(file_with_ext(source_filename(name), ext))
+  if (file.exists(name)) {
+    file_out <- data_file(file_with_ext(basename(name), ext))
+  } else {
+    file_out <- data_file(file_with_ext(source_filename(name), ext))
+  }
+
   if (!is.null(file_out)) {
     return(file_out)
   }
 
   # the file hasn't been found, so we need to create it in the temp directory
-  file_out <- temp_data_file(file_with_ext(source_filename(name), ext))
+  if (file.exists(name)) {
+    file_out <- temp_data_file(file_with_ext(basename(name), ext))
+  } else {
+    file_out <- temp_data_file(file_with_ext(source_filename(name), ext))
+  }
 
   # special case if input is csv + gzip compression since we don't need to read
   # that just to compress

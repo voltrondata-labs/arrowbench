@@ -13,12 +13,12 @@ generate_tpch <- function(scale = 1) {
     # TODO: use arrow-native when merges https://github.com/apache/arrow/pull/11032
     res <- DBI::dbSendQuery(con, paste0("SELECT * FROM ", name, ";"), arrow = TRUE)
     tab <- duckdb::duckdb_fetch_record_batch(res)$read_table()
-
-    # Convert all decimals to floats, can remove when ARROW-13966 is merged
-    decimals <- colnames(tab)[purrr::map_lgl(tab$schema$fields, ~inherits(.x$type, "DecimalType"))]
-    for (nm in decimals) {
-      tab[[nm]] <- tab[[nm]]$cast(arrow::float64())
-    }
+#
+#     # Convert all decimals to floats, can remove when ARROW-13966 is merged
+#     decimals <- colnames(tab)[purrr::map_lgl(tab$schema$fields, ~inherits(.x$type, "DecimalType"))]
+#     for (nm in decimals) {
+#       tab[[nm]] <- tab[[nm]]$cast(arrow::float64())
+#     }
 
     filename <- source_data_file(paste0(name, "_", format(scale, scientific = FALSE), ".parquet"))
     arrow::write_parquet(tab, filename)

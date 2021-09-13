@@ -9,9 +9,12 @@
 tpc_h <- Benchmark("tpc_h",
   setup = function(engine = "arrow",
                    query_num = 1,
+                   format = "parquet",
                    scale = 10) {
     # engine defaults to arrow
     engine <- match.arg(engine, c("arrow", "duckdb", "dplyr"))
+    # input format
+    format <- match.arg(format, c("parquet", "feather", "native"))
     # query_num defaults to 1 for now
     stopifnot(
       "query_num must be an int" = query_num %% 1 == 0,
@@ -20,38 +23,70 @@ tpc_h <- Benchmark("tpc_h",
 
     library("dplyr")
 
-    # ensure that we have the right kind of files available
-    tpch_filenames <- ensure_source("tpch", scale = scale)
+    # ensure that we have the _base_ tpc-h files (in parquet)
+    tpch_files <- ensure_source("tpch", scale = scale)
 
-    input_functions <- list(
-      arrow = function(name) {
-        file <- tpch_filenames[[name]]
-        return(arrow::read_parquet(file, as_data_frame = FALSE))
-      },
-      duckdb = function(name) {
-        return(tbl(con, name))
-      }
-    )
+    # these will be filled in later, when we have files available.
+    input_functions <- list()
 
     # We use this connection both to populate views/tables and get answer info
     con <- DBI::dbConnect(duckdb::duckdb())
 
-    if (engine == "duckdb") {
-      con <- DBI::dbConnect(duckdb::duckdb())
+    if (engine == "arrow") {
+      # ensure that we have the right kind of files available
+      format_to_convert <- format
+      # but for native, make sure we have a feather file, and we will read that
+      # in to memory before the benchmark (below)
+      if (format == "native") {
+        format_to_convert <- "feather"
+      }
+
+      tpch_files <- vapply(
+        tpch_files,
+        ensure_format,
+        FUN.VALUE = character(1),
+        format = format_to_convert
+      )
+
+      if (format == "parquet") {
+        input_functions[["arrow"]] <- function(name) {
+          file <- tpch_files[[name]]
+          return(arrow::read_parquet(file, as_data_frame = FALSE))
+        }
+      } else if (format == "feather") {
+        input_functions[["arrow"]] <- function(name) {
+          file <- tpch_files[[name]]
+          return(arrow::read_feather(file, as_data_frame = FALSE))
+        }
+      } else if (format == "native") {
+        # read the feather file in first, and pass the table
+        input_functions[["arrow"]] <- function(name) {
+          tab <- arrow::read_feather(tpch_files[[name]], as_data_frame = FALSE)
+          return(tab)
+        }
+      }
+    } else if (engine == "duckdb") {
       # set parallelism for duckdb
       DBI::dbExecute(con, paste0("PRAGMA threads=", getOption("Ncpus")))
 
+      input_functions[["duckdb"]] <- function(name) {
+        return(tbl(con, name))
+      }
+
       for (name in tpch_tables) {
-        file <- path.expand(tpch_filenames[[name]])
+        file <- path.expand(tpch_files[[name]])
 
         # have to create a VIEW in order to reference it by name
         # This view is the most accurate comparison to Arrow, however it will
         # penalize duckdb since AFAICT `parquet_scan` is not parallelized and
         # ends up being the bottleneck
-        DBI::dbExecute(
-          con,
-          paste0("CREATE VIEW ", name, " AS SELECT * FROM parquet_scan('", file, "');")
-        )
+        if (format == "parquet") {
+          sql_query <- paste0("CREATE VIEW ", name, " AS SELECT * FROM parquet_scan('", file, "');")
+        } else if (format == "native") {
+          sql_query <- paste0("CREATE TABLE ", name, " AS SELECT * FROM parquet_scan('", file, "');")
+        }
+
+        DBI::dbExecute(con, sql_query)
       }
     }
 
@@ -67,7 +102,7 @@ tpc_h <- Benchmark("tpc_h",
     BenchEnvironment(
       # get the correct read function for the input format
       input_func = input_functions[[engine]],
-      tpch_filenames = tpch_filenames,
+      tpch_files = tpch_files,
       query = tpc_h_queries[[as.character(query_num)]],
       engine = engine,
       con = con,
@@ -85,15 +120,17 @@ tpc_h <- Benchmark("tpc_h",
   # after each iteration, check the dimensions and delete the results
   after_each = {
     if (!isTRUE(all.equal(result, answer, check.attributes = FALSE, tolerance = 0.001))) {
-      warning("Expected:\n\n", paste0(capture.output(print(answer)), collapse = "\n"))
-      warning("\n\nGot:\n\n", paste0(capture.output(print(result, width = Inf)), collapse = "\n"))
+      warning("\nExpected:\n", paste0(capture.output(print(answer)), collapse = "\n"))
+      warning("\n\nGot:\n", paste0(capture.output(print(result, width = Inf)), collapse = "\n"))
       stop("The answer does not match")
     }
     result <- NULL
   },
   # validate that the parameters given are compatible
   valid_params = function(params) {
-    params
+    # TODO: no ipc-duckdb
+    drop <- params$engine == "duckdb" & params$format == "feather"
+    params[!drop,]
   },
   # packages used when specific formats are used
   packages_used = function(params) {

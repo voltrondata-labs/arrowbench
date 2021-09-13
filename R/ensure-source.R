@@ -116,9 +116,15 @@ is_url <- function(x) is.character(x) && length(x) == 1 && grepl("://", x)
 read_source <- function(file, ...) {
   reader <- get_source_attr(file, "reader")
   if (is.null(reader)) {
-    # Assume CSV
-    # TODO: switch based on file extension
-    arrow::read_csv_arrow(file, ...)
+    extension <- file_ext(file)
+    if (grepl("csv", file)) {
+      arrow::read_csv_arrow(file, ...)
+    } else if (extension == "parquet") {
+      arrow::read_parquet(file, ...)
+    }  else if (extension == "feather") {
+      # TODO: other extensions?
+      arrow::read_ipc_stream(file, ...)
+    }
   } else {
     reader(file, ...)
   }
