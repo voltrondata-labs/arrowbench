@@ -15,7 +15,7 @@ tpc_h <- Benchmark("tpc_h",
     # query_num defaults to 1 for now
     stopifnot(
       "query_num must be an int" = query_num %% 1 == 0,
-      "query_num must 1-19" = query_num >= 1 & query_num <= 22
+      "query_num must 1-22" = query_num >= 1 & query_num <= 22
     )
 
     library("dplyr")
@@ -33,8 +33,9 @@ tpc_h <- Benchmark("tpc_h",
       }
     )
 
-    # For Arrow connection is NULL, but for duckdb we need to pass it around.
-    con <- NULL
+    # We use this connection both to populate views/tables and get answer info
+    con <- DBI::dbConnect(duckdb::duckdb())
+
     if (engine == "duckdb") {
       con <- DBI::dbConnect(duckdb::duckdb())
       # set parallelism for duckdb
@@ -54,6 +55,13 @@ tpc_h <- Benchmark("tpc_h",
       }
     }
 
+    # get answers
+    answer_psv <- DBI::dbGetQuery(
+      con,
+      paste0("SELECT answer FROM tpch_answers() WHERE scale_factor = 1 AND query_nr = ", query_num, ";")
+    )
+    answer <- read.delim(textConnection(answer_psv$answer), sep = "|")
+
     # put the necessary variables into a BenchmarkEnvironment to be used when the
     # benchmark is running.
     BenchEnvironment(
@@ -62,7 +70,8 @@ tpc_h <- Benchmark("tpc_h",
       tpch_filenames = tpch_filenames,
       query = tpc_h_queries[[as.character(query_num)]],
       engine = engine,
-      con = con
+      con = con,
+      answer = answer
     )
   },
   # delete the results before each iteration
@@ -75,7 +84,11 @@ tpc_h <- Benchmark("tpc_h",
   },
   # after each iteration, check the dimensions and delete the results
   after_each = {
-    # TODO: check the query answer is correct
+    if (!isTRUE(all.equal(result, answer, check.attributes = FALSE, tolerance = 0.001))) {
+      warning("Expected:\n\n", paste0(capture.output(print(answer)), collapse = "\n"))
+      warning("\n\nGot:\n\n", paste0(capture.output(print(result, width = Inf)), collapse = "\n"))
+      stop("The answer does not match")
+    }
     result <- NULL
   },
   # validate that the parameters given are compatible
