@@ -3,7 +3,8 @@
 #' @section Parameters:
 #' * `engine` One of `c("arrow", "duckdb", "dplyr)`
 #' * `query_num` integer, 1-22
-#' * `scale` Scale factor to use for data generation
+#' * `format` One of `c("parquet", "feather", "native")`
+#' * `scale` Scale factor to use for data generation (e.g. 0.1, 1, 10, 100)
 #'
 #' @export
 tpc_h <- Benchmark("tpc_h",
@@ -26,17 +27,17 @@ tpc_h <- Benchmark("tpc_h",
     # ensure that we have the _base_ tpc-h files (in parquet)
     tpch_files <- ensure_source("tpch", scale = scale)
 
-    # these will be filled in later, when we have files available.
+    # these will be filled in later, when we have file paths available
     input_functions <- list()
 
-    # We use this connection both to populate views/tables and get answer info
+    # we use this connection both to populate views/tables and get answer info
     con <- DBI::dbConnect(duckdb::duckdb())
 
     if (engine == "arrow") {
       # ensure that we have the right kind of files available
-      format_to_convert <- format
       # but for native, make sure we have a feather file, and we will read that
       # in to memory before the benchmark (below)
+      format_to_convert <- format
       if (format == "native") {
         format_to_convert <- "feather"
       }
@@ -48,6 +49,7 @@ tpc_h <- Benchmark("tpc_h",
         format = format_to_convert
       )
 
+      # specify readers for each format
       if (format == "parquet") {
         input_functions[["arrow"]] <- function(name) {
           file <- tpch_files[[name]]
@@ -59,10 +61,13 @@ tpc_h <- Benchmark("tpc_h",
           return(arrow::read_feather(file, as_data_frame = FALSE))
         }
       } else if (format == "native") {
-        # read the feather file in first, and pass the table
+        # native is different: read the feather file in first, and pass the table
+        tab <- list()
+        for (name in names(tpch_files)) {
+          tab[[name]] <- arrow::read_feather(tpch_files[[name]], as_data_frame = FALSE)
+        }
         input_functions[["arrow"]] <- function(name) {
-          tab <- arrow::read_feather(tpch_files[[name]], as_data_frame = FALSE)
-          return(tab)
+          return(tab[[name]])
         }
       }
     } else if (engine == "duckdb") {
@@ -90,13 +95,6 @@ tpc_h <- Benchmark("tpc_h",
       }
     }
 
-    # get answers
-    answer_psv <- DBI::dbGetQuery(
-      con,
-      paste0("SELECT answer FROM tpch_answers() WHERE scale_factor = 1 AND query_nr = ", query_num, ";")
-    )
-    answer <- read.delim(textConnection(answer_psv$answer), sep = "|")
-
     # put the necessary variables into a BenchmarkEnvironment to be used when the
     # benchmark is running.
     BenchEnvironment(
@@ -106,7 +104,8 @@ tpc_h <- Benchmark("tpc_h",
       query = tpc_h_queries[[as.character(query_num)]],
       engine = engine,
       con = con,
-      answer = answer
+      scale = scale,
+      query_num = query_num
     )
   },
   # delete the results before each iteration
@@ -119,16 +118,44 @@ tpc_h <- Benchmark("tpc_h",
   },
   # after each iteration, check the dimensions and delete the results
   after_each = {
-    if (!isTRUE(all.equal(result, answer, check.attributes = FALSE, tolerance = 0.001))) {
-      warning("\nExpected:\n", paste0(capture.output(print(answer)), collapse = "\n"))
-      warning("\n\nGot:\n", paste0(capture.output(print(result, width = Inf)), collapse = "\n"))
-      stop("The answer does not match")
+    # If the scale is < 1, duckdb has the answer
+    if (scale %in% c(0.01, 0.1, 1)) {
+      # get answers
+      answer_psv <- DBI::dbGetQuery(
+        con,
+        paste0(
+          "SELECT answer FROM tpch_answers() WHERE scale_factor = ",
+          scale,
+          " AND query_nr = ",
+          query_num,
+          ";"
+        )
+      )
+      answer <- read.delim(textConnection(answer_psv$answer), sep = "|")
+
+      if (!isTRUE(all.equal(result, answer, check.attributes = FALSE, tolerance = 0.001))) {
+        warning("\nExpected:\n", paste0(capture.output(print(answer)), collapse = "\n"))
+        warning("\n\nGot:\n", paste0(capture.output(print(result, width = Inf)), collapse = "\n"))
+        stop("The answer does not match")
+      }
+    } else {
+      # grab scale factor 1 to check dimensions
+      answer_psv <- DBI::dbGetQuery(
+        con,
+        paste0("SELECT answer FROM tpch_answers() WHERE scale_factor = 1 AND query_nr = ", query_num, ";")
+      )
+      answer <- read.delim(textConnection(answer_psv$answer), sep = "|")
     }
+
+    # TODO: other generic validations for SF < 1?
+    stopifnot(
+      "Dims do not match the answer" = identical(dim(result), dim(answer))
+    )
+
     result <- NULL
   },
   # validate that the parameters given are compatible
   valid_params = function(params) {
-    # TODO: no ipc-duckdb
     drop <- params$engine == "duckdb" & params$format == "feather"
     params[!drop,]
   },
