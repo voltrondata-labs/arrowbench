@@ -17,8 +17,12 @@ Benchmark TPC-H queries
 
 \itemize{
 \item \code{engine} One of \verb{c("arrow", "duckdb", "dplyr)}
-\item \code{query_num} integer, 1-19
-\item \code{scale} Scale factor to use for data generation
+\item \code{query_num} integer, 1-22
+\item \code{format} One of \code{c("parquet", "feather", "native")}
+\item \code{scale} Scale factor to use for data generation (e.g. 0.1, 1, 10, 100)
+\item \code{mem_map} Should memory mapping be used when reading a file in? (only
+applicable to arrow, native. \code{FALSE} will result in the file being explicitly
+read into memory before the benchmark)
 }
 }
 
