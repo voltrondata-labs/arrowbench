@@ -19,7 +19,7 @@ tpc_h <- Benchmark("tpc_h",
     # engine defaults to arrow
     engine <- match.arg(engine, c("arrow", "duckdb", "dplyr"))
     # input format
-    format <- match.arg(format, c("parquet", "feather", "native", "feather-dataset"))
+    format <- match.arg(format, c("parquet", "feather", "native", "feather-dataset", "parquet-dataset"))
     # query_num defaults to 1 for now
     stopifnot(
       "query_num must be an int" = query_num %% 1 == 0,
@@ -49,6 +49,8 @@ tpc_h <- Benchmark("tpc_h",
         format_to_convert <- "feather"
       } else if (format == "feather-dataset") {
         format_to_convert <- "feather"
+      } else if (format == "parquet-dataset") {
+        format_to_convert <- "parquet"
       }
 
       tpch_files <- vapply(
@@ -62,12 +64,17 @@ tpc_h <- Benchmark("tpc_h",
       if (format == "parquet") {
         input_functions[["arrow"]] <- function(name) {
           file <- tpch_files[[name]]
-          return(arrow::read_parquet(file, as_data_frame = FALSE))
+          return(arrow::read_parquet(file, as_data_frame = FALSE, mmap = mem_map))
+        }
+      } else if (format == "parquet-dataset") {
+        input_functions[["arrow"]] <- function(name) {
+          file <- tpch_files[[name]]
+          return(arrow::open_dataset(file, format = "parquet"))
         }
       } else if (format == "feather") {
         input_functions[["arrow"]] <- function(name) {
           file <- tpch_files[[name]]
-          return(arrow::read_feather(file, as_data_frame = FALSE))
+          return(arrow::read_feather(file, as_data_frame = FALSE, mmap = mem_map))
         }
       } else if (format == "feather-dataset") {
         input_functions[["arrow"]] <- function(name) {
@@ -179,7 +186,8 @@ tpc_h <- Benchmark("tpc_h",
   valid_params = function(params) {
     drop <- ( params$engine == "duckdb" & params$format == "feather" ) |
       ( params$engine == "duckdb" & params$format == "feather-dataset" ) |
-      params$mem_map == TRUE & ( params$format != "native" | params$engine != "arrow" )
+      ( params$engine == "duckdb" & params$format == "parquet-dataset" ) |
+      params$mem_map == TRUE & params$engine != "arrow"
     params[!drop,]
   },
   # packages used when specific formats are used
