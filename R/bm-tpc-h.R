@@ -13,13 +13,13 @@
 tpc_h <- Benchmark("tpc_h",
   setup = function(engine = "arrow",
                    query_num = c(1, 6),
-                   format = "parquet",
-                   scale = 10,
+                   format = c("native", "parquet", "feather"),
+                   scale = c(1, 10),
                    mem_map = FALSE) {
     # engine defaults to arrow
     engine <- match.arg(engine, c("arrow", "duckdb", "dplyr"))
     # input format
-    format <- match.arg(format, c("parquet", "feather", "native", "feather-dataset", "parquet-dataset"))
+    format <- match.arg(format, c("parquet", "feather", "native"))
     # query_num defaults to 1 for now
     stopifnot(
       "query_num must be an int" = query_num %% 1 == 0,
@@ -47,10 +47,6 @@ tpc_h <- Benchmark("tpc_h",
       format_to_convert <- format
       if (format == "native") {
         format_to_convert <- "feather"
-      } else if (format == "feather-dataset") {
-        format_to_convert <- "feather"
-      } else if (format == "parquet-dataset") {
-        format_to_convert <- "parquet"
       }
 
       tpch_files <- vapply(
@@ -64,19 +60,9 @@ tpc_h <- Benchmark("tpc_h",
       if (format == "parquet") {
         input_functions[["arrow"]] <- function(name) {
           file <- tpch_files[[name]]
-          return(arrow::read_parquet(file, as_data_frame = FALSE, mmap = mem_map))
-        }
-      } else if (format == "parquet-dataset") {
-        input_functions[["arrow"]] <- function(name) {
-          file <- tpch_files[[name]]
           return(arrow::open_dataset(file, format = "parquet"))
         }
       } else if (format == "feather") {
-        input_functions[["arrow"]] <- function(name) {
-          file <- tpch_files[[name]]
-          return(arrow::read_feather(file, as_data_frame = FALSE, mmap = mem_map))
-        }
-      } else if (format == "feather-dataset") {
         input_functions[["arrow"]] <- function(name) {
           file <- tpch_files[[name]]
           return(arrow::open_dataset(file, format = "feather"))
