@@ -16,7 +16,7 @@ Benchmark TPC-H queries
 \section{Parameters}{
 
 \itemize{
-\item \code{engine} One of \verb{c("arrow", "duckdb", "dplyr)}
+\item \code{engine} One of \code{c("arrow", "duckdb")}
 \item \code{query_num} integer, 1-22
 \item \code{format} One of \code{c("parquet", "feather", "native")}
 \item \code{scale} Scale factor to use for data generation (e.g. 0.1, 1, 10, 100)

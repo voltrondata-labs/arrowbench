@@ -1,7 +1,7 @@
 #' Benchmark TPC-H queries
 #'
 #' @section Parameters:
-#' * `engine` One of `c("arrow", "duckdb", "dplyr)`
+#' * `engine` One of `c("arrow", "duckdb")`
 #' * `query_num` integer, 1-22
 #' * `format` One of `c("parquet", "feather", "native")`
 #' * `scale` Scale factor to use for data generation (e.g. 0.1, 1, 10, 100)
@@ -17,7 +17,7 @@ tpc_h <- Benchmark("tpc_h",
                    scale = c(1, 10),
                    mem_map = FALSE) {
     # engine defaults to arrow
-    engine <- match.arg(engine, c("arrow", "duckdb", "dplyr"))
+    engine <- match.arg(engine, c("arrow", "duckdb"))
     # input format
     format <- match.arg(format, c("parquet", "feather", "native"))
     # query_num defaults to 1 for now
