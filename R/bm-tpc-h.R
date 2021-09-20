@@ -175,8 +175,6 @@ tpc_h <- Benchmark("tpc_h",
   # validate that the parameters given are compatible
   valid_params = function(params) {
     drop <- ( params$engine == "duckdb" & params$format == "feather" ) |
-      ( params$engine == "duckdb" & params$format == "feather-dataset" ) |
-      ( params$engine == "duckdb" & params$format == "parquet-dataset" ) |
       params$mem_map == TRUE & params$engine != "arrow"
     params[!drop,]
   },
