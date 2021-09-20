@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Known data files — known_sources • arrowbench</title>
+<title>For extracting table names from TPC-H queries — tables_refed • arrowbench</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,9 @@
 
 
 
-<meta property="og:title" content="Known data files — known_sources" />
-<meta property="og:description" content="Known data files" />
+<meta property="og:title" content="For extracting table names from TPC-H queries — tables_refed" />
+<meta property="og:description" content="This searches a function for all references of input_func(...) and returns
+the contents of ..." />
 
 
 
@@ -103,21 +104,30 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Known data files</h1>
+    <h1>For extracting table names from TPC-H queries</h1>
     
-    <div class="hidden name"><code>known_sources.Rd</code></div>
+    <div class="hidden name"><code>tables_refed.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Known data files</p>
+    <p>This searches a function for all references of <code>input_func(...)</code> and returns
+the contents of <code>...</code></p>
     </div>
 
-    <pre class="usage"><span class='va'>known_sources</span></pre>
+    <pre class="usage"><span class='fu'>tables_refed</span><span class='op'>(</span><span class='va'>query_func</span><span class='op'>)</span></pre>
 
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>query_func</th>
+      <td><p>a function containing a dplyr pipeline</p></td>
+    </tr>
+    </table>
 
-    <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An object of class <code>list</code> of length 10.</p>
+    <p>all references inside of <code>input_func(...)</code>, collapsed</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

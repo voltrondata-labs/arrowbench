@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Known data files — known_sources • arrowbench</title>
+<title>Benchmark TPC-H queries — tpc_h • arrowbench</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Known data files — known_sources" />
-<meta property="og:description" content="Known data files" />
+<meta property="og:title" content="Benchmark TPC-H queries — tpc_h" />
+<meta property="og:description" content="Benchmark TPC-H queries" />
 
 
 
@@ -103,21 +103,35 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Known data files</h1>
+    <h1>Benchmark TPC-H queries</h1>
     
-    <div class="hidden name"><code>known_sources.Rd</code></div>
+    <div class="hidden name"><code>tpc_h.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Known data files</p>
+    <p>Benchmark TPC-H queries</p>
     </div>
 
-    <pre class="usage"><span class='va'>known_sources</span></pre>
+    <pre class="usage"><span class='va'>tpc_h</span></pre>
 
 
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
-    <p>An object of class <code>list</code> of length 10.</p>
+    <p>An object of class <code>Benchmark</code> of length 8.</p>
+    <h2 class="hasAnchor" id="parameters"><a class="anchor" href="#parameters"></a>Parameters</h2>
+
+    
+
+<ul>
+<li><p><code>engine</code> One of <code>c("arrow", "duckdb", "dplyr)</code></p></li>
+<li><p><code>query_num</code> integer, 1-22</p></li>
+<li><p><code>format</code> One of <code><a href='https://rdrr.io/r/base/c.html'>c("parquet", "feather", "native")</a></code></p></li>
+<li><p><code>scale</code> Scale factor to use for data generation (e.g. 0.1, 1, 10, 100)</p></li>
+<li><p><code>mem_map</code> Should memory mapping be used when reading a file in? (only
+applicable to arrow, native. <code>FALSE</code> will result in the file being explicitly
+read into memory before the benchmark)</p></li>
+</ul>
+
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
