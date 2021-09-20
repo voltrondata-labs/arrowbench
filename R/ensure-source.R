@@ -4,13 +4,14 @@ NULL
 #' Make sure a data file exists
 #'
 #' @param name A known-source id, a file path, or a URL
+#' @param ... arguments to pass on to a custom locator
 #'
 #' @return A valid path to a source file. If a known source but not present,
 #' it will be downloaded and possibly decompressed.
 #' @export
 #' @importFrom R.utils gunzip
 #' @importFrom withr with_options
-ensure_source <- function(name) {
+ensure_source <- function(name, ...) {
   # if this is a direct file reference, return quickly.
   if (is_url(name)) {
     # TODO: validate that it exists?
@@ -20,16 +21,14 @@ ensure_source <- function(name) {
     return(name)
   }
 
-  # If the source doesn't exist we need to create it
-  # Make sure data dirs exist
-  if (!dir.exists(source_data_file(""))) {
-    dir.create(source_data_file(""))
-  }
-  if (!dir.exists(temp_data_file(""))) {
-    dir.create(temp_data_file(""))
-  }
+  ensure_source_dirs_exist()
 
   known <- known_sources[[name]]
+  if (!is.null(known) && !is.null(known$locator)) {
+    # if the source has a custom locator, use that.
+    return(known$locator(...))
+  }
+
   if (!is.null(known)) {
     filename <- source_filename(name)
 
@@ -57,6 +56,17 @@ ensure_source <- function(name) {
     stop(name, " is not a known source", call. = FALSE)
   }
   file
+}
+
+ensure_source_dirs_exist <- function() {
+  # If the source doesn't exist we need to create it
+  # Make sure data dirs exist
+  if (!dir.exists(source_data_file(""))) {
+    dir.create(source_data_file(""))
+  }
+  if (!dir.exists(temp_data_file(""))) {
+    dir.create(temp_data_file(""))
+  }
 }
 
 source_data_file <- function(...) {
@@ -106,9 +116,15 @@ is_url <- function(x) is.character(x) && length(x) == 1 && grepl("://", x)
 read_source <- function(file, ...) {
   reader <- get_source_attr(file, "reader")
   if (is.null(reader)) {
-    # Assume CSV
-    # TODO: switch based on file extension
-    arrow::read_csv_arrow(file, ...)
+    extension <- file_ext(file)
+    if (grepl("csv", file)) {
+      arrow::read_csv_arrow(file, ...)
+    } else if (extension == "parquet") {
+      arrow::read_parquet(file, ...)
+    }  else if (extension == "feather") {
+      # TODO: other extensions?
+      arrow::read_ipc_stream(file, ...)
+    }
   } else {
     reader(file, ...)
   }
