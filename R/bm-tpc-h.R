@@ -129,6 +129,10 @@ tpc_h <- Benchmark("tpc_h",
   },
   # after each iteration, check the dimensions and delete the results
   after_each = {
+    # The tpch_answers() function only exists when the tpch extension has been
+    # built
+    ensure_custom_duckdb()
+
     # If the scale is < 1, duckdb has the answer
     if (scale %in% c(0.01, 0.1, 1)) {
       # get answers
