@@ -2,34 +2,34 @@
 #'
 #' @section Parameters:
 #' * `engine` One of `c("arrow", "duckdb")`
-#' * `query_num` integer, 1-22
+#' * `query_id` integer, 1-22
 #' * `format` One of `c("parquet", "feather", "native")`
-#' * `scale` Scale factor to use for data generation (e.g. 0.1, 1, 10, 100)
-#' * `mem_map` Should memory mapping be used when reading a file in? (only
+#' * `scale_factor` Scale factor to use for data generation (e.g. 0.1, 1, 10, 100)
+#' * `memory_map` Should memory mapping be used when reading a file in? (only
 #'   applicable to arrow, native. `FALSE` will result in the file being explicitly
 #'   read into memory before the benchmark)
 #'
 #' @export
 tpc_h <- Benchmark("tpc_h",
   setup = function(engine = "arrow",
-                   query_num = c(1, 6),
+                   query_id = c(1, 6),
                    format = c("native", "parquet", "feather"),
-                   scale = c(1, 10),
-                   mem_map = FALSE) {
+                   scale_factor = c(1, 10),
+                   memory_map = FALSE) {
     # engine defaults to arrow
     engine <- match.arg(engine, c("arrow", "duckdb"))
     # input format
     format <- match.arg(format, c("parquet", "feather", "native"))
-    # query_num defaults to 1 for now
+    # query_id defaults to 1 for now
     stopifnot(
-      "query_num must be an int" = query_num %% 1 == 0,
-      "query_num must 1-22" = query_num >= 1 & query_num <= 22
+      "query_id must be an int" = query_id %% 1 == 0,
+      "query_id must 1-22" = query_id >= 1 & query_id <= 22
     )
 
     library("dplyr")
 
     # ensure that we have the _base_ tpc-h files (in parquet)
-    tpch_files <- ensure_source("tpch", scale = scale)
+    tpch_files <- ensure_source("tpch", scale_factor = scale_factor)
 
     # these will be filled in later, when we have file paths available
     input_functions <- list()
@@ -38,7 +38,7 @@ tpc_h <- Benchmark("tpc_h",
     con <- DBI::dbConnect(duckdb::duckdb())
 
     # find only the tables that are needed to process
-    tpch_tables_needed <- tables_refed(tpc_h_queries[[query_num]])
+    tpch_tables_needed <- tables_refed(tpc_h_queries[[query_id]])
 
     if (engine == "arrow") {
       # ensure that we have the right kind of files available
@@ -74,7 +74,7 @@ tpc_h <- Benchmark("tpc_h",
           tab[[name]] <- arrow::read_feather(
             tpch_files[[name]],
             as_data_frame = FALSE,
-            mmap = mem_map
+            mmap = memory_map
           )
         }
         input_functions[["arrow"]] <- function(name) {
@@ -112,11 +112,11 @@ tpc_h <- Benchmark("tpc_h",
       # get the correct read function for the input format
       input_func = input_functions[[engine]],
       tpch_files = tpch_files,
-      query = tpc_h_queries[[query_num]],
+      query = tpc_h_queries[[query_id]],
       engine = engine,
       con = con,
-      scale = scale,
-      query_num = query_num
+      scale_factor = scale_factor,
+      query_id = query_id
     )
   },
   # delete the results before each iteration
@@ -133,16 +133,16 @@ tpc_h <- Benchmark("tpc_h",
     # built
     ensure_custom_duckdb()
 
-    # If the scale is < 1, duckdb has the answer
-    if (scale %in% c(0.01, 0.1, 1)) {
+    # If the scale_factor is < 1, duckdb has the answer
+    if (scale_factor %in% c(0.01, 0.1, 1)) {
       # get answers
       answer_psv <- DBI::dbGetQuery(
         con,
         paste0(
           "SELECT answer FROM tpch_answers() WHERE scale_factor = ",
-          scale,
+          scale_factor,
           " AND query_nr = ",
-          query_num,
+          query_id,
           ";"
         )
       )
@@ -154,10 +154,10 @@ tpc_h <- Benchmark("tpc_h",
         stop("The answer does not match")
       }
     } else {
-      # grab scale factor 1 to check dimensions
+      # grab scale_factor 1 to check dimensions
       answer_psv <- DBI::dbGetQuery(
         con,
-        paste0("SELECT answer FROM tpch_answers() WHERE scale_factor = 1 AND query_nr = ", query_num, ";")
+        paste0("SELECT answer FROM tpch_answers() WHERE scale_factor = 1 AND query_nr = ", query_id, ";")
       )
       answer <- read.delim(textConnection(answer_psv$answer), sep = "|")
     }
@@ -175,7 +175,7 @@ tpc_h <- Benchmark("tpc_h",
   # validate that the parameters given are compatible
   valid_params = function(params) {
     drop <- ( params$engine == "duckdb" & params$format == "feather" ) |
-      params$mem_map == TRUE & params$engine != "arrow"
+      params$memory_map == TRUE & params$engine != "arrow"
     params[!drop,]
   },
   # packages used when specific formats are used
@@ -184,8 +184,10 @@ tpc_h <- Benchmark("tpc_h",
   }
 )
 
-# all queries take an input_func which is a function that will return a dplyr tbl
-# referencing the table needed.
+#' all queries take an input_func which is a function that will return a dplyr tbl
+#' referencing the table needed.
+#'
+#' @keywords internal
 #' @export
 tpc_h_queries <- list()
 

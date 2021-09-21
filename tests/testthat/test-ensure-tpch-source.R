@@ -24,7 +24,7 @@ withr::with_envvar(
     })
 
     test_that("can read that same small dataset if it is in the data folder already", {
-      mockery::stub(ensure_tpch, 'generate_tpch', function(scale) stop("this should not be called"))
+      mockery::stub(ensure_tpch, 'generate_tpch', function(scale_factor) stop("this should not be called"))
       tpch_files <- ensure_tpch(0.0001)
       expect_identical(
         tpch_files,
@@ -33,7 +33,7 @@ withr::with_envvar(
     })
 
     test_that("and ensure gets the same thing", {
-      tpch_files <- ensure_source("tpch", scale = 0.0001)
+      tpch_files <- ensure_source("tpch", scale_factor = 0.0001)
       expect_identical(
         tpch_files,
         expected_filenames
