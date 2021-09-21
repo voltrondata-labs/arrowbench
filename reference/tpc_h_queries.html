@@ -6,7 +6,8 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Benchmark TPC-H queries — tpc_h • arrowbench</title>
+<title>all queries take an input_func which is a function that will return a dplyr tbl
+referencing the table needed. — tpc_h_queries • arrowbench</title>
 
 
 <!-- jquery -->
@@ -39,8 +40,10 @@
 
 
 
-<meta property="og:title" content="Benchmark TPC-H queries — tpc_h" />
-<meta property="og:description" content="Benchmark TPC-H queries" />
+<meta property="og:title" content="all queries take an input_func which is a function that will return a dplyr tbl
+referencing the table needed. — tpc_h_queries" />
+<meta property="og:description" content="all queries take an input_func which is a function that will return a dplyr tbl
+referencing the table needed." />
 
 
 
@@ -103,35 +106,23 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Benchmark TPC-H queries</h1>
+    <h1>all queries take an input_func which is a function that will return a dplyr tbl
+referencing the table needed.</h1>
     
-    <div class="hidden name"><code>tpc_h.Rd</code></div>
+    <div class="hidden name"><code>tpc_h_queries.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Benchmark TPC-H queries</p>
+    <p>all queries take an input_func which is a function that will return a dplyr tbl
+referencing the table needed.</p>
     </div>
 
-    <pre class="usage"><span class='va'>tpc_h</span></pre>
+    <pre class="usage"><span class='va'>tpc_h_queries</span></pre>
 
 
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
-    <p>An object of class <code>Benchmark</code> of length 8.</p>
-    <h2 class="hasAnchor" id="parameters"><a class="anchor" href="#parameters"></a>Parameters</h2>
-
-    
-
-<ul>
-<li><p><code>engine</code> One of <code><a href='https://rdrr.io/r/base/c.html'>c("arrow", "duckdb")</a></code></p></li>
-<li><p><code>query_id</code> integer, 1-22</p></li>
-<li><p><code>format</code> One of <code><a href='https://rdrr.io/r/base/c.html'>c("parquet", "feather", "native")</a></code></p></li>
-<li><p><code>scale_factor</code> Scale factor to use for data generation (e.g. 0.1, 1, 10, 100)</p></li>
-<li><p><code>memory_map</code> Should memory mapping be used when reading a file in? (only
-applicable to arrow, native. <code>FALSE</code> will result in the file being explicitly
-read into memory before the benchmark)</p></li>
-</ul>
-
+    <p>An object of class <code>list</code> of length 6.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
