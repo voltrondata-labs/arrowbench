@@ -106,13 +106,19 @@ tpc_h <- Benchmark("tpc_h",
       }
     }
 
+    # Get query, and error if it is not implemented
+    query <- tpc_h_queries[[query_id]]
+    if (is.null(query)) {
+      stop("The query ", query_id, " is not yet implemented.", call. = FALSE)
+    }
+
     # put the necessary variables into a BenchmarkEnvironment to be used when the
     # benchmark is running.
     BenchEnvironment(
       # get the correct read function for the input format
       input_func = input_functions[[engine]],
       tpch_files = tpch_files,
-      query = tpc_h_queries[[query_id]],
+      query = query,
       engine = engine,
       con = con,
       scale_factor = scale_factor,
