@@ -201,6 +201,8 @@ tpc_h_queries[[1]] <- function(input_func) {
   input_func("lineitem") %>%
     select(l_shipdate, l_returnflag, l_linestatus, l_quantity,
            l_extendedprice, l_discount, l_tax) %>%
+    # kludge, should be: filter(l_shipdate <= "1998-12-01" - interval x day) %>%
+    # where x is between 60 and 120, 90 is the only one that will validate.
     filter(l_shipdate <= as.Date("1998-09-02")) %>%
     select(l_returnflag, l_linestatus, l_quantity, l_extendedprice, l_discount, l_tax) %>%
     group_by(l_returnflag, l_linestatus) %>%
@@ -218,14 +220,162 @@ tpc_h_queries[[1]] <- function(input_func) {
     collect()
 }
 
+tpc_h_queries[[2]] <- function(input_func) {
+    ps <- input_func("partsupp") %>% select(ps_partkey, ps_suppkey, ps_supplycost)
+
+    p <- input_func("part") %>%
+      select(p_partkey, p_type, p_size, p_mfgr) %>%
+      filter(p_size == 15, grepl(".*BRASS$", p_type)) %>%
+      select(p_partkey, p_mfgr)
+
+    psp <- inner_join(ps, p, by = c("ps_partkey" = "p_partkey"))
+
+    sp <- input_func("supplier") %>%
+      select(s_suppkey, s_nationkey, s_acctbal, s_name,
+             s_address, s_phone, s_comment)
+
+    psps <- inner_join(psp, sp,
+                       by = c("ps_suppkey" = "s_suppkey")) %>%
+      select(ps_partkey, ps_supplycost, p_mfgr, s_nationkey,
+             s_acctbal, s_name, s_address, s_phone, s_comment)
+
+    nr <- inner_join(input_func("nation"),
+                     input_func("region") %>% filter(r_name == "EUROPE"),
+                     by = c("n_regionkey" = "r_regionkey")) %>%
+      select(n_nationkey, n_name)
+
+    pspsnr <- inner_join(psps, nr,
+                         by = c("s_nationkey" = "n_nationkey")) %>%
+      select(ps_partkey, ps_supplycost, p_mfgr, n_name, s_acctbal,
+             s_name, s_address, s_phone, s_comment)
+
+    aggr <- pspsnr %>%
+      group_by(ps_partkey) %>%
+      summarise(min_ps_supplycost = min(ps_supplycost))
+
+    sj <- inner_join(pspsnr, aggr,
+                     by=c("ps_partkey" = "ps_partkey", "ps_supplycost" = "min_ps_supplycost"))
+
+    res <- sj %>%
+      select(s_acctbal, s_name, n_name, ps_partkey, p_mfgr,
+             s_address, s_phone, s_comment) %>%
+      arrange(desc(s_acctbal), n_name, s_name, ps_partkey) %>%
+      head(100)
+
+    collect(res)
+}
+
+tpc_h_queries[[3]] <- function(input_func) {
+  oc <- inner_join(
+    input_func("orders") %>%
+      select(o_orderkey, o_custkey, o_orderdate, o_shippriority) %>%
+      # kludge, should be: filter(o_orderdate < "1995-03-15"),
+      filter(o_orderdate < as.Date("1995-03-15")),
+    input_func("customer") %>%
+      select(c_custkey, c_mktsegment) %>%
+      filter(c_mktsegment == "BUILDING"),
+    by = c("o_custkey" = "c_custkey")
+  ) %>%
+    select(o_orderkey, o_orderdate, o_shippriority)
+
+  loc <- inner_join(
+    input_func("lineitem") %>%
+      select(l_orderkey, l_shipdate, l_extendedprice, l_discount) %>%
+      filter(l_shipdate > as.Date("1995-03-15")) %>%
+      select(l_orderkey, l_extendedprice, l_discount),
+    oc, by = c("l_orderkey" = "o_orderkey")
+  )
+
+  aggr <- loc %>% mutate(volume=l_extendedprice * (1 - l_discount)) %>%
+    group_by(l_orderkey, o_orderdate, o_shippriority) %>%
+    summarise(revenue = sum(volume)) %>%
+    select(l_orderkey, revenue, o_orderdate, o_shippriority) %>%
+    arrange(desc(revenue), o_orderdate) %>%
+    head(10)
+
+  collect(aggr)
+}
+
+tpc_h_queries[[4]] <- function(input_func) {
+  l <- input_func("lineitem") %>%
+    select(l_orderkey, l_commitdate, l_receiptdate) %>%
+    filter(l_commitdate < l_receiptdate) %>%
+    select(l_orderkey)
+
+  o <- input_func("orders") %>%
+    select(o_orderkey, o_orderdate, o_orderpriority) %>%
+    # kludge: filter(o_orderdate >= "1993-07-01", o_orderdate < "1993-07-01" + interval '3' month) %>%
+    filter(o_orderdate >= as.Date("1993-07-01"), o_orderdate < as.Date("1993-10-01")) %>%
+    select(o_orderkey, o_orderpriority)
+
+  # distinct after join, tested and indeed faster
+  lo <- inner_join(l, o, by = c("l_orderkey" = "o_orderkey")) %>%
+    distinct() %>%
+    select(o_orderpriority)
+
+  aggr <- lo %>%
+    group_by(o_orderpriority) %>%
+    summarise(order_count = n()) %>%
+    arrange(o_orderpriority)
+
+  collect(aggr)
+}
+
+tpc_h_queries[[5]] <- function(input_func) {
+  nr <- inner_join(
+    input_func("nation") %>%
+      select(n_nationkey, n_regionkey, n_name),
+    input_func("region") %>%
+      select(r_regionkey, r_name) %>%
+      filter(r_name == "ASIA"),
+    by = c("n_regionkey" = "r_regionkey")
+  ) %>%
+    select(n_nationkey, n_name)
+
+  snr <- inner_join(
+    input_func("supplier") %>%
+      select(s_suppkey, s_nationkey),
+    nr,
+    by = c("s_nationkey" = "n_nationkey")
+  ) %>%
+    select(s_suppkey, s_nationkey, n_name)
+
+  lsnr <- inner_join(
+    input_func("lineitem") %>% select(l_suppkey, l_orderkey, l_extendedprice, l_discount),
+    snr, by = c("l_suppkey" = "s_suppkey"))
+
+  o <- input_func("orders") %>%
+    select(o_orderdate, o_orderkey, o_custkey) %>%
+    # kludge: filter(o_orderdate >= "1994-01-01", o_orderdate < "1994-01-01" + interval '1' year) %>%
+    filter(o_orderdate >= as.Date("1994-01-01"), o_orderdate < as.Date("1995-01-01")) %>%
+    select(o_orderkey, o_custkey)
+
+  oc <- inner_join(o, input_func("customer") %>% select(c_custkey, c_nationkey),
+                   by = c("o_custkey" = "c_custkey")) %>%
+    select(o_orderkey, c_nationkey)
+
+  lsnroc <- inner_join(lsnr, oc,
+                       by = c("l_orderkey" = "o_orderkey", "s_nationkey" = "c_nationkey")) %>%
+    select(l_extendedprice, l_discount, n_name)
+
+  aggr <- lsnroc %>%
+    mutate(volume=l_extendedprice * (1 - l_discount)) %>%
+    group_by(n_name) %>%
+    summarise(revenue = sum(volume)) %>%
+    arrange(desc(revenue))
+
+  collect(aggr)
+}
+
 tpc_h_queries[[6]] <- function(input_func) {
   input_func("lineitem") %>%
     select(l_shipdate, l_extendedprice, l_discount, l_quantity) %>%
+    # kludge, should be: filter(l_shipdate >= "1994-01-01",
     filter(l_shipdate >= as.Date("1994-01-01"),
+           # kludge: should be: l_shipdate < "1994-01-01" + interval '1' year,
            l_shipdate < as.Date("1995-01-01"),
-           # discounts are saved as decimals
-           l_discount >= 0.05,
-           l_discount <= 0.07,
+           l_discount >= 0.06 - 0.01,
+           l_discount <= 0.06 + 0.01,
            l_quantity < 24) %>%
     select(l_extendedprice, l_discount) %>%
     summarise(revenue = sum(l_extendedprice * l_discount)) %>%
