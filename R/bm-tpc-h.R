@@ -154,7 +154,19 @@ tpc_h <- Benchmark("tpc_h",
       )
       answer <- read.delim(textConnection(answer_psv$answer), sep = "|")
 
-      if (!isTRUE(all.equal(result, answer, check.attributes = FALSE, tolerance = 0.001))) {
+      all_equal_out <- all.equal(result, answer, check.attributes = FALSE, tolerance = 0.001)
+
+      # turn chars into dates in the answer (in DuckDB, they are all chars not dates)
+      # TODO: send duckdb a PR to change that?
+      char_to_date <- purrr::map_lgl(all_equal_out, ~grepl("target is Date, current is character", .x))
+      cols <- sub("Component “(.*)”.*", "\\1", all_equal_out[char_to_date])
+      for (col in cols) {
+        answer[, col] <- as.Date(answer[, col])
+      }
+
+      all_equal_out <- all.equal(result, answer, check.attributes = FALSE, tolerance = 0.001)
+      if (!isTRUE(all_equal_out)) {
+        warning("\n", all_equal_out, "\n")
         warning("\nExpected:\n", paste0(capture.output(print(answer)), collapse = "\n"))
         warning("\n\nGot:\n", paste0(capture.output(print(result, width = Inf)), collapse = "\n"))
         stop("The answer does not match")
@@ -259,10 +271,12 @@ tpc_h_queries[[2]] <- function(input_func) {
     res <- sj %>%
       select(s_acctbal, s_name, n_name, ps_partkey, p_mfgr,
              s_address, s_phone, s_comment) %>%
-      arrange(desc(s_acctbal), n_name, s_name, ps_partkey) %>%
-      head(100)
+      arrange(desc(s_acctbal), n_name, s_name, ps_partkey)
 
-    collect(res)
+    # head(100) should be able to be up above, but it currently does not respect
+    # arrange()
+    collect(res) %>%
+      head(100)
 }
 
 tpc_h_queries[[3]] <- function(input_func) {
@@ -290,10 +304,12 @@ tpc_h_queries[[3]] <- function(input_func) {
     group_by(l_orderkey, o_orderdate, o_shippriority) %>%
     summarise(revenue = sum(volume)) %>%
     select(l_orderkey, revenue, o_orderdate, o_shippriority) %>%
-    arrange(desc(revenue), o_orderdate) %>%
-    head(10)
+    arrange(desc(revenue), o_orderdate)
 
-  collect(aggr)
+  # head(10) should be able to be up above, but it currently does not respect
+  # arrange()
+  collect(aggr) %>%
+    head(10)
 }
 
 tpc_h_queries[[4]] <- function(input_func) {
@@ -374,13 +390,69 @@ tpc_h_queries[[6]] <- function(input_func) {
     filter(l_shipdate >= as.Date("1994-01-01"),
            # kludge: should be: l_shipdate < "1994-01-01" + interval '1' year,
            l_shipdate < as.Date("1995-01-01"),
-           l_discount >= 0.06 - 0.01,
-           l_discount <= 0.06 + 0.01,
+           # Should be the following, but https://issues.apache.org/jira/browse/ARROW-14125
+           # Need to round because 0.06 - 0.01 != 0.05
+           l_discount >= round(0.06 - 0.01, digits = 2),
+           l_discount <= round(0.06 + 0.01, digits = 2),
+           # l_discount >= 0.05,
+           # l_discount <= 0.07,
            l_quantity < 24) %>%
     select(l_extendedprice, l_discount) %>%
     summarise(revenue = sum(l_extendedprice * l_discount)) %>%
     collect()
 }
+
+tpc_h_queries[[7]] <- function(input_func) {
+  sn <- inner_join(
+    input_func("supplier") %>%
+      select(s_nationkey, s_suppkey),
+    input_func("nation") %>%
+      select(n1_nationkey = n_nationkey, n1_name = n_name) %>%
+      filter(n1_name %in% c("FRANCE", "GERMANY")),
+    by = c("s_nationkey" = "n1_nationkey")) %>%
+    select(s_suppkey, n1_name)
+
+  cn <- inner_join(
+    input_func("customer") %>%
+      select(c_custkey, c_nationkey),
+    input_func("nation") %>%
+      select(n2_nationkey = n_nationkey, n2_name = n_name) %>%
+      filter(n2_name %in% c("FRANCE", "GERMANY")),
+    by = c("c_nationkey" = "n2_nationkey")) %>%
+    select(c_custkey, n2_name)
+
+  cno <- inner_join(
+    input_func("orders") %>%
+      select(o_custkey, o_orderkey),
+    cn, by = c("o_custkey" = "c_custkey")) %>%
+    select(o_orderkey, n2_name)
+
+  cnol <- inner_join(
+    input_func("lineitem") %>%
+      select(l_orderkey, l_suppkey, l_shipdate, l_extendedprice, l_discount) %>%
+      filter(l_shipdate >= "1995-01-01", l_shipdate <= "1996-12-31"),
+    cno,
+    by = c("l_orderkey" = "o_orderkey")) %>%
+    select(l_suppkey, l_shipdate, l_extendedprice, l_discount, n2_name)
+
+  all <- inner_join(cnol, sn, by = c("l_suppkey" = "s_suppkey"))
+
+  aggr <- all %>%
+    filter((n1_name == "FRANCE" & n2_name == "GERMANY") |
+             (n1_name == "GERMANY" & n2_name == "FRANCE")) %>%
+    mutate(
+      supp_nation = n1_name,
+      cust_nation = n2_name,
+      l_year = as.integer(format(l_shipdate, "%Y")),
+      volume = l_extendedprice * (1 - l_discount)) %>%
+    select(supp_nation, cust_nation, l_year, volume) %>%
+    group_by(supp_nation, cust_nation, l_year) %>%
+    summarise(revenue = sum(volume)) %>%
+    arrange(supp_nation, cust_nation, l_year)
+
+  aggr
+}
+
 
 #' For extracting table names from TPC-H queries
 #'
