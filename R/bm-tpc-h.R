@@ -274,7 +274,7 @@ tpc_h_queries[[2]] <- function(input_func) {
       arrange(desc(s_acctbal), n_name, s_name, ps_partkey)
 
     # head(100) should be able to be up above, but it currently does not respect
-    # arrange()
+    # arrange() https://issues.apache.org/jira/browse/ARROW-13893
     collect(res) %>%
       head(100)
 }
@@ -307,7 +307,7 @@ tpc_h_queries[[3]] <- function(input_func) {
     arrange(desc(revenue), o_orderdate)
 
   # head(10) should be able to be up above, but it currently does not respect
-  # arrange()
+  # arrange() https://issues.apache.org/jira/browse/ARROW-13893
   collect(aggr) %>%
     head(10)
 }
