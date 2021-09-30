@@ -65,10 +65,8 @@ array_to_vector <- Benchmark("array_to_vector",
   },
   after_each = {
     # altrep checking
-    is_altrep <- unlist(purrr::map(
-      result,
-      ~any(grepl("arrow::Array", capture.output(.Internal(inspect(.)))))
-    ))
+    # TODO: should we also check that one of the classes is "arrow"?
+    is_altrep <- unlist(purrr::map(result, ~!is.null(.Internal(altrep_class(.)))))
     if (alt_rep) {
       altrep_ok <- all(is_altrep)
     } else {
