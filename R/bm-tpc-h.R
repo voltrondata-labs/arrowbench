@@ -582,6 +582,47 @@ tpc_h_queries[[9]] <- function(input_func) {
     collect()
 }
 
+tpc_h_queries[[10]] <- function(input_func) {
+  l <- input_func("lineitem") %>%
+    select(l_orderkey, l_returnflag, l_extendedprice, l_discount) %>%
+    filter(l_returnflag == "R") %>%
+    select(l_orderkey, l_extendedprice, l_discount)
+
+  o <- input_func("orders") %>%
+    select(o_orderkey, o_custkey, o_orderdate) %>%
+    # kludge, filter(o_orderdate >= "1993-10-01", o_orderdate < "1994-01-01") %>%
+    filter(o_orderdate >= as.Date("1993-10-01"), o_orderdate < as.Date("1994-01-01")) %>%
+    select(o_orderkey, o_custkey)
+
+  lo <- inner_join(l, o,
+                   by = c("l_orderkey" = "o_orderkey")) %>%
+    select(l_extendedprice, l_discount, o_custkey)
+  # first aggregate, then join with customer/nation,
+  # otherwise we need to aggr over lots of cols
+
+  lo_aggr <- lo %>% mutate(volume=l_extendedprice * (1 - l_discount)) %>%
+    group_by(o_custkey) %>%
+    summarise(revenue = sum(volume))
+
+  c <- input_func("customer") %>%
+    select(c_custkey, c_nationkey, c_name, c_acctbal, c_phone, c_address, c_comment)
+
+  loc <- inner_join(lo_aggr, c, by = c("o_custkey" = "c_custkey"))
+
+  locn <- inner_join(loc, input_func("nation") %>% select(n_nationkey, n_name),
+                     by = c("c_nationkey" = "n_nationkey"))
+
+  res <- locn %>%
+    select(o_custkey, c_name, revenue, c_acctbal, n_name,
+           c_address, c_phone, c_comment) %>%
+    # kludge, should not need to collect here
+    collect() %>%
+    arrange(desc(revenue)) %>%
+    head(20)
+
+  res
+}
+
 #' For extracting table names from TPC-H queries
 #'
 #' This searches a function for all references of `input_func(...)` and returns
