@@ -154,7 +154,14 @@ tpc_h <- Benchmark("tpc_h",
       )
       answer <- read.delim(textConnection(answer_psv$answer), sep = "|")
 
-      all_equal_out <- all.equal(result, answer, check.attributes = FALSE, tolerance = 0.001)
+      # TODO: different tolerances for different kinds of columns?
+      # > For ratios, results r must be within 1% of the query validation output
+      # data v when rounded to the nearest 1/100th. That is, 0.99*v<=round(r,2)<=1.01*v.
+      # > For results from AVG aggregates, the resulting values r must be within 1%
+      # of the query validation output data when rounded to the nearest 1/100th
+      # > For results from SUM aggregates, the resulting values must be within
+      # $100 of the query validation output data.
+      all_equal_out <- all.equal(result, answer, check.attributes = FALSE, tolerance = 0.01)
 
       # turn chars into dates in the answer (in DuckDB, they are all chars not dates)
       # TODO: send duckdb a PR to change that?
@@ -164,7 +171,7 @@ tpc_h <- Benchmark("tpc_h",
         answer[, col] <- as.Date(answer[, col])
       }
 
-      all_equal_out <- all.equal(result, answer, check.attributes = FALSE, tolerance = 0.001)
+      all_equal_out <- all.equal(result, answer, check.attributes = FALSE, tolerance = 0.01)
       if (!isTRUE(all_equal_out)) {
         warning("\n", all_equal_out, "\n")
         warning("\nExpected:\n", paste0(capture.output(print(answer)), collapse = "\n"))
@@ -444,14 +451,16 @@ tpc_h_queries[[7]] <- function(input_func) {
     mutate(
       supp_nation = n1_name,
       cust_nation = n2_name,
-      l_year = as.integer(strftime(l_shipdate, "%Y")),
+      # kludge (?) l_year = as.integer(strftime(l_shipdate, "%Y")),
+      l_year = year(l_shipdate),
       volume = l_extendedprice * (1 - l_discount)) %>%
     select(supp_nation, cust_nation, l_year, volume) %>%
     group_by(supp_nation, cust_nation, l_year) %>%
     summarise(revenue = sum(volume)) %>%
     arrange(supp_nation, cust_nation, l_year)
 
-  aggr
+  aggr %>%
+    collect()
 }
 
 tpc_h_queries[[8]] <- function(input_func) {
@@ -517,7 +526,8 @@ tpc_h_queries[[8]] <- function(input_func) {
 
   aggr <- all %>%
     mutate(
-      o_year = as.integer(strftime(o_orderdate, "%Y")),
+      # kludge(?), o_year = as.integer(strftime(o_orderdate, "%Y")),
+      o_year = year(o_orderdate),
       volume = l_extendedprice * (1 - l_discount),
       nation = n2_name) %>%
     select(o_year, volume, nation) %>%
@@ -567,11 +577,11 @@ tpc_h_queries[[9]] <- function(input_func) {
   aggr <- all %>%
     # kludge, should not need to compute here, but if we don't the answers we
     # get are wrong (though they *do* complete).
-    compute() %>%
     mutate(
       nation = n_name,
       # kludge, o_year = as.integer(format(o_orderdate, "%Y")),
-      o_year = as.integer(strftime(o_orderdate, "%Y")),
+      # also ARROW-14200
+      o_year = year(o_orderdate),
       amount = l_extendedprice * (1 - l_discount) - ps_supplycost * l_quantity) %>%
     select(nation, o_year, amount) %>%
     group_by(nation, o_year) %>%
