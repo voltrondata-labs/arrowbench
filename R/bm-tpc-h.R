@@ -430,7 +430,8 @@ tpc_h_queries[[7]] <- function(input_func) {
   cnol <- inner_join(
     input_func("lineitem") %>%
       select(l_orderkey, l_suppkey, l_shipdate, l_extendedprice, l_discount) %>%
-      filter(l_shipdate >= "1995-01-01", l_shipdate <= "1996-12-31"),
+      # kludge, should be: filter(l_shipdate >= "1995-01-01", l_shipdate <= "1996-12-31"),
+      filter(l_shipdate >= as.Date("1995-01-01"), l_shipdate <= as.Date("1996-12-31")),
     cno,
     by = c("l_orderkey" = "o_orderkey")) %>%
     select(l_suppkey, l_shipdate, l_extendedprice, l_discount, n2_name)
@@ -443,7 +444,7 @@ tpc_h_queries[[7]] <- function(input_func) {
     mutate(
       supp_nation = n1_name,
       cust_nation = n2_name,
-      l_year = as.integer(format(l_shipdate, "%Y")),
+      l_year = as.integer(strftime(l_shipdate, "%Y")),
       volume = l_extendedprice * (1 - l_discount)) %>%
     select(supp_nation, cust_nation, l_year, volume) %>%
     group_by(supp_nation, cust_nation, l_year) %>%
@@ -453,6 +454,133 @@ tpc_h_queries[[7]] <- function(input_func) {
   aggr
 }
 
+tpc_h_queries[[8]] <- function(input_func) {
+  # kludge, swapped the table order around because of ARROW-14184
+  # nr <- inner_join(
+  #   input_func("nation") %>%
+  #     select(n1_nationkey = n_nationkey, n1_regionkey = n_regionkey),
+  #   input_func("region") %>%
+  #     select(r_regionkey, r_name) %>%
+  #     filter(r_name == "AMERICA") %>%
+  #     select(r_regionkey),
+  #   by = c("n1_regionkey" = "r_regionkey")) %>%
+  #   select(n1_nationkey)
+  nr <- inner_join(
+    input_func("region") %>%
+      select(r_regionkey, r_name) %>%
+      filter(r_name == "AMERICA") %>%
+      select(r_regionkey),
+    input_func("nation") %>%
+      select(n1_nationkey = n_nationkey, n1_regionkey = n_regionkey),
+    by = c("r_regionkey" = "n1_regionkey")) %>%
+    select(n1_nationkey)
+
+  cnr <- inner_join(
+    input_func("customer") %>%
+      select(c_custkey, c_nationkey),
+    nr, by = c("c_nationkey" = "n1_nationkey")) %>%
+    select(c_custkey)
+
+  ocnr <- inner_join(
+    input_func("orders") %>%
+      select(o_orderkey, o_custkey, o_orderdate) %>%
+      # bludge, should be: filter(o_orderdate >= "1995-01-01", o_orderdate <= "1996-12-31"),
+      filter(o_orderdate >= as.Date("1995-01-01"), o_orderdate <= as.Date("1996-12-31")),
+    cnr, by = c("o_custkey" = "c_custkey")) %>%
+    select(o_orderkey, o_orderdate)
+
+  locnr <- inner_join(
+    input_func("lineitem") %>%
+      select(l_orderkey, l_partkey, l_suppkey, l_extendedprice, l_discount),
+    ocnr, by=c("l_orderkey" = "o_orderkey")) %>%
+    select(l_partkey, l_suppkey, l_extendedprice, l_discount, o_orderdate)
+
+  locnrp <- inner_join(locnr,
+                       input_func("part") %>%
+                         select(p_partkey, p_type) %>%
+                         filter(p_type == "ECONOMY ANODIZED STEEL") %>%
+                         select(p_partkey),
+                       by = c("l_partkey" = "p_partkey")) %>%
+    select(l_suppkey, l_extendedprice, l_discount, o_orderdate)
+
+  locnrps <- inner_join(locnrp,
+                        input_func("supplier") %>%
+                          select(s_suppkey, s_nationkey),
+                        by = c("l_suppkey" = "s_suppkey")) %>%
+    select(l_extendedprice, l_discount, o_orderdate, s_nationkey)
+
+  all <- inner_join(locnrps,
+                    input_func("nation") %>%
+                      select(n2_nationkey = n_nationkey, n2_name = n_name),
+                    by = c("s_nationkey" = "n2_nationkey")) %>%
+    select(l_extendedprice, l_discount, o_orderdate, n2_name)
+
+  aggr <- all %>%
+    mutate(
+      o_year = as.integer(strftime(o_orderdate, "%Y")),
+      volume = l_extendedprice * (1 - l_discount),
+      nation = n2_name) %>%
+    select(o_year, volume, nation) %>%
+    group_by(o_year) %>%
+    summarise(mkt_share = sum(ifelse(nation == "BRAZIL", volume, 0)) / sum(volume)) %>%
+    arrange(o_year)
+
+  aggr %>%
+    collect()
+}
+
+tpc_h_queries[[9]] <- function(input_func) {
+  p <- input_func("part") %>%
+    select(p_name, p_partkey) %>%
+    filter(grepl(".*green.*", p_name)) %>%
+    select(p_partkey)
+
+  psp <- inner_join(
+    input_func("partsupp") %>%
+      select(ps_suppkey, ps_partkey, ps_supplycost),
+    p, by = c("ps_partkey" = "p_partkey"))
+
+  sn <- inner_join(
+    input_func("supplier") %>%
+      select(s_suppkey, s_nationkey),
+    input_func("nation") %>%
+      select(n_nationkey, n_name),
+    by = c("s_nationkey" = "n_nationkey")) %>%
+    select(s_suppkey, n_name)
+
+  pspsn <- inner_join(psp, sn, by = c("ps_suppkey" = "s_suppkey"))
+
+  lpspsn <- inner_join(
+    input_func("lineitem") %>%
+      select(l_suppkey, l_partkey, l_orderkey, l_extendedprice, l_discount, l_quantity),
+    pspsn,
+    by = c("l_suppkey" = "ps_suppkey", "l_partkey" = "ps_partkey")) %>%
+    select(l_orderkey, l_extendedprice, l_discount, l_quantity, ps_supplycost, n_name)
+
+  all <- inner_join(
+    input_func("orders") %>%
+      select(o_orderkey, o_orderdate),
+    lpspsn,
+    by = c("o_orderkey"= "l_orderkey" )) %>%
+    select(l_extendedprice, l_discount, l_quantity, ps_supplycost, n_name, o_orderdate)
+
+  aggr <- all %>%
+    # kludge, should not need to collect here, but if we don't the answers we
+    # get are wrong (though they *do* complete).
+    collect() %>%
+    mutate(
+      nation = n_name,
+      # kludge, o_year = as.integer(format(o_orderdate, "%Y")),
+      o_year = as.integer(strftime(o_orderdate, "%Y")),
+      amount = l_extendedprice * (1 - l_discount) - ps_supplycost * l_quantity) %>%
+    select(nation, o_year, amount) %>%
+    group_by(nation, o_year) %>%
+    summarise(sum_profit = sum(amount)) %>%
+    arrange(nation, desc(o_year))
+
+  aggr %>%
+    collect()
+}
 
 #' For extracting table names from TPC-H queries
 #'
