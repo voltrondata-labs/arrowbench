@@ -565,9 +565,9 @@ tpc_h_queries[[9]] <- function(input_func) {
     select(l_extendedprice, l_discount, l_quantity, ps_supplycost, n_name, o_orderdate)
 
   aggr <- all %>%
-    # kludge, should not need to collect here, but if we don't the answers we
+    # kludge, should not need to compute here, but if we don't the answers we
     # get are wrong (though they *do* complete).
-    collect() %>%
+    compute() %>%
     mutate(
       nation = n_name,
       # kludge, o_year = as.integer(format(o_orderdate, "%Y")),

@@ -56,6 +56,11 @@ ensure_lib <- function(lib = NULL, test_packages = unlist(strsplit(packageDescri
         test_packages <- setdiff(test_packages, "data.table")
       }
 
+      if ("duckdb" %in% test_packages) {
+        install_custom_duckdb()
+        test_packages <- setdiff(test_packages, "duckdb")
+      }
+
       # make it install everything from this repo, install data.table separately (above) tho
       install.packages(test_packages, repos = repo_url)
     } else if (lib == "devel") {
@@ -68,6 +73,11 @@ ensure_lib <- function(lib = NULL, test_packages = unlist(strsplit(packageDescri
       if (is_macos() && "data.table" %in% test_packages) {
         special_data_table_install(dev = TRUE, cran_url = cran_url)
         test_packages <- setdiff(test_packages, "data.table")
+      }
+
+      if ("duckdb" %in% test_packages) {
+        install_custom_duckdb()
+        test_packages <- setdiff(test_packages, "duckdb")
       }
 
       # make it install everything from this repo, install data.table separately (above) tho
@@ -86,6 +96,16 @@ ensure_lib <- function(lib = NULL, test_packages = unlist(strsplit(packageDescri
         }
       }
     } else if (grepl("^remote-.*", lib)) {
+      if (is_macos() && "data.table" %in% test_packages) {
+        special_data_table_install(dev = TRUE, cran_url = cran_url)
+        test_packages <- setdiff(test_packages, "data.table")
+      }
+
+      if ("duckdb" %in% test_packages) {
+        install_custom_duckdb()
+        test_packages <- setdiff(test_packages, "duckdb")
+      }
+
       install.packages(c("remotes", setdiff(test_packages, "arrow")))
       # the form of the lib is remote-repo@ref
       args <- identify_repo_ref(lib)
@@ -261,13 +281,7 @@ ensure_custom_duckdb <- function() {
 
   if (duckdb_cant_tpch >= 1) {
     message("Installing duckdb with the ability to generate tpc-h datasets")
-    # build = false so that the duckdb cpp source is available when the R package
-    # is compiling itself
-    withr::with_envvar(
-      list(DUCKDB_R_EXTENSIONS = "tpch"),
-      # build duckdb with tpch enabled
-      remotes::install_github("duckdb/duckdb/tools/rpkg", build = FALSE)
-    )
+    install_custom_duckdb()
 
     # Warn that the session will have to be reset
     if ("duckdb" %in% loadedNamespaces()) {
@@ -281,4 +295,14 @@ ensure_custom_duckdb <- function() {
       )
     }
   }
+}
+
+install_custom_duckdb <- function() {
+  # build = false so that the duckdb cpp source is available when the R package
+  # is compiling itself
+  withr::with_envvar(
+    list(DUCKDB_R_EXTENSIONS = "tpch"),
+    # build duckdb with tpch enabled
+    remotes::install_github("duckdb/duckdb/tools/rpkg", build = FALSE)
+  )
 }
