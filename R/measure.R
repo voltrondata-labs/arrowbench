@@ -50,6 +50,9 @@ with_gc_info <- function(expr) {
     # Means there was no garbage collection, so let's fill this in with 0s
     gc[1, ] <- list(0L, 0L, 0L)
   }
+  # Cat out any messages so that we don't swallow them.
+  # TODO: filter out what has been parsed?
+  cat(gc_output)
   gc
 }
 

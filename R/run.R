@@ -122,7 +122,7 @@ run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, pro
   script <- c(
     setup_script,
     eval_script,
-    paste0('cat("', results_sentinel, '\n")'),
+    paste0('cat("\n', results_sentinel, '\n")'),
     "cat(jsonlite::toJSON(unclass(out), digits = 15))",
     # The end _should_ include only the json, but sometimes `open_dataset()`
     # results in * Closing connection n being printed at the end which breaks
@@ -233,7 +233,7 @@ global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL, te
   script
 }
 
-#' @importFrom jsonlite fromJSON
+#' @importFrom jsonlite fromJSON toJSON
 #' @importFrom withr with_envvar
 run_script <- function(lines, cmd = find_r(), ..., progress_bar, read_only = FALSE) {
   # cmd may need to vary by platform; possibly also a param for this fn?
@@ -279,16 +279,28 @@ run_script <- function(lines, cmd = find_r(), ..., progress_bar, read_only = FAL
   )
   find_results <- which(result == results_sentinel)
   if (length(find_results)) {
+    # Grab the JSON
     # Keep everything after the sentinel
-    result <- tail(result, -find_results)
+    result_json <- tail(result, -find_results)
     # But only that which is before the end sentinel
-    result <- head(result, which(result == results_sentinel_end) - 1)
+    result_json <- head(result_json, which(result_json == results_sentinel_end) - 1)
+
+    # Now grab the console out
+    # Keep everything before the sentinel
+    result_output <- trimws(paste(
+      paste0(head(result, find_results - 1), collapse = "\n"),
+      "### RESULTS HAVE BEEN PARSED ###",
+      paste0(tail(result, -(which(result == results_sentinel_end))), collapse = "\n"),
+      sep = "\n"
+    ))
+
     # Cache the result so we don't have to re-run it
     if (!dir.exists(dirname(file))) {
       dir.create(dirname(file))
     }
-    writeLines(result, file)
-    result <- fromJSON(result, simplifyDataFrame = TRUE)
+    result <- fromJSON(result_json, simplifyDataFrame = TRUE)
+    result$output <- result_output
+    writeLines(toJSON(result, digits = 15), file)
   } else {
     # This means the script errored.
     message(paste(result, collapse = "\n"))

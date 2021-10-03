@@ -81,12 +81,49 @@ test_that("form of the results", {
   ))
 })
 
+test_that("form of the results, including output", {
+  expect_message(res <- run_benchmark(placebo, cpu_count = 1, output_type = "message"))
+
+  results_df <- as.data.frame(res)
+  expect_identical(
+    results_df[,c("iteration", "cpu_count", "lib_path", "output")],
+    data.frame(
+      iteration = 1L,
+      cpu_count = 1L,
+      lib_path = "latest",
+      output = "A message: here's some output\n### RESULTS HAVE BEEN PARSED ###"
+    )
+  )
+  expect_true(all(
+    c("real", "process", "version_arrow") %in% colnames(results_df)
+  ))
+
+  expect_message(res <- run_benchmark(placebo, cpu_count = 1, output_type = "warning"))
+  results_df <- as.data.frame(res)
+  expect_identical(
+    results_df$output,
+    paste(
+      "Warning message:",
+      "In placebo_func() : A warning:here's some output",
+      "",
+      "### RESULTS HAVE BEEN PARSED ###",
+      sep = "\n"
+    )
+  )
+
+  expect_message(res <- run_benchmark(placebo, cpu_count = 1, output_type = "cat"))
+  results_df <- as.data.frame(res)
+  expect_identical(
+    results_df$output,
+    "A cat: here's some output\n### RESULTS HAVE BEEN PARSED ###"
+  )
+})
+
 test_that("form of the results during a dry run", {
   res <- run_benchmark(placebo, cpu_count = 10, dry_run = TRUE)
 
-
   expect_true(all(sapply(res[[1]], class) == "character"))
-  expect_true("cat(\"##### RESULTS FOLLOW\n\")" %in% res[[1]])
+  expect_true("cat(\"\n##### RESULTS FOLLOW\n\")" %in% res[[1]])
   expect_true("cat(\"\n##### RESULTS END\n\")" %in% res[[length(res)]])
 })
 
