@@ -281,9 +281,11 @@ tpc_h_queries[[2]] <- function(input_func) {
       arrange(desc(s_acctbal), n_name, s_name, ps_partkey)
 
     # head(100) should be able to be up above, but it currently does not respect
-    # arrange() https://issues.apache.org/jira/browse/ARROW-13893
-    collect(res) %>%
-      head(100)
+    # arrange() https://issues.apache.org/jira/browse/ARROW-14162
+    res %>%
+      compute() %>%
+      head(100) %>%
+      collect()
 }
 
 tpc_h_queries[[3]] <- function(input_func) {
@@ -314,9 +316,11 @@ tpc_h_queries[[3]] <- function(input_func) {
     arrange(desc(revenue), o_orderdate)
 
   # head(10) should be able to be up above, but it currently does not respect
-  # arrange() https://issues.apache.org/jira/browse/ARROW-13893
-  collect(aggr) %>%
-    head(10)
+  # arrange() https://issues.apache.org/jira/browse/ARROW-14162
+  aggr %>%
+    compute() %>%
+    head(10) %>%
+    collect()
 }
 
 tpc_h_queries[[4]] <- function(input_func) {
@@ -625,12 +629,14 @@ tpc_h_queries[[10]] <- function(input_func) {
   res <- locn %>%
     select(o_custkey, c_name, revenue, c_acctbal, n_name,
            c_address, c_phone, c_comment) %>%
-    # kludge, should not need to collect here
-    collect() %>%
     arrange(desc(revenue)) %>%
+    # we should not need to collect here, but it currently does not respect
+    # arrange() https://issues.apache.org/jira/browse/ARROW-14162
+    compute() %>%
     head(20)
 
-  res
+  res %>%
+    collect()
 }
 
 #' For extracting table names from TPC-H queries
