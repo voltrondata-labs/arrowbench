@@ -10,7 +10,13 @@ df_to_table <- Benchmark("df_to_table",
   setup = function(source = names(known_sources)) {
     source <- ensure_source(source)
     result_dim <- get_source_attr(source, "dim")
-    df <- read_source(source, as_data_frame = TRUE)
+    # Make sure that we're not (accidentally) creating altrep vectors which will
+    # make the benchmark measure both arrow->R and then also R->arrow when we
+    # really want to just measure R->arrow.
+    withr::with_options(
+      list(arrow.use_altrep = FALSE),
+      df <- read_source(source, as_data_frame = TRUE)
+    )
 
     transfer_func <- function(df) arrow::Table$create(df)
 
