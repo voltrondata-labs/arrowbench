@@ -1,7 +1,7 @@
 #' Benchmark TPC-H queries
 #'
 #' @section Parameters:
-#' * `engine` One of `c("arrow", "duckdb")`
+#' * `engine` One of `c("arrow", "duckdb", "dplyr")`
 #' * `query_id` integer, 1-22
 #' * `format` One of `c("parquet", "feather", "native")`
 #' * `scale_factor` Scale factor to use for data generation (e.g. 0.1, 1, 10, 100)
@@ -17,7 +17,7 @@ tpc_h <- Benchmark("tpc_h",
                    scale_factor = c(1, 10),
                    memory_map = FALSE) {
     # engine defaults to arrow
-    engine <- match.arg(engine, c("arrow", "duckdb"))
+    engine <- match.arg(engine, c("arrow", "duckdb", "dplyr"))
     # input format
     format <- match.arg(format, c("parquet", "feather", "native"))
     # query_id defaults to 1 for now
@@ -103,6 +103,14 @@ tpc_h <- Benchmark("tpc_h",
         }
 
         DBI::dbExecute(con, sql_query)
+      }
+    } else if (engine == "dplyr") {
+      library(lubridate)
+      if (format == "parquet") {
+        input_functions[["dplyr"]] <- function(name) {
+          file <- tpch_files[[name]]
+          return(arrow::read_parquet(file, as_data_frame = TRUE))
+        }
       }
     }
 
@@ -200,12 +208,13 @@ tpc_h <- Benchmark("tpc_h",
   # validate that the parameters given are compatible
   valid_params = function(params) {
     drop <- ( params$engine == "duckdb" & params$format == "feather" ) |
-      params$memory_map == TRUE & params$engine != "arrow"
+      params$memory_map == TRUE & params$engine != "arrow" |
+      ( params$engine == "dplyr" & params$format %in% c("feather", "native") )
     params[!drop,]
   },
   # packages used when specific formats are used
   packages_used = function(params) {
-    c(params$engine, "dplyr")
+    c(params$engine, "dplyr", "lubridate")
   }
 )
 
@@ -345,7 +354,8 @@ tpc_h_queries[[4]] <- function(input_func) {
     summarise(order_count = n()) %>%
     arrange(o_orderpriority)
 
-  collect(aggr)
+  aggr %>%
+    collect()
 }
 
 tpc_h_queries[[5]] <- function(input_func) {
