@@ -6,7 +6,7 @@
 \title{all queries take an input_func which is a function that will return a dplyr tbl
 referencing the table needed.}
 \format{
-An object of class \code{list} of length 6.
+An object of class \code{list} of length 10.
 }
 \usage{
 tpc_h_queries
