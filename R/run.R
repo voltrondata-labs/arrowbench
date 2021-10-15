@@ -161,7 +161,11 @@ run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, pro
 #' @importFrom utils modifyList
 #' @importFrom sessioninfo package_info
 run_bm <- function(bm, ..., n_iter = 1, profiling = FALSE, global_params = list()) {
-  ctx <- bm$setup(...)
+  # We *don't* want to use altrep when we are setting up, or we get surprising results
+  withr::with_options(
+    list(arrow.use_altrep = FALSE),
+    ctx <- bm$setup(...)
+  )
   on.exit({
     eval(bm$teardown, envir = ctx)
     rm(ctx)
