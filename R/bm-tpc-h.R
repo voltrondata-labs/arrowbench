@@ -166,7 +166,7 @@ tpc_h <- Benchmark("tpc_h",
       # turn chars into dates in the answer (in DuckDB, they are all chars not dates)
       # TODO: send duckdb a PR to change that?
       char_to_date <- purrr::map_lgl(all_equal_out, ~grepl("target is Date, current is character", .x))
-      cols <- sub("Component .*(.*).*", "\\1", all_equal_out[char_to_date])
+      cols <- sub(paste0("Component ", dQuote("(.*)"), ":.*"), "\\1", all_equal_out[char_to_date])
       for (col in cols) {
         answer[, col] <- as.Date(answer[, col])
       }
