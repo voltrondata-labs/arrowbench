@@ -639,6 +639,34 @@ tpc_h_queries[[10]] <- function(input_func) {
     collect()
 }
 
+tpc_h_queries[[22]] <- function(input_func) {
+  acctbal_min <- input_func("customer") %>%
+    filter(
+      substr(c_phone, 1, 2) %in% c("13", "31", "23", "29", "30", "18", "17") &
+        c_acctbal > 0
+    ) %>%
+    summarise(mean(c_acctbal, na.rm = TRUE)) %>%
+    collect()
+
+  out <- input_func("customer") %>%
+    mutate(cntrycode = as.integer(substr(c_phone, 1, 2))) %>%
+    filter(
+      cntrycode %in% c(13, 31, 23, 29, 30, 18, 17) &
+        c_acctbal > acctbal_min[[1]]
+    ) %>%
+    anti_join(input_func("orders"), by = c("c_custkey" = "o_custkey")) %>%
+    select(cntrycode, c_acctbal) %>%
+    group_by(cntrycode) %>%
+    summarise(
+      numcust = n(),
+      totacctbal = sum(c_acctbal)
+    ) %>%
+    arrange(cntrycode) %>%
+    collect()
+
+  out
+}
+
 #' For extracting table names from TPC-H queries
 #'
 #' This searches a function for all references of `input_func(...)` and returns
