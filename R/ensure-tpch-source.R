@@ -16,13 +16,19 @@ generate_tpch <- function(scale_factor = 1) {
 
   # set the max memory to a bit smaller than max memory so that we don't swap or oom
   tryCatch({
-    mem_limit <- max_memory(minus_gb = 1)
+    mem_limit <- max_memory(minus_gb = 3)
     DBI::dbExecute(con, paste0("PRAGMA memory_limit='", mem_limit, "'"))
+    message(paste0("Set max memory to: ", mem_limit))
   })
   DBI::dbExecute(con, paste0("CALL dbgen(sf=", scale_factor, ");"))
 
   out <- lapply(tpch_tables, function(name) {
-    filename <- source_data_file(paste0(name, "_", format(scale_factor, scientific = FALSE), ".parquet"))
+    filename <- normalizePath(source_data_file(paste0(
+      name,
+      "_",
+      format(scale_factor, scientific = FALSE),
+      ".parquet"
+    )))
     res <- DBI::dbExecute(con, paste0("COPY (SELECT * FROM ", name, ") TO '", filename, "' (FORMAT 'parquet');"))
 
     filename
