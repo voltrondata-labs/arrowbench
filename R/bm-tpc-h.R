@@ -716,6 +716,105 @@ tpc_h_queries[[11]] <- function(input_func) {
   result2
 }
 
+tpc_h_queries[[12]] <- function(input_func) {
+  stop("Not implemented")
+}
+
+tpc_h_queries[[13]] <- function(input_func) {
+  stop("Not implemented")
+}
+
+tpc_h_queries[[14]] <- function(input_func) {
+  stop("Not implemented")
+}
+
+tpc_h_queries[[15]] <- function(input_func) {
+  stop("Not implemented")
+}
+
+tpc_h_queries[[16]] <- function(input_func) {
+  stop("Not implemented")
+}
+
+tpc_h_queries[[17]] <- function(input_func) {
+  stop("Not implemented")
+}
+
+tpc_h_queries[[18]] <- function(input_func) {
+  stop("Not implemented")
+}
+
+tpc_h_queries[[19]] <- function(input_func) {
+  stop("Not implemented")
+}
+
+tpc_h_queries[[20]] <- function(input_func) {
+  stop("Not implemented")
+}
+
+tpc_h_queries[[21]] <- function(input_func) {
+  orders_with_more_than_one_supplier <- input_func("lineitem") %>%
+    group_by(l_orderkey) %>%
+    count(l_suppkey) %>%
+    group_by(l_orderkey) %>%
+    summarise(n_supplier = n()) %>%
+    filter(n_supplier > 1)
+
+  line_items_needed <- input_func("lineitem") %>%
+    semi_join(orders_with_more_than_one_supplier) %>%
+    inner_join(input_func("orders"), by = c("l_orderkey" = "o_orderkey")) %>%
+    filter(o_orderstatus == "F") %>%
+    group_by(l_orderkey, l_suppkey) %>%
+    summarise(failed_delivery_commit = any(l_receiptdate > l_commitdate)) %>%
+    group_by(l_orderkey) %>%
+    summarise(n_supplier = n(), num_failed = sum(failed_delivery_commit)) %>%
+    filter(n_supplier > 1 & num_failed == 1)
+
+  line_items <- input_func("lineitem") %>%
+    semi_join(line_items_needed)
+
+  out <- input_func("supplier") %>%
+    inner_join(line_items, by = c("s_suppkey" = "l_suppkey")) %>%
+    filter(l_receiptdate > l_commitdate) %>%
+    inner_join(input_func("nation"), by = c("s_nationkey" = "n_nationkey")) %>%
+    filter(n_name == "SAUDI ARABIA") %>%
+    group_by(s_name) %>%
+    summarise(numwait = n()) %>%
+    arrange(desc(numwait), s_name) %>%
+    head(100) %>%
+    collect()
+
+  out
+}
+
+tpc_h_queries[[22]] <- function(input_func) {
+  acctbal_min <- input_func("customer") %>%
+    filter(
+      substr(c_phone, 1, 2) %in% c("13", "31", "23", "29", "30", "18", "17") &
+        c_acctbal > 0
+    ) %>%
+    summarise(mean(c_acctbal, na.rm = TRUE)) %>%
+    collect()
+
+  out <- input_func("customer") %>%
+    mutate(cntrycode = as.integer(substr(c_phone, 1, 2))) %>%
+    filter(
+      cntrycode %in% c(13, 31, 23, 29, 30, 18, 17) &
+        c_acctbal > acctbal_min[[1]]
+    ) %>%
+    anti_join(input_func("orders"), by = c("c_custkey" = "o_custkey")) %>%
+    select(cntrycode, c_acctbal) %>%
+    group_by(cntrycode) %>%
+    summarise(
+      numcust = n(),
+      totacctbal = sum(c_acctbal)
+    ) %>%
+    arrange(cntrycode) %>%
+    collect()
+
+  out
+}
+
 #' For extracting table names from TPC-H queries
 #'
 #' This searches a function for all references of `input_func(...)` and returns
