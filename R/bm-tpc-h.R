@@ -718,38 +718,283 @@ tpc_h_queries[[11]] <- function(input_func) {
 
 tpc_h_queries[[12]] <- function(input_func) {
   stop("Not implemented")
+
+  #  SELECT
+  #      l_shipmode,
+  #      sum(
+  #          CASE WHEN o_orderpriority = '1-URGENT'
+  #              OR o_orderpriority = '2-HIGH' THEN
+  #              1
+  #          ELSE
+  #              0
+  #          END) AS high_line_count,
+  #      sum(
+  #          CASE WHEN o_orderpriority <> '1-URGENT'
+  #              AND o_orderpriority <> '2-HIGH' THEN
+  #              1
+  #          ELSE
+  #              0
+  #          END) AS low_line_count
+  #  FROM
+  #      orders,
+  #      lineitem
+  #  WHERE
+  #      o_orderkey = l_orderkey
+  #      AND l_shipmode IN ('MAIL', 'SHIP')
+  #      AND l_commitdate < l_receiptdate
+  #      AND l_shipdate < l_commitdate
+  #      AND l_receiptdate >= CAST('1994-01-01' AS date)
+  #      AND l_receiptdate < CAST('1995-01-01' AS date)
+  #  GROUP BY
+  #      l_shipmode
+  #  ORDER BY
+  #      l_shipmode;
 }
 
 tpc_h_queries[[13]] <- function(input_func) {
   stop("Not implemented")
+
+  #  SELECT
+  #      c_count,
+  #      count(*) AS custdist
+  #  FROM (
+  #      SELECT
+  #          c_custkey,
+  #          count(o_orderkey)
+  #      FROM
+  #          customer
+  #      LEFT OUTER JOIN orders ON c_custkey = o_custkey
+  #      AND o_comment NOT LIKE '%special%requests%'
+  #  GROUP BY
+  #      c_custkey) AS c_orders (c_custkey,
+  #          c_count)
+  #  GROUP BY
+  #      c_count
+  #  ORDER BY
+  #      custdist DESC,
+  #      c_count DESC;
 }
 
 tpc_h_queries[[14]] <- function(input_func) {
   stop("Not implemented")
+
+  #  SELECT
+  #      100.00 * sum(
+  #          CASE WHEN p_type LIKE 'PROMO%' THEN
+  #              l_extendedprice * (1 - l_discount)
+  #          ELSE
+  #              0
+  #          END) / sum(l_extendedprice * (1 - l_discount)) AS promo_revenue
+  #  FROM
+  #      lineitem,
+  #      part
+  #  WHERE
+  #      l_partkey = p_partkey
+  #      AND l_shipdate >= date '1995-09-01'
+  #      AND l_shipdate < CAST('1995-10-01' AS date);
 }
 
 tpc_h_queries[[15]] <- function(input_func) {
   stop("Not implemented")
+
+  #  SELECT
+  #      s_suppkey,
+  #      s_name,
+  #      s_address,
+  #      s_phone,
+  #      total_revenue
+  #  FROM
+  #      supplier,
+  #      (
+  #          SELECT
+  #              l_suppkey AS supplier_no,
+  #              sum(l_extendedprice * (1 - l_discount)) AS total_revenue
+  #          FROM
+  #              lineitem
+  #          WHERE
+  #              l_shipdate >= CAST('1996-01-01' AS date)
+  #              AND l_shipdate < CAST('1996-04-01' AS date)
+  #          GROUP BY
+  #              supplier_no) revenue0
+  #  WHERE
+  #      s_suppkey = supplier_no
+  #      AND total_revenue = (
+  #          SELECT
+  #              max(total_revenue)
+  #          FROM (
+  #              SELECT
+  #                  l_suppkey AS supplier_no,
+  #                  sum(l_extendedprice * (1 - l_discount)) AS total_revenue
+  #              FROM
+  #                  lineitem
+  #              WHERE
+  #                  l_shipdate >= CAST('1996-01-01' AS date)
+  #                  AND l_shipdate < CAST('1996-04-01' AS date)
+  #              GROUP BY
+  #                  supplier_no) revenue1)
+  #  ORDER BY
+  #      s_suppkey;
 }
 
 tpc_h_queries[[16]] <- function(input_func) {
   stop("Not implemented")
+
+  #  SELECT
+  #      p_brand,
+  #      p_type,
+  #      p_size,
+  #      count(DISTINCT ps_suppkey) AS supplier_cnt
+  #  FROM
+  #      partsupp,
+  #      part
+  #  WHERE
+  #      p_partkey = ps_partkey
+  #      AND p_brand <> 'Brand#45'
+  #      AND p_type NOT LIKE 'MEDIUM POLISHED%'
+  #      AND p_size IN (49, 14, 23, 45, 19, 3, 36, 9)
+  #      AND ps_suppkey NOT IN (
+  #          SELECT
+  #              s_suppkey
+  #          FROM
+  #              supplier
+  #          WHERE
+  #              s_comment LIKE '%Customer%Complaints%')
+  #  GROUP BY
+  #      p_brand,
+  #      p_type,
+  #      p_size
+  #  ORDER BY
+  #      supplier_cnt DESC,
+  #      p_brand,
+  #      p_type,
+  #      p_size;
 }
 
 tpc_h_queries[[17]] <- function(input_func) {
   stop("Not implemented")
+
+  #  SELECT
+  #      sum(l_extendedprice) / 7.0 AS avg_yearly
+  #  FROM
+  #      lineitem,
+  #      part
+  #  WHERE
+  #      p_partkey = l_partkey
+  #      AND p_brand = 'Brand#23'
+  #      AND p_container = 'MED BOX'
+  #      AND l_quantity < (
+  #          SELECT
+  #              0.2 * avg(l_quantity)
+  #          FROM
+  #              lineitem
+  #          WHERE
+  #              l_partkey = p_partkey);
 }
 
 tpc_h_queries[[18]] <- function(input_func) {
   stop("Not implemented")
+
+  #  SELECT
+  #      c_name,
+  #      c_custkey,
+  #      o_orderkey,
+  #      o_orderdate,
+  #      o_totalprice,
+  #      sum(l_quantity)
+  #  FROM
+  #      customer,
+  #      orders,
+  #      lineitem
+  #  WHERE
+  #      o_orderkey IN (
+  #          SELECT
+  #              l_orderkey
+  #          FROM
+  #              lineitem
+  #          GROUP BY
+  #              l_orderkey
+  #          HAVING
+  #              sum(l_quantity) > 300)
+  #      AND c_custkey = o_custkey
+  #      AND o_orderkey = l_orderkey
+  #  GROUP BY
+  #      c_name,
+  #      c_custkey,
+  #      o_orderkey,
+  #      o_orderdate,
+  #      o_totalprice
+  #  ORDER BY
+  #      o_totalprice DESC,
+  #      o_orderdate
+  #  LIMIT 100;
 }
 
 tpc_h_queries[[19]] <- function(input_func) {
   stop("Not implemented")
+
+  #  SELECT
+  #      sum(l_extendedprice * (1 - l_discount)) AS revenue
+  #  FROM
+  #      lineitem,
+  #      part
+  #  WHERE (p_partkey = l_partkey
+  #      AND p_brand = 'Brand#12'
+  #      AND p_container IN ('SM CASE', 'SM BOX', 'SM PACK', 'SM PKG')
+  #      AND l_quantity >= 1
+  #      AND l_quantity <= 1 + 10
+  #      AND p_size BETWEEN 1 AND 5
+  #      AND l_shipmode IN ('AIR', 'AIR REG')
+  #      AND l_shipinstruct = 'DELIVER IN PERSON')
+  #      OR (p_partkey = l_partkey
+  #          AND p_brand = 'Brand#23'
+  #          AND p_container IN ('MED BAG', 'MED BOX', 'MED PKG', 'MED PACK')
+  #          AND l_quantity >= 10
+  #          AND l_quantity <= 10 + 10
+  #          AND p_size BETWEEN 1 AND 10
+  #          AND l_shipmode IN ('AIR', 'AIR REG')
+  #          AND l_shipinstruct = 'DELIVER IN PERSON')
+  #      OR (p_partkey = l_partkey
+  #          AND p_brand = 'Brand#34'
+  #          AND p_container IN ('LG CASE', 'LG BOX', 'LG PACK', 'LG PKG')
+  #          AND l_quantity >= 20
+  #          AND l_quantity <= 20 + 10
+  #          AND p_size BETWEEN 1 AND 15
+  #          AND l_shipmode IN ('AIR', 'AIR REG')
+  #          AND l_shipinstruct = 'DELIVER IN PERSON');
 }
 
 tpc_h_queries[[20]] <- function(input_func) {
   stop("Not implemented")
+
+  #  SELECT
+  #      sum(l_extendedprice * (1 - l_discount)) AS revenue
+  #  FROM
+  #      lineitem,
+  #      part
+  #  WHERE (p_partkey = l_partkey
+  #      AND p_brand = 'Brand#12'
+  #      AND p_container IN ('SM CASE', 'SM BOX', 'SM PACK', 'SM PKG')
+  #      AND l_quantity >= 1
+  #      AND l_quantity <= 1 + 10
+  #      AND p_size BETWEEN 1 AND 5
+  #      AND l_shipmode IN ('AIR', 'AIR REG')
+  #      AND l_shipinstruct = 'DELIVER IN PERSON')
+  #      OR (p_partkey = l_partkey
+  #          AND p_brand = 'Brand#23'
+  #          AND p_container IN ('MED BAG', 'MED BOX', 'MED PKG', 'MED PACK')
+  #          AND l_quantity >= 10
+  #          AND l_quantity <= 10 + 10
+  #          AND p_size BETWEEN 1 AND 10
+  #          AND l_shipmode IN ('AIR', 'AIR REG')
+  #          AND l_shipinstruct = 'DELIVER IN PERSON')
+  #      OR (p_partkey = l_partkey
+  #          AND p_brand = 'Brand#34'
+  #          AND p_container IN ('LG CASE', 'LG BOX', 'LG PACK', 'LG PKG')
+  #          AND l_quantity >= 20
+  #          AND l_quantity <= 20 + 10
+  #          AND p_size BETWEEN 1 AND 15
+  #          AND l_shipmode IN ('AIR', 'AIR REG')
+  #          AND l_shipinstruct = 'DELIVER IN PERSON');
 }
 
 tpc_h_queries[[21]] <- function(input_func) {
