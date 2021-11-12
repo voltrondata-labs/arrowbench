@@ -708,7 +708,7 @@ tpc_h_queries[[11]] <- function(input_func) {
     left_join(partkey_agr, by = "ps_partkey") %>%
     filter(value > global_value) %>%
     arrange(desc(value)) %>%
-    select(-global_agr_key, -global_value) %>%
+    select(ps_partkey, value) %>%
     collect()
 
   # identical(result1, result2)
