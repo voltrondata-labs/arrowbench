@@ -875,8 +875,6 @@ tpc_h_queries[[15]] <- function(input_func) {
 }
 
 tpc_h_queries[[16]] <- function(input_func) {
-  stop("Not implemented")
-
   #  SELECT
   #      p_brand,
   #      p_type,
@@ -906,11 +904,34 @@ tpc_h_queries[[16]] <- function(input_func) {
   #      p_brand,
   #      p_type,
   #      p_size;
+
+  part_filtered <- input_func("part") %>%
+    filter(
+      p_brand != "Brand#45",
+      !grepl("^MEDIUM POLISHED", p_type),
+      p_size %in% c(49, 14, 23, 45, 19, 3, 36, 9)
+    )
+
+  supplier_filtered <- input_func("supplier") %>%
+    filter(!grepl("Customer.*?Complaints", s_comment))
+
+  partsupp_filtered <- input_func("partsupp") %>%
+    inner_join(supplier_filtered, by = c("ps_suppkey" = "s_suppkey")) %>%
+    select(ps_partkey, ps_suppkey)
+
+  part_filtered %>%
+    inner_join(partsupp_filtered, by = c("p_partkey" = "ps_partkey")) %>%
+    group_by(p_brand, p_type, p_size) %>%
+    summarise(
+      supplier_cnt = n_distinct(ps_suppkey),
+      .groups = "drop"
+    ) %>%
+    select(p_brand, p_type, p_size, supplier_cnt) %>%
+    arrange(desc(supplier_cnt), p_brand, p_type, p_size) %>%
+    collect()
 }
 
 tpc_h_queries[[17]] <- function(input_func) {
-  stop("Not implemented")
-
   #  SELECT
   #      sum(l_extendedprice) / 7.0 AS avg_yearly
   #  FROM
@@ -927,6 +948,25 @@ tpc_h_queries[[17]] <- function(input_func) {
   #              lineitem
   #          WHERE
   #              l_partkey = p_partkey);
+
+  parts_filtered <- input_func("part") %>%
+    filter(
+      p_brand == "Brand#23",
+      p_container == "MED BOX"
+    )
+
+  joined <- input_func("lineitem") %>%
+    inner_join(parts_filtered, by = c("l_partkey" = "p_partkey"))
+
+  quantity_by_part <- joined %>%
+    group_by(l_partkey) %>%
+    summarise(quantity_threshold = 0.2 * mean(l_quantity))
+
+  joined %>%
+    inner_join(quantity_by_part, by = "l_partkey") %>%
+    filter(l_quantity < quantity_threshold) %>%
+    summarise(avg_yearly = sum(l_extendedprice) / 7.0) %>%
+    collect()
 }
 
 tpc_h_queries[[18]] <- function(input_func) {
@@ -977,6 +1017,7 @@ tpc_h_queries[[18]] <- function(input_func) {
       o_orderdate, o_totalprice, sum_l_quantity
     ) %>%
     arrange(desc(o_totalprice), o_orderdate) %>%
+    head(100) %>%
     collect()
 }
 
