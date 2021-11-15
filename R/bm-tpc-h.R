@@ -787,16 +787,21 @@ tpc_h_queries[[13]] <- function(input_func) {
   #      c_count DESC;
 
   c_orders <- input_func("customer") %>%
-    left_join(input_func("orders"), by = c("c_custkey" = "o_custkey")) %>%
-    filter(!grepl("special.*?requests", o_comment)) %>%
+    left_join(
+      input_func("orders") %>%
+        filter(!grepl("special.*?requests", o_comment)),
+      by = c("c_custkey" = "o_custkey")
+    ) %>%
     group_by(c_custkey) %>%
-    summarise(c_count = n_distinct(o_orderkey))
+    summarise(
+      c_count = sum(!is.na(o_orderkey))
+    )
 
   c_orders %>%
     group_by(c_count) %>%
     summarise(custdist = n()) %>%
-    arrange(desc(custdist)) %>%
-    collect()
+    arrange(desc(custdist), desc(c_count)) %>%
+    collect() -> maybe_answer
 }
 
 tpc_h_queries[[14]] <- function(input_func) {
