@@ -717,8 +717,6 @@ tpc_h_queries[[11]] <- function(input_func) {
 }
 
 tpc_h_queries[[12]] <- function(input_func) {
-  stop("Not implemented")
-
   #  SELECT
   #      l_shipmode,
   #      sum(
@@ -749,6 +747,37 @@ tpc_h_queries[[12]] <- function(input_func) {
   #      l_shipmode
   #  ORDER BY
   #      l_shipmode;
+
+  input_func("orders") %>%
+    inner_join(
+      input_func("lineitem") %>% filter(l_shipmode %in% c("MAIL", "SHIP")),
+      by = c("o_orderkey" = "l_orderkey")
+    ) %>%
+    filter(
+      l_commitdate < l_receiptdate,
+      l_shipdate < l_commitdate,
+      l_receiptdate >= as.Date("1994-01-01"),
+      l_receiptdate < as.Date("1995-01-01")
+    ) %>%
+    group_by(l_shipmode) %>%
+    summarise(
+      high_line_count = sum(
+        if_else(
+          (o_orderpriority == "1-URGENT") | (o_orderpriority == "2-HIGH"),
+          1L,
+          0L
+        )
+      ),
+      low_line_count = sum(
+        if_else(
+          (o_orderpriority != "1-URGENT") & (o_orderpriority != "2-HIGH"),
+          1L,
+          0L
+        )
+      )
+    ) %>%
+    arrange(l_shipmode) %>%
+    collect()
 }
 
 tpc_h_queries[[13]] <- function(input_func) {
