@@ -795,7 +795,8 @@ tpc_h_queries[[13]] <- function(input_func) {
   c_orders %>%
     group_by(c_count) %>%
     summarise(custdist = n()) %>%
-    arrange(desc(c_count))
+    arrange(desc(custdist)) %>%
+    collect()
 }
 
 tpc_h_queries[[14]] <- function(input_func) {
