@@ -781,8 +781,6 @@ tpc_h_queries[[12]] <- function(input_func) {
 }
 
 tpc_h_queries[[13]] <- function(input_func) {
-  stop("Not implemented")
-
   #  SELECT
   #      c_count,
   #      count(*) AS custdist
@@ -802,6 +800,17 @@ tpc_h_queries[[13]] <- function(input_func) {
   #  ORDER BY
   #      custdist DESC,
   #      c_count DESC;
+
+  c_orders <- input_func("customer") %>%
+    left_join(input_func("orders"), by = c("c_custkey" = "o_custkey")) %>%
+    filter(!grepl("special.*?requests", o_comment)) %>%
+    group_by(c_custkey) %>%
+    summarise(c_count = n_distinct(o_orderkey))
+
+  c_orders %>%
+    group_by(c_count) %>%
+    summarise(custdist = n()) %>%
+    arrange(desc(c_count))
 }
 
 tpc_h_queries[[14]] <- function(input_func) {
