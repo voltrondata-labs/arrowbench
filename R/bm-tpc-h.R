@@ -1157,30 +1157,42 @@ tpc_h_queries[[20]] <- function(input_func) {
   #              s_name;
 
   supplier_ca <- input_func("supplier") %>%
-    inner_join(input_func("nation"), by = c("s_nationkey" = "n_nationkey")) %>%
-    filter(n_name == "CANADA") %>%
+    inner_join(
+      input_func("nation") %>% filter(n_name == "CANADA"),
+      by = c("s_nationkey" = "n_nationkey")
+    ) %>%
     select(s_suppkey, s_name, s_address)
 
   partsupp_ca <- input_func("partsupp") %>%
-    inner_join(supplier_ca, c("ps_suppkey" = "s_suppkey"))
+    semi_join(supplier_ca, c("ps_suppkey" = "s_suppkey"))
 
   part_forest <- input_func("part") %>%
     filter(grepl("^forest", p_name))
 
   qty_threshold <- input_func("lineitem") %>%
-    semi_join(partsupp_ca, by = c("l_partkey" = "ps_partkey")) %>%
-    semi_join(part_forest, by = c("l_partkey" = "p_partkey")) %>%
     filter(
       l_shipdate >= as.Date("1994-01-01"),
       l_shipdate < as.Date("1995-01-01")
     ) %>%
-    group_by(l_partkey) %>%
-    summarise(qty_threshold = 0.5 * sum(l_quantity))
+    inner_join(
+      partsupp_ca %>%
+        semi_join(part_forest, by = c("ps_partkey" = "p_partkey")),
+      by = c("l_partkey" = "ps_partkey")
+    ) %>%
+    group_by(l_partkey, ps_suppkey) %>%
+    summarise(qty_threshold = 0.5 * sum(l_quantity), .groups = "drop")
 
-  partsupp_ca %>%
-    inner_join(qty_threshold, by = c("ps_partkey" = "l_partkey")) %>%
-    filter(ps_availqty > qty_threshold) %>%
+  partsupp_ca_filtered <- partsupp_ca %>%
+    inner_join(
+      qty_threshold,
+      by = c("ps_suppkey", "ps_partkey" = "l_partkey")
+    ) %>%
+    filter(ps_availqty > qty_threshold)
+
+  supplier_ca %>%
+    semi_join(partsupp_ca_filtered, by = c("s_suppkey" = "ps_suppkey")) %>%
     select(s_name, s_address) %>%
+    arrange(s_name) %>%
     collect()
 }
 
