@@ -814,8 +814,6 @@ tpc_h_queries[[13]] <- function(input_func) {
 }
 
 tpc_h_queries[[14]] <- function(input_func) {
-  stop("Not implemented")
-
   #  SELECT
   #      100.00 * sum(
   #          CASE WHEN p_type LIKE 'PROMO%' THEN
@@ -830,6 +828,19 @@ tpc_h_queries[[14]] <- function(input_func) {
   #      l_partkey = p_partkey
   #      AND l_shipdate >= date '1995-09-01'
   #      AND l_shipdate < CAST('1995-10-01' AS date);
+
+  input_func("lineitem") %>%
+    filter(
+      l_shipdate >= as.Date("1995-01-01"),
+      l_shipdate < as.Date("1995-10-01")
+    ) %>%
+    inner_join(input_func("part"), by = c("l_partkey" = "p_partkey")) %>%
+    summarise(
+      promo_revenue = 100 * sum(
+        if_else(grepl("^PROMO", p_type), l_extendedprice * (1 - l_discount), 0)
+      ) / sum(l_extendedprice * (1 - l_discount))
+    ) %>%
+    collect()
 }
 
 tpc_h_queries[[15]] <- function(input_func) {
