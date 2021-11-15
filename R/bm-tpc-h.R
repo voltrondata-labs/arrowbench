@@ -950,7 +950,7 @@ tpc_h_queries[[19]] <- function(input_func) {
       #      AND l_shipinstruct = 'DELIVER IN PERSON')
       (
         p_brand == "Brand#12" &
-          p_container %in% c() &
+          p_container %in% c('SM CASE', 'SM BOX', 'SM PACK', 'SM PKG') &
           l_quantity >= 1 &
           l_quantity <= (1 + 10) &
           p_size >= 1 &
@@ -999,7 +999,8 @@ tpc_h_queries[[19]] <- function(input_func) {
   result %>%
     summarise(
       revenue = sum(l_extendedprice * (1 - l_discount))
-    )
+    ) %>%
+    collect()
 }
 
 tpc_h_queries[[20]] <- function(input_func) {
@@ -1037,6 +1038,33 @@ tpc_h_queries[[20]] <- function(input_func) {
   #              AND n_name = 'CANADA'
   #          ORDER BY
   #              s_name;
+
+  supplier_ca <- input_func("supplier") %>%
+    inner_join(input_func("nation"), by = c("s_nationkey" = "n_nationkey")) %>%
+    filter(n_name == "CANADA") %>%
+    select(s_suppkey, s_name, s_address)
+
+  partsupp_ca <- input_func("partsupp") %>%
+    inner_join(supplier_ca, c("ps_suppkey" = "s_suppkey"))
+
+  part_forest <- input_func("part") %>%
+    filter(grepl("^forest", p_name))
+
+  qty_threshold <- input_func("lineitem") %>%
+    semi_join(partsupp_ca, by = c("l_partkey" = "ps_partkey")) %>%
+    semi_join(part_forest, by = c("l_partkey" = "p_partkey")) %>%
+    filter(
+      l_shipdate >= as.Date("1994-01-01"),
+      l_shipdate < as.Date("1995-01-01")
+    ) %>%
+    group_by(l_partkey) %>%
+    summarise(qty_threshold = 0.5 * sum(l_quantity))
+
+  partsupp_ca %>%
+    inner_join(qty_threshold, by = c("ps_partkey" = "l_partkey")) %>%
+    filter(ps_availqty > qty_threshold) %>%
+    select(s_name, s_address) %>%
+    collect()
 }
 
 tpc_h_queries[[21]] <- function(input_func) {
