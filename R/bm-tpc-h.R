@@ -833,8 +833,6 @@ tpc_h_queries[[14]] <- function(input_func) {
 }
 
 tpc_h_queries[[15]] <- function(input_func) {
-  stop("Not implemented")
-
   #  SELECT
   #      s_suppkey,
   #      s_name,
@@ -872,6 +870,31 @@ tpc_h_queries[[15]] <- function(input_func) {
   #                  supplier_no) revenue1)
   #  ORDER BY
   #      s_suppkey;
+
+  revenue_by_supplier <- input_func("lineitem") %>%
+    filter(
+      l_shipdate >= as.Date("1996-01-01"),
+      l_shipdate < as.Date("1996-04-01")
+    ) %>%
+    group_by(l_suppkey) %>%
+    summarise(
+      total_revenue = sum(l_extendedprice * (1 - l_discount))
+    )
+
+  global_revenue <- revenue_by_supplier %>%
+    mutate(global_agr_key = 1L) %>%
+    group_by(global_agr_key) %>%
+    summarise(
+      max_total_revenue = max(total_revenue)
+    )
+
+  revenue_by_supplier %>%
+    mutate(global_agr_key = 1L) %>%
+    inner_join(global_revenue, by = "global_agr_key") %>%
+    filter(total_revenue == max_total_revenue) %>%
+    inner_join(input_func("supplier"), by = c("l_suppkey" = "s_suppkey")) %>%
+    select(s_suppkey = l_suppkey, s_name, s_address, s_phone, total_revenue) %>%
+    collect()
 }
 
 tpc_h_queries[[16]] <- function(input_func) {
