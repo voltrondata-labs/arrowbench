@@ -654,12 +654,12 @@ tpc_h_queries[[11]] <- function(input_func) {
 
   partsupp <- input_func("partsupp")
   supplier <- input_func("supplier")
-  nation <- input_func("nation")
+  nation <- input_func("nation") %>%
+    filter(n_name == "GERMANY")
 
   joined_filtered <- partsupp %>%
     inner_join(supplier, by = c("ps_suppkey" = "s_suppkey")) %>%
-    inner_join(nation, by = c("s_nationkey" = "n_nationkey")) %>%
-    filter(n_name == "GERMANY")
+    inner_join(nation, by = c("s_nationkey" = "n_nationkey"))
 
   # GROUP BY
   #     ps_partkey
@@ -677,20 +677,6 @@ tpc_h_queries[[11]] <- function(input_func) {
   #             AND n_name = 'GERMANY')
   # ORDER BY
   #     value DESC;
-
-  # grouped mutate/filter works in dplyr but errors in Arrow because
-  # window functions aren't currently supported
-  # result1 <- joined_filtered %>%
-  #   mutate(global_value = sum(ps_supplycost * ps_availqty) * 0.0001000000) %>%
-  #   group_by(ps_partkey) %>%
-  #   mutate(value = sum(ps_supplycost * ps_availqty)) %>%
-  #   filter(value > global_value) %>%
-  #   ungroup() %>%
-  #   arrange(desc(value)) %>%
-  #   select(-global_value) %>%
-  #   collect()
-
-  # ...but not in Arrow yet, so we do a summarize() + left_join()
   global_agr <- joined_filtered %>%
     mutate(global_agr_key = 1L) %>%
     group_by(global_agr_key) %>%
@@ -702,10 +688,9 @@ tpc_h_queries[[11]] <- function(input_func) {
     group_by(ps_partkey) %>%
     summarise(value = sum(ps_supplycost * ps_availqty))
 
-  result2 <- joined_filtered %>%
+  result2 <- partkey_agr %>%
     mutate(global_agr_key = 1L) %>%
-    left_join(global_agr, by = "global_agr_key") %>%
-    left_join(partkey_agr, by = "ps_partkey") %>%
+    inner_join(global_agr, by = "global_agr_key") %>%
     filter(value > global_value) %>%
     arrange(desc(value)) %>%
     select(ps_partkey, value) %>%
