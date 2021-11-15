@@ -930,8 +930,6 @@ tpc_h_queries[[17]] <- function(input_func) {
 }
 
 tpc_h_queries[[18]] <- function(input_func) {
-  stop("Not implemented")
-
   #  SELECT
   #      c_name,
   #      c_custkey,
@@ -965,6 +963,21 @@ tpc_h_queries[[18]] <- function(input_func) {
   #      o_totalprice DESC,
   #      o_orderdate
   #  LIMIT 100;
+
+  big_orders <- input_func("lineitem") %>%
+    group_by(l_orderkey) %>%
+    summarise(sum_l_quantity = sum(l_quantity)) %>%
+    filter(sum_l_quantity > 300)
+
+  input_func("orders") %>%
+    inner_join(big_orders, by = c("o_orderkey" = "l_orderkey")) %>%
+    inner_join(input_func("customer"), by = c("o_custkey" = "c_custkey")) %>%
+    select(
+      c_name, c_custkey = o_custkey, o_orderkey,
+      o_orderdate, o_totalprice, sum_l_quantity
+    ) %>%
+    arrange(desc(o_totalprice), o_orderdate) %>%
+    collect()
 }
 
 tpc_h_queries[[19]] <- function(input_func) {
