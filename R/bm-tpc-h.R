@@ -1175,14 +1175,14 @@ tpc_h_queries[[20]] <- function(input_func) {
       l_shipdate >= as.Date("1994-01-01"),
       l_shipdate < as.Date("1995-01-01")
     ) %>%
-    inner_join(partsupp_forest_ca, by = c("l_partkey" = "ps_partkey")) %>%
-    group_by(l_partkey, ps_suppkey) %>%
-    summarise(qty_threshold = 0.5 * sum(l_quantity), .groups = "drop")
+    semi_join(partsupp_forest_ca, by = c("l_partkey" = "ps_partkey", "l_suppkey" = "ps_suppkey")) %>%
+    group_by(l_suppkey) %>%
+    summarise(qty_threshold = 0.5 * sum(l_quantity))
 
   partsupp_forest_ca_filtered <- partsupp_forest_ca %>%
     inner_join(
       qty_threshold,
-      by = c("ps_suppkey", "ps_partkey" = "l_partkey")
+      by = c("ps_suppkey" = "l_suppkey")
     ) %>%
     filter(ps_availqty > qty_threshold)
 
