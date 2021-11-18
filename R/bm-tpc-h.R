@@ -12,8 +12,8 @@
 #' @export
 tpc_h <- Benchmark("tpc_h",
   setup = function(engine = "arrow",
-                   query_id = c(1, 6),
-                   format = c("native", "parquet", "feather"),
+                   query_id = 1:22,
+                   format = c("native", "parquet"),
                    scale_factor = c(1, 10),
                    memory_map = FALSE) {
     # engine defaults to arrow
@@ -275,15 +275,10 @@ tpc_h_queries[[2]] <- function(input_func) {
     sj <- inner_join(pspsnr, aggr,
                      by=c("ps_partkey" = "ps_partkey", "ps_supplycost" = "min_ps_supplycost"))
 
-    res <- sj %>%
+    sj %>%
       select(s_acctbal, s_name, n_name, ps_partkey, p_mfgr,
              s_address, s_phone, s_comment) %>%
-      arrange(desc(s_acctbal), n_name, s_name, ps_partkey)
-
-    # head(100) should be able to be up above, but it currently does not respect
-    # arrange() https://issues.apache.org/jira/browse/ARROW-14162
-    res %>%
-      compute() %>%
+      arrange(desc(s_acctbal), n_name, s_name, ps_partkey) %>%
       head(100) %>%
       collect()
 }
@@ -309,16 +304,11 @@ tpc_h_queries[[3]] <- function(input_func) {
     oc, by = c("l_orderkey" = "o_orderkey")
   )
 
-  aggr <- loc %>% mutate(volume=l_extendedprice * (1 - l_discount)) %>%
+  loc %>% mutate(volume=l_extendedprice * (1 - l_discount)) %>%
     group_by(l_orderkey, o_orderdate, o_shippriority) %>%
     summarise(revenue = sum(volume)) %>%
     select(l_orderkey, revenue, o_orderdate, o_shippriority) %>%
-    arrange(desc(revenue), o_orderdate)
-
-  # head(10) should be able to be up above, but it currently does not respect
-  # arrange() https://issues.apache.org/jira/browse/ARROW-14162
-  aggr %>%
-    compute() %>%
+    arrange(desc(revenue), o_orderdate) %>%
     head(10) %>%
     collect()
 }
@@ -340,12 +330,11 @@ tpc_h_queries[[4]] <- function(input_func) {
     distinct() %>%
     select(o_orderpriority)
 
-  aggr <- lo %>%
+  lo %>%
     group_by(o_orderpriority) %>%
     summarise(order_count = n()) %>%
-    arrange(o_orderpriority)
-
-  collect(aggr)
+    arrange(o_orderpriority) %>%
+    collect()
 }
 
 tpc_h_queries[[5]] <- function(input_func) {
@@ -385,13 +374,12 @@ tpc_h_queries[[5]] <- function(input_func) {
                        by = c("l_orderkey" = "o_orderkey", "s_nationkey" = "c_nationkey")) %>%
     select(l_extendedprice, l_discount, n_name)
 
-  aggr <- lsnroc %>%
+  lsnroc %>%
     mutate(volume=l_extendedprice * (1 - l_discount)) %>%
     group_by(n_name) %>%
     summarise(revenue = sum(volume)) %>%
-    arrange(desc(revenue))
-
-  collect(aggr)
+    arrange(desc(revenue)) %>%
+    collect()
 }
 
 tpc_h_queries[[6]] <- function(input_func) {
@@ -449,7 +437,7 @@ tpc_h_queries[[7]] <- function(input_func) {
 
   all <- inner_join(cnol, sn, by = c("l_suppkey" = "s_suppkey"))
 
-  aggr <- all %>%
+  all %>%
     filter((n1_name == "FRANCE" & n2_name == "GERMANY") |
              (n1_name == "GERMANY" & n2_name == "FRANCE")) %>%
     mutate(
@@ -461,9 +449,7 @@ tpc_h_queries[[7]] <- function(input_func) {
     select(supp_nation, cust_nation, l_year, volume) %>%
     group_by(supp_nation, cust_nation, l_year) %>%
     summarise(revenue = sum(volume)) %>%
-    arrange(supp_nation, cust_nation, l_year)
-
-  aggr %>%
+    arrange(supp_nation, cust_nation, l_year) %>%
     collect()
 }
 
@@ -528,7 +514,7 @@ tpc_h_queries[[8]] <- function(input_func) {
                     by = c("s_nationkey" = "n2_nationkey")) %>%
     select(l_extendedprice, l_discount, o_orderdate, n2_name)
 
-  aggr <- all %>%
+  all %>%
     mutate(
       # kludge(?), o_year = as.integer(strftime(o_orderdate, "%Y")),
       o_year = year(o_orderdate),
@@ -537,9 +523,7 @@ tpc_h_queries[[8]] <- function(input_func) {
     select(o_year, volume, nation) %>%
     group_by(o_year) %>%
     summarise(mkt_share = sum(ifelse(nation == "BRAZIL", volume, 0)) / sum(volume)) %>%
-    arrange(o_year)
-
-  aggr %>%
+    arrange(o_year) %>%
     collect()
 }
 
@@ -578,9 +562,7 @@ tpc_h_queries[[9]] <- function(input_func) {
     by = c("o_orderkey"= "l_orderkey" )) %>%
     select(l_extendedprice, l_discount, l_quantity, ps_supplycost, n_name, o_orderdate)
 
-  aggr <- all %>%
-    # kludge, should not need to compute here, but if we don't the answers we
-    # get are wrong (though they *do* complete).
+  all %>%
     mutate(
       nation = n_name,
       # kludge, o_year = as.integer(format(o_orderdate, "%Y")),
@@ -590,9 +572,7 @@ tpc_h_queries[[9]] <- function(input_func) {
     select(nation, o_year, amount) %>%
     group_by(nation, o_year) %>%
     summarise(sum_profit = sum(amount)) %>%
-    arrange(nation, desc(o_year))
-
-  aggr %>%
+    arrange(nation, desc(o_year)) %>%
     collect()
 }
 
@@ -626,17 +606,345 @@ tpc_h_queries[[10]] <- function(input_func) {
   locn <- inner_join(loc, input_func("nation") %>% select(n_nationkey, n_name),
                      by = c("c_nationkey" = "n_nationkey"))
 
-  res <- locn %>%
+  locn %>%
     select(o_custkey, c_name, revenue, c_acctbal, n_name,
            c_address, c_phone, c_comment) %>%
     arrange(desc(revenue)) %>%
-    # we should not need to collect here, but it currently does not respect
-    # arrange() https://issues.apache.org/jira/browse/ARROW-14162
-    compute() %>%
-    head(20)
-
-  res %>%
+    head(20) %>%
     collect()
+}
+
+tpc_h_queries[[11]] <- function(input_func) {
+  nation <- input_func("nation") %>%
+    filter(n_name == "GERMANY")
+
+  joined_filtered <- input_func("partsupp") %>%
+    inner_join(input_func("supplier"), by = c("ps_suppkey" = "s_suppkey")) %>%
+    inner_join(nation, by = c("s_nationkey" = "n_nationkey"))
+
+  global_agr <- joined_filtered %>%
+    summarise(
+      global_value = sum(ps_supplycost * ps_availqty) * 0.0001000000
+    ) %>%
+    mutate(global_agr_key = 1L)
+
+  partkey_agr <- joined_filtered %>%
+    group_by(ps_partkey) %>%
+    summarise(value = sum(ps_supplycost * ps_availqty))
+
+  partkey_agr %>%
+    mutate(global_agr_key = 1L) %>%
+    inner_join(global_agr, by = "global_agr_key") %>%
+    filter(value > global_value) %>%
+    arrange(desc(value)) %>%
+    select(ps_partkey, value) %>%
+    collect()
+}
+
+tpc_h_queries[[12]] <- function(input_func) {
+  input_func("orders") %>%
+    inner_join(
+      input_func("lineitem") %>% filter(l_shipmode %in% c("MAIL", "SHIP")),
+      by = c("o_orderkey" = "l_orderkey")
+    ) %>%
+    filter(
+      l_commitdate < l_receiptdate,
+      l_shipdate < l_commitdate,
+      l_receiptdate >= as.Date("1994-01-01"),
+      l_receiptdate < as.Date("1995-01-01")
+    ) %>%
+    group_by(l_shipmode) %>%
+    summarise(
+      high_line_count = sum(
+        if_else(
+          (o_orderpriority == "1-URGENT") | (o_orderpriority == "2-HIGH"),
+          1L,
+          0L
+        )
+      ),
+      low_line_count = sum(
+        if_else(
+          (o_orderpriority != "1-URGENT") & (o_orderpriority != "2-HIGH"),
+          1L,
+          0L
+        )
+      )
+    ) %>%
+    arrange(l_shipmode) %>%
+    collect()
+}
+
+tpc_h_queries[[13]] <- function(input_func) {
+  c_orders <- input_func("customer") %>%
+    left_join(
+      input_func("orders") %>%
+        filter(!grepl("special.*?requests", o_comment)),
+      by = c("c_custkey" = "o_custkey")
+    ) %>%
+    group_by(c_custkey) %>%
+    summarise(
+      c_count = sum(!is.na(o_orderkey))
+    )
+
+  c_orders %>%
+    group_by(c_count) %>%
+    summarise(custdist = n()) %>%
+    arrange(desc(custdist), desc(c_count)) %>%
+    collect()
+}
+
+tpc_h_queries[[14]] <- function(input_func) {
+  input_func("lineitem") %>%
+    filter(
+      l_shipdate >= as.Date("1995-01-01"),
+      l_shipdate < as.Date("1995-10-01")
+    ) %>%
+    inner_join(input_func("part"), by = c("l_partkey" = "p_partkey")) %>%
+    summarise(
+      promo_revenue = 100 * sum(
+        if_else(grepl("^PROMO", p_type), l_extendedprice * (1 - l_discount), 0)
+      ) / sum(l_extendedprice * (1 - l_discount))
+    ) %>%
+    collect()
+}
+
+tpc_h_queries[[15]] <- function(input_func) {
+  revenue_by_supplier <- input_func("lineitem") %>%
+    filter(
+      l_shipdate >= as.Date("1996-01-01"),
+      l_shipdate < as.Date("1996-04-01")
+    ) %>%
+    group_by(l_suppkey) %>%
+    summarise(
+      total_revenue = sum(l_extendedprice * (1 - l_discount))
+    )
+
+  global_revenue <- revenue_by_supplier %>%
+    mutate(global_agr_key = 1L) %>%
+    group_by(global_agr_key) %>%
+    summarise(
+      max_total_revenue = max(total_revenue)
+    )
+
+  revenue_by_supplier %>%
+    mutate(global_agr_key = 1L) %>%
+    inner_join(global_revenue, by = "global_agr_key") %>%
+    filter(abs(total_revenue - max_total_revenue) < 1e-9) %>%
+    inner_join(input_func("supplier"), by = c("l_suppkey" = "s_suppkey")) %>%
+    select(s_suppkey = l_suppkey, s_name, s_address, s_phone, total_revenue) %>%
+    collect()
+}
+
+tpc_h_queries[[16]] <- function(input_func) {
+  part_filtered <- input_func("part") %>%
+    filter(
+      p_brand != "Brand#45",
+      !grepl("^MEDIUM POLISHED", p_type),
+      p_size %in% c(49, 14, 23, 45, 19, 3, 36, 9)
+    )
+
+  supplier_filtered <- input_func("supplier") %>%
+    filter(!grepl("Customer.*?Complaints", s_comment))
+
+  partsupp_filtered <- input_func("partsupp") %>%
+    inner_join(supplier_filtered, by = c("ps_suppkey" = "s_suppkey")) %>%
+    select(ps_partkey, ps_suppkey)
+
+  part_filtered %>%
+    inner_join(partsupp_filtered, by = c("p_partkey" = "ps_partkey")) %>%
+    group_by(p_brand, p_type, p_size) %>%
+    summarise(
+      supplier_cnt = n_distinct(ps_suppkey),
+      .groups = "drop"
+    ) %>%
+    select(p_brand, p_type, p_size, supplier_cnt) %>%
+    arrange(desc(supplier_cnt), p_brand, p_type, p_size) %>%
+    collect()
+}
+
+tpc_h_queries[[17]] <- function(input_func) {
+  parts_filtered <- input_func("part") %>%
+    filter(
+      p_brand == "Brand#23",
+      p_container == "MED BOX"
+    )
+
+  joined <- input_func("lineitem") %>%
+    inner_join(parts_filtered, by = c("l_partkey" = "p_partkey"))
+
+  quantity_by_part <- joined %>%
+    group_by(l_partkey) %>%
+    summarise(quantity_threshold = 0.2 * mean(l_quantity))
+
+  joined %>%
+    inner_join(quantity_by_part, by = "l_partkey") %>%
+    filter(l_quantity < quantity_threshold) %>%
+    summarise(avg_yearly = sum(l_extendedprice) / 7.0) %>%
+    collect()
+}
+
+tpc_h_queries[[18]] <- function(input_func) {
+  big_orders <- input_func("lineitem") %>%
+    group_by(l_orderkey) %>%
+    summarise(sum_l_quantity = sum(l_quantity)) %>%
+    filter(sum_l_quantity > 300)
+
+  input_func("orders") %>%
+    inner_join(big_orders, by = c("o_orderkey" = "l_orderkey")) %>%
+    inner_join(input_func("customer"), by = c("o_custkey" = "c_custkey")) %>%
+    select(
+      c_name, c_custkey = o_custkey, o_orderkey,
+      o_orderdate, o_totalprice, sum_l_quantity
+    ) %>%
+    arrange(desc(o_totalprice), o_orderdate) %>%
+    head(100) %>%
+    collect()
+}
+
+tpc_h_queries[[19]] <- function(input_func) {
+  joined <- input_func("lineitem") %>%
+    inner_join(input_func("part"), by = c("l_partkey" = "p_partkey"))
+
+  result <- joined %>%
+    filter(
+      (
+        p_brand == "Brand#12" &
+          p_container %in% c('SM CASE', 'SM BOX', 'SM PACK', 'SM PKG') &
+          l_quantity >= 1 &
+          l_quantity <= (1 + 10) &
+          p_size >= 1 &
+          p_size <= 5 &
+          l_shipmode %in% c("AIR", "AIR REG") &
+          l_shipinstruct == "DELIVER IN PERSON"
+      ) |
+        (
+          p_brand == "Brand#23" &
+            p_container %in% c('MED BAG', 'MED BOX', 'MED PKG', 'MED PACK') &
+            l_quantity >= 10 &
+            l_quantity <= (10 + 10) &
+            p_size >= 1 &
+            p_size <= 10 &
+            l_shipmode %in% c("AIR", "AIR REG") &
+            l_shipinstruct == "DELIVER IN PERSON"
+        ) |
+        (
+          p_brand == "Brand#34" &
+            p_container %in% c('LG CASE', 'LG BOX', 'LG PACK', 'LG PKG') &
+            l_quantity >= 20 &
+            l_quantity <= (20 + 10) &
+            p_size >= 1 &
+            p_size <= 15 &
+            l_shipmode %in% c("AIR", "AIR REG") &
+            l_shipinstruct == "DELIVER IN PERSON"
+        )
+    )
+
+  result %>%
+    summarise(
+      revenue = sum(l_extendedprice * (1 - l_discount))
+    ) %>%
+    collect()
+}
+
+tpc_h_queries[[20]] <- function(input_func) {
+  supplier_ca <- input_func("supplier") %>%
+    inner_join(
+      input_func("nation") %>% filter(n_name == "CANADA"),
+      by = c("s_nationkey" = "n_nationkey")
+    ) %>%
+    select(s_suppkey, s_name, s_address)
+
+  part_forest <- input_func("part") %>%
+    filter(grepl("^forest", p_name))
+
+  partsupp_forest_ca <- input_func("partsupp") %>%
+    semi_join(supplier_ca, c("ps_suppkey" = "s_suppkey")) %>%
+    semi_join(part_forest, by = c("ps_partkey" = "p_partkey"))
+
+  qty_threshold <- input_func("lineitem") %>%
+    filter(
+      l_shipdate >= as.Date("1994-01-01"),
+      l_shipdate < as.Date("1995-01-01")
+    ) %>%
+    semi_join(partsupp_forest_ca, by = c("l_partkey" = "ps_partkey", "l_suppkey" = "ps_suppkey")) %>%
+    group_by(l_suppkey) %>%
+    summarise(qty_threshold = 0.5 * sum(l_quantity))
+
+  partsupp_forest_ca_filtered <- partsupp_forest_ca %>%
+    inner_join(
+      qty_threshold,
+      by = c("ps_suppkey" = "l_suppkey")
+    ) %>%
+    filter(ps_availqty > qty_threshold)
+
+  supplier_ca %>%
+    semi_join(partsupp_forest_ca_filtered, by = c("s_suppkey" = "ps_suppkey")) %>%
+    select(s_name, s_address) %>%
+    arrange(s_name) %>%
+    collect()
+}
+
+tpc_h_queries[[21]] <- function(input_func) {
+  orders_with_more_than_one_supplier <- input_func("lineitem") %>%
+    group_by(l_orderkey) %>%
+    count(l_suppkey) %>%
+    group_by(l_orderkey) %>%
+    summarise(n_supplier = n()) %>%
+    filter(n_supplier > 1)
+
+  line_items_needed <- input_func("lineitem") %>%
+    semi_join(orders_with_more_than_one_supplier) %>%
+    inner_join(input_func("orders"), by = c("l_orderkey" = "o_orderkey")) %>%
+    filter(o_orderstatus == "F") %>%
+    group_by(l_orderkey, l_suppkey) %>%
+    summarise(failed_delivery_commit = any(l_receiptdate > l_commitdate)) %>%
+    group_by(l_orderkey) %>%
+    summarise(n_supplier = n(), num_failed = sum(failed_delivery_commit)) %>%
+    filter(n_supplier > 1 & num_failed == 1)
+
+  line_items <- input_func("lineitem") %>%
+    semi_join(line_items_needed)
+
+  out <- input_func("supplier") %>%
+    inner_join(line_items, by = c("s_suppkey" = "l_suppkey")) %>%
+    filter(l_receiptdate > l_commitdate) %>%
+    inner_join(input_func("nation"), by = c("s_nationkey" = "n_nationkey")) %>%
+    filter(n_name == "SAUDI ARABIA") %>%
+    group_by(s_name) %>%
+    summarise(numwait = n()) %>%
+    arrange(desc(numwait), s_name) %>%
+    head(100) %>%
+    collect()
+
+  out
+}
+
+tpc_h_queries[[22]] <- function(input_func) {
+  acctbal_min <- input_func("customer") %>%
+    filter(
+      substr(c_phone, 1, 2) %in% c("13", "31", "23", "29", "30", "18", "17") &
+        c_acctbal > 0
+    ) %>%
+    summarise(mean(c_acctbal, na.rm = TRUE)) %>%
+    collect()
+
+  out <- input_func("customer") %>%
+    mutate(cntrycode = as.integer(substr(c_phone, 1, 2))) %>%
+    filter(
+      cntrycode %in% c(13, 31, 23, 29, 30, 18, 17) &
+        c_acctbal > acctbal_min[[1]]
+    ) %>%
+    anti_join(input_func("orders"), by = c("c_custkey" = "o_custkey")) %>%
+    select(cntrycode, c_acctbal) %>%
+    group_by(cntrycode) %>%
+    summarise(
+      numcust = n(),
+      totacctbal = sum(c_acctbal)
+    ) %>%
+    arrange(cntrycode) %>%
+    collect()
+
+  out
 }
 
 #' For extracting table names from TPC-H queries
