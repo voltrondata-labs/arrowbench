@@ -12,8 +12,8 @@
 #' @export
 tpc_h <- Benchmark("tpc_h",
   setup = function(engine = "arrow",
-                   query_id = c(1, 6),
-                   format = c("native", "parquet", "feather"),
+                   query_id = 1:22,
+                   format = c("native", "parquet"),
                    scale_factor = c(1, 10),
                    memory_map = FALSE) {
     # engine defaults to arrow
@@ -615,21 +615,18 @@ tpc_h_queries[[10]] <- function(input_func) {
 }
 
 tpc_h_queries[[11]] <- function(input_func) {
-  partsupp <- input_func("partsupp")
-  supplier <- input_func("supplier")
   nation <- input_func("nation") %>%
     filter(n_name == "GERMANY")
 
-  joined_filtered <- partsupp %>%
-    inner_join(supplier, by = c("ps_suppkey" = "s_suppkey")) %>%
+  joined_filtered <- input_func("partsupp") %>%
+    inner_join(input_func("supplier"), by = c("ps_suppkey" = "s_suppkey")) %>%
     inner_join(nation, by = c("s_nationkey" = "n_nationkey"))
 
   global_agr <- joined_filtered %>%
-    mutate(global_agr_key = 1L) %>%
-    group_by(global_agr_key) %>%
     summarise(
       global_value = sum(ps_supplycost * ps_availqty) * 0.0001000000
-    )
+    ) %>%
+    mutate(global_agr_key = 1L)
 
   partkey_agr <- joined_filtered %>%
     group_by(ps_partkey) %>%
