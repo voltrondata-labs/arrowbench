@@ -80,19 +80,19 @@
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
-<p>The quickest and easiest way to install is to run <code><a href="https://remotes.r-lib.org/reference/install_github.html">remotes::install_github("ursacomputing/arrowbench", dependencies = TRUE)</a></code> in R. If you need to install remotes you can <code><a href="https://rdrr.io/r/utils/install.packages.html">install.packages("remotes")</a></code>.</p>
-<p>If you’ve downloaded the source, or you’re making changes to arrow bench you should make sure that you have the dependencies with <code><a href="https://remotes.r-lib.org/reference/install_deps.html">remotes::install_deps(".", dependencies = TRUE)</a></code> in R (this will also install the arrow package along with other packages that can be benchmarked with arrowbench. And then running <code>R CMD INSTALL .</code> in a terminal (for both, you should do this in the root directory of arrowbench, or pass the path to arrowbench instead of <code>.</code>).</p>
+<p>The quickest and easiest way to install is to run <code>remotes::install_github("ursacomputing/arrowbench", dependencies = TRUE)</code> in R. If you need to install remotes you can <code>install.packages("remotes")</code>.</p>
+<p>If you’ve downloaded the source, or you’re making changes to arrow bench you should make sure that you have the dependencies with <code>remotes::install_deps(".", dependencies = TRUE)</code> in R (this will also install the arrow package along with other packages that can be benchmarked with arrowbench. And then running <code>R CMD INSTALL .</code> in a terminal (for both, you should do this in the root directory of arrowbench, or pass the path to arrowbench instead of <code>.</code>).</p>
 </div>
 <div id="running-benchmarks" class="section level2">
 <h2 class="hasAnchor">
 <a href="#running-benchmarks" class="anchor"></a>Running benchmarks</h2>
-<p>Pass a Benchmark to <code><a href="reference/run_benchmark.html">run_benchmark()</a></code> and it will run it across the range of parameters specified. For parameters specified in <code>bm$setup</code> that are omitted when calling <code><a href="reference/run_benchmark.html">run_benchmark(bm)</a></code>, it will test across all combinations of them (what we call a benchmark matrix). If some parameter combinations are not valid, define a <code>bm$valid_params(params)</code> function that will filter that expanded <code>data.frame</code> of parameters down to the valid set.</p>
+<p>Pass a Benchmark to <code><a href="reference/run_benchmark.html">run_benchmark()</a></code> and it will run it across the range of parameters specified. For parameters specified in <code>bm$setup</code> that are omitted when calling <code>run_benchmark(bm)</code>, it will test across all combinations of them (what we call a benchmark matrix). If some parameter combinations are not valid, define a <code>bm$valid_params(params)</code> function that will filter that expanded <code>data.frame</code> of parameters down to the valid set.</p>
 <p>For example,</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">arrowbench</span><span class="op">)</span>
 
 <span class="fu"><a href="reference/run_benchmark.html">run_benchmark</a></span><span class="op">(</span><span class="va">write_file</span>, source <span class="op">=</span> <span class="st">"nyctaxi_2010-01"</span><span class="op">)</span></code></pre></div>
-<p>will run the <code>write_file</code> benchmark with “nyctaxi_2010-01” source file on the Cartesian product of the other function parameters–<code>format</code>, <code>compression</code>, and <code>input</code>–along with <code>cpu_count</code>s of <code><a href="https://rdrr.io/r/base/c.html">c(1, Ncpus)</a></code>.</p>
+<p>will run the <code>write_file</code> benchmark with “nyctaxi_2010-01” source file on the Cartesian product of the other function parameters–<code>format</code>, <code>compression</code>, and <code>input</code>–along with <code>cpu_count</code>s of <code>c(1, Ncpus)</code>.</p>
 <p>Another example:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">arrowbench</span><span class="op">)</span>
@@ -199,19 +199,19 @@
   }
 )</code></pre>
 <p>And now we could run our benchmark with the following for the default matrix, using 4 cpu cores and 5 iterations per case.</p>
-<pre><code><a href="reference/run_benchmark.html">run_benchmark(
+<pre><code>run_benchmark(
   new_csv_benchmark,
   cpu_count = 4,
   n_iter = 5
-)</a></code></pre>
+)</code></pre>
 <p>Or specify parameters (including non-default parameters) with:</p>
-<pre><code><a href="reference/run_benchmark.html">run_benchmark(
+<pre><code>run_benchmark(
   new_csv_benchmark,
   as_data_frame = c(TRUE, FALSE),
   skip_empty_rows = c(TRUE, FALSE),
   cpu_count = 4,
   n_iter = 5
-)</a></code></pre>
+)</code></pre>
 </div>
 <div id="enabling-benchmarks-to-be-run-on-conbench" class="section level3">
 <h3 class="hasAnchor">
