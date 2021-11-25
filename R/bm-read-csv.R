@@ -78,7 +78,7 @@ read_csv <- Benchmark(
 #' @return the csv reader
 #' @export
 get_csv_reader <- function(reader, delim) {
-  library(reader, character.only = TRUE)
+  library(reader, character.only = TRUE, warn.conflicts = FALSE)
   # TODO: allow other readers to read non-comma delimed files
   if (reader == "arrow") {
     # TODO: if gzipped and arrow csv reader version doesn't support, unzip?

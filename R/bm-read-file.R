@@ -77,7 +77,7 @@ get_read_function <- function(format) {
     "parquet" = "arrow",
     "fst" = "fst"
   )
-  library(pkg_map[[format]], character.only = TRUE)
+  library(pkg_map[[format]], character.only = TRUE, warn.conflicts = FALSE)
 
   if (format == "feather") {
     return(function(...) arrow::read_feather(...))

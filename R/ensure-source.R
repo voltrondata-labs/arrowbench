@@ -119,9 +119,9 @@ read_source <- function(file, ...) {
     extension <- file_ext(file)
     if (grepl("csv", file)) {
       arrow::read_csv_arrow(file, ...)
-    } else if (extension == "parquet") {
+    } else if (grepl("parquet", extension)) {
       arrow::read_parquet(file, ...)
-    }  else if (extension == "feather") {
+    }  else if (grepl("feather", extension)) {
       # TODO: other extensions?
       arrow::read_ipc_stream(file, ...)
     }

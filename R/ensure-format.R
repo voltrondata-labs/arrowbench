@@ -87,7 +87,7 @@ ensure_format <- function(
 
   # read the data in
   # TODO: read in things that are easier to read in feather > parquet >> csv?
-  tab <- read_source(file_in)
+  tab <- read_source(file_in, as_data_frame = FALSE)
 
   # write the reformatted data based on the format/ext
   write_func <- get_write_function(format, compression)
