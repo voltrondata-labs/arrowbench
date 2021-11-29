@@ -6,8 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>all queries take an input_func which is a function that will return a dplyr tbl
-referencing the table needed. — tpc_h_queries • arrowbench</title>
+<title>get a tpch answer — tpch_answer • arrowbench</title>
 
 
 <!-- jquery -->
@@ -40,10 +39,8 @@ referencing the table needed. — tpc_h_queries • arrowbench</title>
 
 
 
-<meta property="og:title" content="all queries take an input_func which is a function that will return a dplyr tbl
-referencing the table needed. — tpc_h_queries" />
-<meta property="og:description" content="all queries take an input_func which is a function that will return a dplyr tbl
-referencing the table needed." />
+<meta property="og:title" content="get a tpch answer — tpch_answer" />
+<meta property="og:description" content="Gets a TPC-H answer" />
 
 
 
@@ -106,23 +103,38 @@ referencing the table needed." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>all queries take an input_func which is a function that will return a dplyr tbl
-referencing the table needed.</h1>
+    <h1>get a tpch answer</h1>
     
-    <div class="hidden name"><code>tpc_h_queries.Rd</code></div>
+    <div class="hidden name"><code>tpch_answer.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>all queries take an input_func which is a function that will return a dplyr tbl
-referencing the table needed.</p>
+    <p>Gets a TPC-H answer</p>
     </div>
 
-    <pre class="usage"><span class='va'>tpc_h_queries</span></pre>
+    <pre class="usage"><span class='fu'>tpch_answer</span><span class='op'>(</span><span class='va'>scale_factor</span>, <span class='va'>query_id</span>, source <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"arrowbench"</span>, <span class='st'>"duckdb"</span><span class='op'>)</span><span class='op'>)</span></pre>
 
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>scale_factor</th>
+      <td><p>scale factor (possible values: <code>c(0.01, 0.1, 1, 10)</code>)</p></td>
+    </tr>
+    <tr>
+      <th>query_id</th>
+      <td><p>Id of the query (possible values: 1-22)</p></td>
+    </tr>
+    <tr>
+      <th>source</th>
+      <td><p>source of the answer (default: "arrowbench"), "duckdb" can
+return answers for scale_factor 1.</p></td>
+    </tr>
+    </table>
 
-    <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An object of class <code>list</code> of length 22.</p>
+    <p>the answer, as a data.frame</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
