@@ -3,7 +3,7 @@ temp_dir <- tempfile()
 dir.create(temp_dir)
 
 withr::with_envvar(
-  list(ARROWBENCH_DATA_DIR = temp_dir),
+  list(ARROWBENCH_DATA_DIR = temp_dir), {
   test_that("ensure_format", {
     # there are no temp files yet
     expect_false(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.parquet")))
@@ -28,7 +28,22 @@ withr::with_envvar(
     expect_identical(out, ensure_source("nyctaxi_sample"))
     expect_false(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.csv")))
   })
-)
+
+  test_that("ensure_format with tpch", {
+    # there are no temp files yet
+    expect_false(file.exists(file.path(temp_dir, "lineitem_0.001.parquet")))
+    expect_false(file.exists(file.path(temp_dir, "temp", "lineitem_0.001.uncompressed.parquet")))
+
+    # we can generate
+    tpch_files <- ensure_tpch(0.0001)
+    expect_true(file.exists(file.path(temp_dir, "lineitem_0.0001.parquet")))
+
+    # and we can ensure format
+    lineitem <- ensure_format(tpch_files[["lineitem"]], "parquet")
+    expect_equal(lineitem, file.path(temp_dir, "temp", "lineitem_0.0001.uncompressed.parquet"))
+    expect_true(file.exists(file.path(temp_dir, "temp", "lineitem_0.0001.uncompressed.parquet")))
+  })
+})
 
 test_that("format + compression validation with a df", {
   df <- expand.grid(

@@ -58,5 +58,6 @@ Collate:
     'result.R'
     'run.R'
     'setup.R'
+    'tpch-queries.R'
     'util.R'
 Config/testthat/edition: 3

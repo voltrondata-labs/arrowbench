@@ -16,13 +16,14 @@ Benchmark TPC-H queries
 \section{Parameters}{
 
 \itemize{
-\item \code{engine} One of \code{c("arrow", "duckdb")}
+\item \code{engine} One of \code{c("arrow", "duckdb", "dplyr")}
 \item \code{query_id} integer, 1-22
 \item \code{format} One of \code{c("parquet", "feather", "native")}
 \item \code{scale_factor} Scale factor to use for data generation (e.g. 0.1, 1, 10, 100)
 \item \code{memory_map} Should memory mapping be used when reading a file in? (only
 applicable to arrow, native. \code{FALSE} will result in the file being explicitly
 read into memory before the benchmark)
+\item \code{output} the format of the output (either \code{"data_frame"} (default) or \code{"arrow_table"})
 }
 }
 

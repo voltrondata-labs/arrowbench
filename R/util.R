@@ -15,7 +15,14 @@ file_exts <- function(file) {
 }
 
 file_ext <- function(file) {
-  paste(file_exts(file), collapse = ".")
+  extensions <- file_exts(file)
+
+  # special case .csv.gz
+  if (extensions[length(extensions)] == "gz" && extensions[length(extensions)-1] == "csv") {
+    return("csv.gz")
+  }
+
+  extensions[length(extensions)]
 }
 
 file_base <- function(file) {
