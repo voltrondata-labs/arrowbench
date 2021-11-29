@@ -439,16 +439,17 @@ tpc_h_queries[[11]] <- function(input_func, collect_func = dplyr::collect) {
 }
 
 tpc_h_queries[[12]] <- function(input_func, collect_func = dplyr::collect) {
-  input_func("orders") %>%
-    inner_join(
-      input_func("lineitem") %>% filter(l_shipmode %in% c("MAIL", "SHIP")),
-      by = c("o_orderkey" = "l_orderkey")
-    ) %>%
+  input_func("lineitem") %>%
     filter(
+      l_shipmode %in% c("MAIL", "SHIP"),
       l_commitdate < l_receiptdate,
       l_shipdate < l_commitdate,
       l_receiptdate >= as.Date("1994-01-01"),
       l_receiptdate < as.Date("1995-01-01")
+    ) %>%
+    inner_join(
+      input_func("orders"),
+      by = c("l_orderkey" = "o_orderkey")
     ) %>%
     group_by(l_shipmode) %>%
     summarise(
