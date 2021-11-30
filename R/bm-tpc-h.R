@@ -288,7 +288,7 @@ tpch_answer <- function(scale_factor, query_id, source = c("arrowbench", "duckdb
       "tpch",
       "answers",
       paste0("scale-factor-", scale_factor_string),
-      paste0("tpch-q", sprintf("%02s", query_id), "-sf", scale_factor_string, ".parquet"),
+      paste0("tpch-q", sprintf("%02i", query_id), "-sf", scale_factor_string, ".parquet"),
       package = "arrowbench"
     )
 
@@ -300,7 +300,7 @@ tpch_answer <- function(scale_factor, query_id, source = c("arrowbench", "duckdb
           "tpch",
           "answers",
           paste0("scale-factor-", scale_factor_string),
-          paste0("tpch-q", sprintf("%02s", query_id), "-sf", scale_factor_string, ".parquet")
+          paste0("tpch-q", sprintf("%02i", query_id), "-sf", scale_factor_string, ".parquet")
         ),
         " in the arrowbench package directory) was not found "
       )
