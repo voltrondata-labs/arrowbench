@@ -38,3 +38,11 @@ test_that("can find the tables used", {
   }
   expect_identical(tables_refed(test_query), "lineitem")
 })
+
+test_that("tpch_answer", {
+  q01_ans <- tpch_answer(0.01, 1)
+  expect_s3_class(q01_ans, "tbl_df")
+
+  q22_ans <- tpch_answer(1, 22)
+  expect_s3_class(q22_ans, "tbl_df")
+})
