@@ -291,7 +291,21 @@ tpch_answer <- function(scale_factor, query_id, source = c("arrowbench", "duckdb
       paste0("tpch-q", sprintf("%02s", query_id), "-sf", scale_factor_string, ".parquet"),
       package = "arrowbench"
     )
-    # TODO: what if the file doesn't exist?
+
+    if (!file.exists(answer_file)) {
+      stop(
+        "The answer file (looking for ",
+        file.path(
+          "arrowbench",
+          "tpch",
+          "answers",
+          paste0("scale-factor-", scale_factor_string),
+          paste0("tpch-q", sprintf("%02s", query_id), "-sf", scale_factor_string, ".parquet")
+        ),
+        " in the arrowbench package directory) was not found "
+      )
+    }
+
     answer <- arrow::read_parquet(answer_file)
   } else if (source == "duckdb") {
     if (scale_factor != 1) {
