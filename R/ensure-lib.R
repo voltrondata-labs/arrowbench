@@ -303,6 +303,6 @@ install_custom_duckdb <- function() {
   withr::with_envvar(
     list(DUCKDB_R_EXTENSIONS = "tpch"),
     # build duckdb with tpch enabled
-    remotes::install_github("duckdb/duckdb/tools/rpkg", build = FALSE)
+    remotes::install_github("duckdb/duckdb@*release", build = FALSE, subdir = "tools/rpkg")
   )
 }
