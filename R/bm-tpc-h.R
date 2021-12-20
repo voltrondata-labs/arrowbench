@@ -19,7 +19,7 @@ tpc_h <- Benchmark("tpc_h",
                    memory_map = FALSE,
                    output = "data_frame") {
     # engine defaults to arrow
-    engine <- match.arg(engine, c("arrow", "duckdb", "dplyr"))
+    engine <- match.arg(engine, c("arrow", "duckdb", "duckdb_sql", "dplyr"))
     # input format
     format <- match.arg(format, c("parquet", "feather", "native"))
     # query_id defaults to 1 for now
@@ -95,7 +95,7 @@ tpc_h <- Benchmark("tpc_h",
       } else if (output == "arrow_table") {
         collect_func <- compute
       }
-    } else if (engine == "duckdb") {
+    } else if (engine %in% c("duckdb", "duckdb_sql")) {
       # we use this connection both to populate views/tables
       con <- DBI::dbConnect(duckdb::duckdb())
 
@@ -114,13 +114,26 @@ tpc_h <- Benchmark("tpc_h",
         # penalize duckdb since AFAICT `parquet_scan` is not parallelized and
         # ends up being the bottleneck
         if (format == "parquet") {
-          sql_query <- paste0("CREATE VIEW ", name, " AS SELECT * FROM parquet_scan('", file, "');")
+          sql_query <- paste0("CREATE OR REPLACE VIEW ", name, " AS SELECT * FROM parquet_scan('", file, "');")
         } else if (format == "native") {
-          sql_query <- paste0("CREATE TABLE ", name, " AS SELECT * FROM parquet_scan('", file, "');")
+          sql_query <- paste0("CREATE TABLE IF NOT EXISTS ", name, " AS SELECT * FROM parquet_scan('", file, "');")
         }
 
         DBI::dbExecute(con, sql_query)
       }
+
+      # If we are using the SQL engine, then we need to replace tpc_h_queries
+      if (engine == "duckdb_sql") {
+        tpc_h_queries <- list()
+        # TODO: should this actually just be query_id?
+        queries <- 1:22
+
+        # get the queries
+        tpc_h_queries <- lapply(queries, get_sql_query_func, con = con)
+
+        names(tpc_h_queries) <- queries
+      }
+
     } else if (engine == "dplyr") {
       library("lubridate", warn.conflicts = FALSE)
       if (format == "parquet") {
@@ -157,13 +170,17 @@ tpc_h <- Benchmark("tpc_h",
   },
   # the benchmark to run
   run = {
-    result <- query(input_func, collect_func)
+    result <- query(input_func, collect_func, con)
   },
   # after each iteration, check the dimensions and delete the results
   after_each = {
     # If the scale_factor is < 1, duckdb has the answer
     if (scale_factor %in% c(0.01, 0.1, 1, 10)) {
       answer <- tpch_answer(scale_factor, query_id)
+
+      # the result is sometimes a data.frame, turn into a tibble for printing
+      # purposes
+      result <- dplyr::as_tibble(result)
 
       # TODO: different tolerances for different kinds of columns?
       # > For ratios, results r must be within 1% of the query validation output
@@ -210,7 +227,7 @@ tpc_h <- Benchmark("tpc_h",
       all_equal_out <- all.equal(result, answer, check.attributes = FALSE, tolerance = 0.01)
       if (!isTRUE(all_equal_out)) {
         warning("\n", all_equal_out, "\n")
-        warning("\nExpected:\n", paste0(capture.output(print(answer)), collapse = "\n"))
+        warning("\nExpected:\n", paste0(capture.output(print(answer, width = Inf)), collapse = "\n"))
         warning("\n\nGot:\n", paste0(capture.output(print(result, width = Inf)), collapse = "\n"))
         stop("The answer does not match")
       }
@@ -340,4 +357,42 @@ tpch_answer <- function(scale_factor, query_id, source = c("arrowbench", "duckdb
   }
 
   answer
+}
+
+#' Get a SQL query
+#'
+#' Produces a function that can be queried against any DBI backend (e.g. DuckDB)
+#'
+#' @param con the connection to DuckDB to use to get the query (note: this is
+#' not the connection that will be used to run the query)
+#' @param query_num the query number to fetch the result for
+#'
+#' @return a function that accepts an argument `con` which will run
+#' `DBI::dbGetQuery()` against.
+#'
+#' @export
+#' @keywords internal
+get_sql_query_func <- function(con, query_num) {
+  query_sql <- get_sql_tpch_query(con, query_num)
+
+  # wrap the SQL in a function
+  function(input_func = NULL, collect_func = NULL, con) {
+    DBI::dbGetQuery(con, query_sql)
+  }
+}
+
+
+get_sql_tpch_query <- function(con, query_num) {
+  ensure_custom_duckdb()
+
+  out <- DBI::dbGetQuery(
+    con,
+    paste0("SELECT query FROM tpch_queries() WHERE query_nr=", query_num, ";")
+  )
+
+  # there should be only one row
+  stopifnot(nrow(out) == 1)
+
+  # extract the one query found
+  out$query[[1]]
 }

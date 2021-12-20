@@ -5,7 +5,7 @@
 #' @export
 tpc_h_queries <- list()
 
-tpc_h_queries[[1]] <- function(input_func, collect_func = dplyr::collect) {
+tpc_h_queries[[1]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
   input_func("lineitem") %>%
     select(l_shipdate, l_returnflag, l_linestatus, l_quantity,
            l_extendedprice, l_discount, l_tax) %>%
@@ -29,7 +29,7 @@ tpc_h_queries[[1]] <- function(input_func, collect_func = dplyr::collect) {
     collect_func()
 }
 
-tpc_h_queries[[2]] <- function(input_func, collect_func = dplyr::collect) {
+tpc_h_queries[[2]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
   ps <- input_func("partsupp") %>% select(ps_partkey, ps_suppkey, ps_supplycost)
 
   p <- input_func("part") %>%
@@ -74,7 +74,7 @@ tpc_h_queries[[2]] <- function(input_func, collect_func = dplyr::collect) {
     collect_func()
 }
 
-tpc_h_queries[[3]] <- function(input_func, collect_func = dplyr::collect) {
+tpc_h_queries[[3]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
   oc <- inner_join(
     input_func("orders") %>%
       select(o_orderkey, o_custkey, o_orderdate, o_shippriority) %>%
@@ -105,7 +105,7 @@ tpc_h_queries[[3]] <- function(input_func, collect_func = dplyr::collect) {
     collect_func()
 }
 
-tpc_h_queries[[4]] <- function(input_func, collect_func = dplyr::collect) {
+tpc_h_queries[[4]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
   l <- input_func("lineitem") %>%
     select(l_orderkey, l_commitdate, l_receiptdate) %>%
     filter(l_commitdate < l_receiptdate) %>%
@@ -130,7 +130,7 @@ tpc_h_queries[[4]] <- function(input_func, collect_func = dplyr::collect) {
     collect_func()
 }
 
-tpc_h_queries[[5]] <- function(input_func, collect_func = dplyr::collect) {
+tpc_h_queries[[5]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
   nr <- inner_join(
     input_func("nation") %>%
       select(n_nationkey, n_regionkey, n_name),
@@ -176,7 +176,7 @@ tpc_h_queries[[5]] <- function(input_func, collect_func = dplyr::collect) {
     collect_func()
 }
 
-tpc_h_queries[[6]] <- function(input_func, collect_func = dplyr::collect) {
+tpc_h_queries[[6]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
   input_func("lineitem") %>%
     select(l_shipdate, l_extendedprice, l_discount, l_quantity) %>%
     # kludge, should be: filter(l_shipdate >= "1994-01-01",
@@ -195,7 +195,7 @@ tpc_h_queries[[6]] <- function(input_func, collect_func = dplyr::collect) {
     collect_func()
 }
 
-tpc_h_queries[[7]] <- function(input_func, collect_func = dplyr::collect) {
+tpc_h_queries[[7]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
   sn <- inner_join(
     input_func("supplier") %>%
       select(s_nationkey, s_suppkey),
@@ -248,7 +248,7 @@ tpc_h_queries[[7]] <- function(input_func, collect_func = dplyr::collect) {
     collect_func()
 }
 
-tpc_h_queries[[8]] <- function(input_func, collect_func = dplyr::collect) {
+tpc_h_queries[[8]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
   # kludge, swapped the table order around because of ARROW-14184
   # nr <- inner_join(
   #   input_func("nation") %>%
@@ -323,7 +323,7 @@ tpc_h_queries[[8]] <- function(input_func, collect_func = dplyr::collect) {
     collect_func()
 }
 
-tpc_h_queries[[9]] <- function(input_func, collect_func = dplyr::collect) {
+tpc_h_queries[[9]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
   p <- input_func("part") %>%
     select(p_name, p_partkey) %>%
     filter(grepl(".*green.*", p_name)) %>%
@@ -373,7 +373,7 @@ tpc_h_queries[[9]] <- function(input_func, collect_func = dplyr::collect) {
     collect_func()
 }
 
-tpc_h_queries[[10]] <- function(input_func, collect_func = dplyr::collect) {
+tpc_h_queries[[10]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
   l <- input_func("lineitem") %>%
     select(l_orderkey, l_returnflag, l_extendedprice, l_discount) %>%
     filter(l_returnflag == "R") %>%
@@ -411,7 +411,7 @@ tpc_h_queries[[10]] <- function(input_func, collect_func = dplyr::collect) {
     collect_func()
 }
 
-tpc_h_queries[[11]] <- function(input_func, collect_func = dplyr::collect) {
+tpc_h_queries[[11]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
   nation <- input_func("nation") %>%
     filter(n_name == "GERMANY")
 
@@ -438,7 +438,7 @@ tpc_h_queries[[11]] <- function(input_func, collect_func = dplyr::collect) {
     collect_func()
 }
 
-tpc_h_queries[[12]] <- function(input_func, collect_func = dplyr::collect) {
+tpc_h_queries[[12]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
   input_func("lineitem") %>%
     filter(
       l_shipmode %in% c("MAIL", "SHIP"),
@@ -473,7 +473,7 @@ tpc_h_queries[[12]] <- function(input_func, collect_func = dplyr::collect) {
     collect_func()
 }
 
-tpc_h_queries[[13]] <- function(input_func, collect_func = dplyr::collect) {
+tpc_h_queries[[13]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
   c_orders <- input_func("customer") %>%
     left_join(
       input_func("orders") %>%
@@ -493,7 +493,7 @@ tpc_h_queries[[13]] <- function(input_func, collect_func = dplyr::collect) {
     collect_func()
 }
 
-tpc_h_queries[[14]] <- function(input_func, collect_func = dplyr::collect) {
+tpc_h_queries[[14]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
   input_func("lineitem") %>%
     filter(
       l_shipdate >= as.Date("1995-01-01"),
@@ -508,7 +508,7 @@ tpc_h_queries[[14]] <- function(input_func, collect_func = dplyr::collect) {
     collect_func()
 }
 
-tpc_h_queries[[15]] <- function(input_func, collect_func = dplyr::collect) {
+tpc_h_queries[[15]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
   revenue_by_supplier <- input_func("lineitem") %>%
     filter(
       l_shipdate >= as.Date("1996-01-01"),
@@ -535,7 +535,7 @@ tpc_h_queries[[15]] <- function(input_func, collect_func = dplyr::collect) {
     collect_func()
 }
 
-tpc_h_queries[[16]] <- function(input_func, collect_func = dplyr::collect) {
+tpc_h_queries[[16]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
   part_filtered <- input_func("part") %>%
     filter(
       p_brand != "Brand#45",
@@ -560,7 +560,7 @@ tpc_h_queries[[16]] <- function(input_func, collect_func = dplyr::collect) {
     collect_func()
 }
 
-tpc_h_queries[[17]] <- function(input_func, collect_func = dplyr::collect) {
+tpc_h_queries[[17]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
   parts_filtered <- input_func("part") %>%
     filter(
       p_brand == "Brand#23",
@@ -581,7 +581,7 @@ tpc_h_queries[[17]] <- function(input_func, collect_func = dplyr::collect) {
     collect_func()
 }
 
-tpc_h_queries[[18]] <- function(input_func, collect_func = dplyr::collect) {
+tpc_h_queries[[18]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
   big_orders <- input_func("lineitem") %>%
     group_by(l_orderkey) %>%
     summarise(`sum(l_quantity)` = sum(l_quantity)) %>%
@@ -599,7 +599,7 @@ tpc_h_queries[[18]] <- function(input_func, collect_func = dplyr::collect) {
     collect_func()
 }
 
-tpc_h_queries[[19]] <- function(input_func, collect_func = dplyr::collect) {
+tpc_h_queries[[19]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
   joined <- input_func("lineitem") %>%
     inner_join(input_func("part"), by = c("l_partkey" = "p_partkey"))
 
@@ -644,7 +644,7 @@ tpc_h_queries[[19]] <- function(input_func, collect_func = dplyr::collect) {
     collect_func()
 }
 
-tpc_h_queries[[20]] <- function(input_func, collect_func = dplyr::collect) {
+tpc_h_queries[[20]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
   supplier_ca <- input_func("supplier") %>%
     inner_join(
       input_func("nation") %>% filter(n_name == "CANADA"),
@@ -682,7 +682,7 @@ tpc_h_queries[[20]] <- function(input_func, collect_func = dplyr::collect) {
     collect_func()
 }
 
-tpc_h_queries[[21]] <- function(input_func, collect_func = dplyr::collect) {
+tpc_h_queries[[21]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
   orders_with_more_than_one_supplier <- input_func("lineitem") %>%
     group_by(l_orderkey) %>%
     count(l_suppkey) %>%
@@ -716,7 +716,7 @@ tpc_h_queries[[21]] <- function(input_func, collect_func = dplyr::collect) {
     collect_func()
 }
 
-tpc_h_queries[[22]] <- function(input_func, collect_func = dplyr::collect) {
+tpc_h_queries[[22]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
   acctbal_mins <- input_func("customer") %>%
     filter(
       substr(c_phone, 1, 2) %in% c("13", "31", "23", "29", "30", "18", "17") &
