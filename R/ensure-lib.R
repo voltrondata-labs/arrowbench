@@ -261,13 +261,12 @@ ensure_custom_duckdb <- function() {
   # We need to check if the installed duckdb has the tpch extension built. If it
   # does not, we will build it (with the appropriate envvars to build with tpch)
 
-  # We check if duckdb can generate a (very small) set of tpch data to ensure it
-  # has the tpch extension. This is done in a call to `system` so that we don't
-  # load the duckdb namespace/dll before installing it. In my testing even pkgload::unload()
-  # couldn't fully unload duckdb.
+  # We check if duckdb has the tpch extension. This is done in a call to `system`
+  # so that we don't load the duckdb namespace/dll before installing it. In my
+  # testing even pkgload::unload() couldn't fully unload duckdb.
   lines <- c(
     "con <- DBI::dbConnect(duckdb::duckdb())",
-    "DBI::dbExecute(con, 'CALL dbgen(sf=0.00001);')",
+    "DBI::dbGetQuery(con, 'select scale_factor, query_nr from tpch_answers() LIMIT 1;')",
     "DBI::dbDisconnect(con, shutdown = TRUE)"
   )
 

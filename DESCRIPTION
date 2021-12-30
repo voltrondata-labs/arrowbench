@@ -32,6 +32,7 @@ Suggests:
     DBI,
     duckdb,
     fst,
+    lubridate,
     mockery,
     readr,
     vroom

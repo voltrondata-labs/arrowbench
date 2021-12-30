@@ -19,7 +19,7 @@ tpc_h <- Benchmark("tpc_h",
                    memory_map = FALSE,
                    output = "data_frame") {
     # engine defaults to arrow
-    engine <- match.arg(engine, c("arrow", "duckdb", "dplyr"))
+    engine <- match.arg(engine, c("arrow", "duckdb", "duckdb_sql", "dplyr"))
     # input format
     format <- match.arg(format, c("parquet", "feather", "native"))
     # query_id defaults to 1 for now
@@ -32,118 +32,41 @@ tpc_h <- Benchmark("tpc_h",
 
     library("dplyr", warn.conflicts = FALSE)
 
-    # ensure that we have the _base_ tpc-h files (in parquet)
-    tpch_files <- ensure_source("tpch", scale_factor = scale_factor)
-
-    # these will be filled in later, when we have file paths available
-    input_functions <- list()
-
-    # find only the tables that are needed to process
-    tpch_tables_needed <- tables_refed(tpc_h_queries[[query_id]])
 
     # for most engines, we want to use collect() (since arrow_table isn't an
     # output option)
     collect_func <- collect
 
+    if (output == "data_frame") {
+      collect_func <- collect
+    } else if (output == "arrow_table") {
+      collect_func <- compute
+    }
+
     # we pass a connection around for duckdb, but not others
     con <- NULL
 
-    if (engine == "arrow") {
-      # ensure that we have the right kind of files available
-      # but for native, make sure we have a feather file, and we will read that
-      # in to memory before the benchmark (below)
-      format_to_convert <- format
-      if (format == "native") {
-        format_to_convert <- "feather"
-      }
-
-      tpch_files <- vapply(
-        tpch_files[tpch_tables_needed],
-        ensure_format,
-        FUN.VALUE = character(1),
-        format = format_to_convert
-      )
-
-      # specify readers for each format
-      if (format == "parquet") {
-        input_functions[["arrow"]] <- function(name) {
-          file <- tpch_files[[name]]
-          return(arrow::open_dataset(file, format = "parquet"))
-        }
-      } else if (format == "feather") {
-        input_functions[["arrow"]] <- function(name) {
-          file <- tpch_files[[name]]
-          return(arrow::open_dataset(file, format = "feather"))
-        }
-      } else if (format == "native") {
-        # native is different: read the feather file in first, and pass the table
-        tab <- list()
-        for (name in names(tpch_files)) {
-          tab[[name]] <- arrow::read_feather(
-            tpch_files[[name]],
-            as_data_frame = FALSE,
-            mmap = memory_map
-          )
-        }
-        input_functions[["arrow"]] <- function(name) {
-          return(tab[[name]])
-        }
-      }
-
-      if (output == "data_frame") {
-        collect_func <- collect
-      } else if (output == "arrow_table") {
-        collect_func <- compute
-      }
-    } else if (engine == "duckdb") {
+    if (engine %in% c("duckdb", "duckdb_sql")) {
       # we use this connection both to populate views/tables
       con <- DBI::dbConnect(duckdb::duckdb())
 
       # set parallelism for duckdb
       DBI::dbExecute(con, paste0("PRAGMA threads=", getOption("Ncpus")))
-
-      input_functions[["duckdb"]] <- function(name) {
-        return(tbl(con, name))
-      }
-
-      for (name in tpch_tables_needed) {
-        file <- path.expand(tpch_files[[name]])
-
-        # have to create a VIEW in order to reference it by name
-        # This view is the most accurate comparison to Arrow, however it will
-        # penalize duckdb since AFAICT `parquet_scan` is not parallelized and
-        # ends up being the bottleneck
-        if (format == "parquet") {
-          sql_query <- paste0("CREATE VIEW ", name, " AS SELECT * FROM parquet_scan('", file, "');")
-        } else if (format == "native") {
-          sql_query <- paste0("CREATE TABLE ", name, " AS SELECT * FROM parquet_scan('", file, "');")
-        }
-
-        DBI::dbExecute(con, sql_query)
-      }
-    } else if (engine == "dplyr") {
-      library("lubridate", warn.conflicts = FALSE)
-      if (format == "parquet") {
-        input_functions[["dplyr"]] <- function(name) {
-          file <- tpch_files[[name]]
-          return(arrow::read_parquet(file, as_data_frame = TRUE))
-        }
-      }
-    }
-
-    # Get query, and error if it is not implemented
-    query <- tpc_h_queries[[query_id]]
-    if (is.null(query)) {
-      stop("The query ", query_id, " is not yet implemented.", call. = FALSE)
     }
 
     # put the necessary variables into a BenchmarkEnvironment to be used when the
     # benchmark is running.
     BenchEnvironment(
       # get the correct read function for the input format
-      input_func = input_functions[[engine]],
-      tpch_files = tpch_files,
-      query = query,
+      input_func = get_input_func(
+        engine = engine,
+        scale_factor = scale_factor,
+        query_id = query_id,
+        format = format,
+        con = con,
+        memory_map = memory_map
+      ),
+      query = get_query_func(query_id, engine),
       engine = engine,
       con = con,
       scale_factor = scale_factor,
@@ -157,13 +80,17 @@ tpc_h <- Benchmark("tpc_h",
   },
   # the benchmark to run
   run = {
-    result <- query(input_func, collect_func)
+    result <- query(input_func, collect_func, con)
   },
   # after each iteration, check the dimensions and delete the results
   after_each = {
     # If the scale_factor is < 1, duckdb has the answer
     if (scale_factor %in% c(0.01, 0.1, 1, 10)) {
       answer <- tpch_answer(scale_factor, query_id)
+
+      # the result is sometimes a data.frame, turn into a tibble for printing
+      # purposes
+      result <- dplyr::as_tibble(result)
 
       # TODO: different tolerances for different kinds of columns?
       # > For ratios, results r must be within 1% of the query validation output
@@ -210,7 +137,7 @@ tpc_h <- Benchmark("tpc_h",
       all_equal_out <- all.equal(result, answer, check.attributes = FALSE, tolerance = 0.01)
       if (!isTRUE(all_equal_out)) {
         warning("\n", all_equal_out, "\n")
-        warning("\nExpected:\n", paste0(capture.output(print(answer)), collapse = "\n"))
+        warning("\nExpected:\n", paste0(capture.output(print(answer, width = Inf)), collapse = "\n"))
         warning("\n\nGot:\n", paste0(capture.output(print(result, width = Inf)), collapse = "\n"))
         stop("The answer does not match")
       }
@@ -267,10 +194,126 @@ find_input_func <- function(func) {
   }
 }
 
-
-#' get a tpch answer
+#' Get an input function for a table
 #'
-#' Gets a TPC-H answer
+#' This returns a function which will return a table reference with the specified
+#' parameters
+#'
+#' @param engine which engine to use
+#' @param scale_factor what scale factor to reference
+#' @param query_id which query is being used
+#' @param format which format
+#' @param con a connection
+#' @param memory_map should the file be memory mapped?
+#'
+#' @export
+get_input_func <- function(engine,
+                           scale_factor,
+                           query_id,
+                           format,
+                           con = NULL,
+                           memory_map = FALSE) {
+  # ensure that we have the _base_ tpc-h files (in parquet)
+  tpch_files <- ensure_source("tpch", scale_factor = scale_factor)
+
+  # find only the tables that are needed to process
+  tpch_tables_needed <- tables_refed(tpc_h_queries[[query_id]])
+
+  if (engine == "arrow") {
+    # ensure that we have the right kind of files available
+    # but for native, make sure we have a feather file, and we will read that
+    # in to memory before the benchmark (below)
+    format_to_convert <- format
+    if (format == "native") {
+      format_to_convert <- "feather"
+    }
+
+    tpch_files <- vapply(
+      tpch_files[tpch_tables_needed],
+      ensure_format,
+      FUN.VALUE = character(1),
+      format = format_to_convert
+    )
+
+    # specify readers for each format
+    if (format == "parquet") {
+      input_functions <- function(name) {
+        file <- tpch_files[[name]]
+        return(arrow::open_dataset(file, format = "parquet"))
+      }
+    } else if (format == "feather") {
+      input_functions <- function(name) {
+        file <- tpch_files[[name]]
+        return(arrow::open_dataset(file, format = "feather"))
+      }
+    } else if (format == "native") {
+      # native is different: read the feather file in first, and pass the table
+      tab <- list()
+      for (name in names(tpch_files)) {
+        tab[[name]] <- arrow::read_feather(
+          tpch_files[[name]],
+          as_data_frame = FALSE,
+          mmap = memory_map
+        )
+      }
+      input_functions <- function(name) {
+        return(tab[[name]])
+      }
+    }
+  } else if (engine %in% c("duckdb", "duckdb_sql")) {
+    input_functions <- function(name) {
+      return(dplyr::tbl(con, name))
+    }
+
+    for (name in tpch_tables_needed) {
+      file <- path.expand(tpch_files[[name]])
+
+      # have to create a VIEW in order to reference it by name
+      # This view is the most accurate comparison to Arrow, however it will
+      # penalize duckdb since AFAICT `parquet_scan` is not parallelized and
+      # ends up being the bottleneck
+      if (format == "parquet") {
+        sql_query <- paste0("CREATE OR REPLACE VIEW ", name, " AS SELECT * FROM parquet_scan('", file, "');")
+      } else if (format == "native") {
+        sql_query <- paste0("CREATE TABLE IF NOT EXISTS ", name, " AS SELECT * FROM parquet_scan('", file, "');")
+      }
+
+      DBI::dbExecute(con, sql_query)
+    }
+
+  } else if (engine == "dplyr") {
+    requireNamespace("lubridate")
+    if (format == "parquet") {
+      input_functions <- function(name) {
+        file <- tpch_files[[name]]
+        return(arrow::read_parquet(file, as_data_frame = TRUE))
+      }
+    }
+  }
+
+  input_functions
+}
+
+
+#' Get a query function that will run a specific TPC-H query
+#'
+#' @param query_id which query to get?
+#' @param engine which engine to use (all options return a dplyr-based query,
+#' with the except of `"duckdb_sql"` which returns a SQL-based query)
+#'
+#' @export
+get_query_func <- function(query_id, engine = NULL) {
+
+  if (!is.null(engine) && engine == "duckdb_sql") {
+    # If we are using the SQL engine, then we need to get the SQL
+    return(get_sql_query_func(query_id))
+  } else {
+    # For all other engines, use the dplyr in tpc_h_queryes
+    return(tpc_h_queries[[query_id]])
+  }
+}
+
+#' Get a TPC-H answer
 #'
 #' @param scale_factor scale factor (possible values: `c(0.01, 0.1, 1, 10)`)
 #' @param query_id Id of the query (possible values: 1-22)
@@ -340,4 +383,49 @@ tpch_answer <- function(scale_factor, query_id, source = c("arrowbench", "duckdb
   }
 
   answer
+}
+
+#' Get a SQL query
+#'
+#' Produces a function that can be queried against any DBI backend (e.g. DuckDB)
+#'
+#' The function that is returned takes the following arguments. The first two are
+#' suppleid to match the signature of those in tpc_h_queries
+#'
+#' * `input_func` set to default `NULL`, will have no effect if supplied
+#' * `collect_func` set to default `NULL`, will have no effect if supplied
+#' * `con` a (DBI) connection to query against
+#'
+#' @param query_num the query number to fetch the result for
+#'
+#' @return a function that accepts an argument `con` which will run
+#' `DBI::dbGetQuery()` against.
+#'
+#' @export
+#' @keywords internal
+get_sql_query_func <- function(query_num) {
+  query_sql <- get_sql_tpch_query(query_num)
+
+  # wrap the SQL in a function
+  function(input_func = NULL, collect_func = NULL, con) {
+    DBI::dbGetQuery(con, query_sql)
+  }
+}
+
+
+get_sql_tpch_query <- function(query_num) {
+  ensure_custom_duckdb()
+  con <- DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+
+  out <- DBI::dbGetQuery(
+    con,
+    paste0("SELECT query FROM tpch_queries() WHERE query_nr=", query_num, ";")
+  )
+
+  # there should be only one row
+  stopifnot(nrow(out) == 1)
+
+  # extract the one query found
+  out$query[[1]]
 }

@@ -36,7 +36,7 @@ for (name in tpch_tables) {
 }
 
 input_functions[["duckdb"]] <- function(name) {
-  return(tbl(con, name))
+  return(dplyr::tbl(con, name))
 }
 
 # create directory to save the answers to
