@@ -47,9 +47,17 @@ test_that("tpch_answer", {
   expect_s3_class(q22_ans, "tbl_df")
 })
 
+test_that("get_query_func()", {
+  out <- get_query_func(1)
+  expect_type(out, "closure")
+  expect_identical(out, tpc_h_queries[[1]])
+
+  out <- get_query_func(1, engine = "duckdb_sql")
+  expect_type(out, "closure")
+})
+
 test_that("tpch sql queries", {
-  con_one <- DBI::dbConnect(duckdb::duckdb())
-  query_01 <- get_sql_tpch_query(con_one, 1)
+  query_01 <- get_sql_tpch_query(1)
   expect_equal(
     query_01,
     "SELECT
@@ -76,13 +84,12 @@ ORDER BY
   )
 
   # create a new connection to ensure we're using the one that is bieng based
-  con_two <- DBI::dbConnect(duckdb::duckdb())
-  DBI::dbExecute(con_two, paste0("CALL dbgen(sf=0.001);"))
+  con_one <- DBI::dbConnect(duckdb::duckdb())
+  DBI::dbExecute(con_one, paste0("CALL dbgen(sf=0.001);"))
 
-  query_01_func <- get_sql_query_func(con_two, 1)
-  query_01_func(con = con_two)
+  query_01_func <- get_sql_query_func(1)
+  query_01_func(con = con_one)
 
   # clean up
   DBI::dbDisconnect(con_one, shutdown = TRUE)
-  DBI::dbDisconnect(con_two, shutdown = TRUE)
 })

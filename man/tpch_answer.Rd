@@ -2,7 +2,7 @@
 % Please edit documentation in R/bm-tpc-h.R
 \name{tpch_answer}
 \alias{tpch_answer}
-\title{get a tpch answer}
+\title{Get a TPC-H answer}
 \usage{
 tpch_answer(scale_factor, query_id, source = c("arrowbench", "duckdb"))
 }
@@ -18,5 +18,5 @@ return answers for scale_factor 1.}
 the answer, as a data.frame
 }
 \description{
-Gets a TPC-H answer
+Get a TPC-H answer
 }
