@@ -39,12 +39,17 @@ test_that("can find the tables used", {
   expect_identical(tables_refed(test_query), "lineitem")
 })
 
-test_that("tpch_answer", {
-  q01_ans <- tpch_answer(0.01, 1)
+test_that("tpch_answer (arrowbench)", {
+  q01_ans <- tpch_answer(0.01, 1, source = "arrowbench")
   expect_s3_class(q01_ans, "tbl_df")
 
-  q22_ans <- tpch_answer(1, 22)
+  q22_ans <- tpch_answer(1, 22, source = "arrowbench")
   expect_s3_class(q22_ans, "tbl_df")
+})
+
+test_that("tpch_answer (duckdb)", {
+  q22_ans <- tpch_answer(1, 22, source = "duckdb")
+  expect_s3_class(q22_ans, "data.frame")
 })
 
 test_that("get_query_func()", {
@@ -83,13 +88,25 @@ ORDER BY
     l_linestatus;\n"
   )
 
-  # create a new connection to ensure we're using the one that is bieng based
+  # create a new connection to ensure we're using the one that is being based
   con_one <- DBI::dbConnect(duckdb::duckdb())
-  DBI::dbExecute(con_one, paste0("CALL dbgen(sf=0.001);"))
+
+  # use it to populate the tables needed for query 1
+  get_input_func(
+    engine = "duckdb",
+    scale_factor = 0.001,
+    format = "parquet",
+    query_id = 1,
+    con = con_one
+  )
 
   query_01_func <- get_sql_query_func(1)
-  query_01_func(con = con_one)
+  expect_s3_class(query_01_func(con = con_one), "data.frame")
 
   # clean up
   DBI::dbDisconnect(con_one, shutdown = TRUE)
+})
+
+test_that("tpch_answer() works", {
+
 })

@@ -24,7 +24,8 @@ Imports:
   R.utils,
   sessioninfo,
   utils,
-  withr
+  withr,
+  callr
 Suggests:
     testthat (>= 3.0.0),
     arrow,
@@ -50,6 +51,7 @@ Collate:
     'bm-table-to-df.R'
     'bm-tpc-h.R'
     'bm-write-file.R'
+    'custom-duckdb.R'
     'ensure-format.R'
     'ensure-lib.R'
     'known-sources.R'
