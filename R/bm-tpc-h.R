@@ -108,7 +108,7 @@ tpc_h <- Benchmark("tpc_h",
         stop("The answer does not match")
       }
     } else {
-      stop("There is no validation for more scale factors")
+      warning("There is no validation for scale_factors other than 0.01, 0.1, 1, and 10. Be careful with these results!")
     }
 
     # double check this result with the duckdb answers, since we can
