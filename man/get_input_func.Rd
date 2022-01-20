@@ -9,6 +9,7 @@ get_input_func(
   scale_factor,
   query_id,
   format,
+  compression = "uncompressed",
   con = NULL,
   memory_map = FALSE
 )
@@ -22,9 +23,11 @@ get_input_func(
 
 \item{format}{which format}
 
+\item{compression}{which compression to use (default: "uncompressed")}
+
 \item{con}{a connection}
 
-\item{memory_map}{should the file be memory mapped?}
+\item{memory_map}{should the file be memory mapped? (only relevant for the "native" format with Arrow)}
 }
 \description{
 This returns a function which will return a table reference with the specified
