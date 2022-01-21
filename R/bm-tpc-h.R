@@ -356,12 +356,7 @@ tpch_answer <- function(scale_factor, query_id, source = c("arrowbench", "duckdb
       return(NULL)
     }
     ensure_custom_duckdb()
-
-    con <- DBI::dbConnect(duckdb::duckdb())
-    on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
-
-    answer_psv <- DBI::dbGetQuery(
-      con,
+    answer_psv <- query_custom_duckdb(
       paste0(
         "SELECT *, cast(scale_factor AS VARCHAR) FROM tpch_answers() ",
         "WHERE " ,
@@ -415,11 +410,7 @@ get_sql_query_func <- function(query_num) {
 
 get_sql_tpch_query <- function(query_num) {
   ensure_custom_duckdb()
-  con <- DBI::dbConnect(duckdb::duckdb())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
-
-  out <- DBI::dbGetQuery(
-    con,
+  out <- query_custom_duckdb(
     paste0("SELECT query FROM tpch_queries() WHERE query_nr=", query_num, ";")
   )
 

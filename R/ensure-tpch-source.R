@@ -9,20 +9,20 @@ generate_tpch <- function(scale_factor = 1) {
   ensure_custom_duckdb()
 
   duckdb_file <- tempfile()
-  con <- DBI::dbConnect(duckdb::duckdb(dbdir = duckdb_file))
-  on.exit({
-    DBI::dbDisconnect(con, shutdown = TRUE)
-    unlink(duckdb_file)
-  }, add = TRUE)
-  DBI::dbExecute(con, paste0("CALL dbgen(sf=", scale_factor, ");"))
+  on.exit(unlink(duckdb_file, recursive = TRUE))
 
+  # generate the tables
+  query_custom_duckdb(
+    paste0("CALL dbgen(sf=", scale_factor, ");"),
+    dbdir = duckdb_file
+  )
+
+  # write each table to paruqet
   out <- lapply(tpch_tables, function(name) {
-    # TODO: use arrow-native when merges https://github.com/apache/arrow/pull/11032
-    res <- DBI::dbSendQuery(con, paste0("SELECT * FROM ", name, ";"), arrow = TRUE)
-    tab <- duckdb::duckdb_fetch_record_batch(res)$read_table()
-
     filename <- source_data_file(paste0(name, "_", format(scale_factor, scientific = FALSE), ".parquet"))
-    arrow::write_parquet(tab, filename)
+    query <- paste0("SELECT * FROM ", name, ";")
+    export_custom_duckdb(query, filename, dbdir = duckdb_file)
+
     filename
   })
 
