@@ -26,7 +26,8 @@ known_formats <- c("csv", "parquet", "feather", "fst")
 ensure_format <- function(
   name,
   format = known_formats,
-  compression = known_compressions) {
+  compression = known_compressions,
+  num_groups = parallel::detectCores()) {
   compression <- match.arg(compression)
   format <- match.arg(format)
 
@@ -42,10 +43,10 @@ ensure_format <- function(
     if (compression == "gzip") {
       ext <- paste(format, "gz", sep = ".")
     } else {
-      ext <- format
+      ext <- paste(format)
     }
   } else {
-    ext <- paste(compression, format, sep = ".")
+    ext <- paste(compression, format, num_groups, sep = ".")
   }
 
   # exit quickly if exists already
@@ -90,26 +91,30 @@ ensure_format <- function(
   tab <- read_source(file_in, as_data_frame = FALSE)
 
   # write the reformatted data based on the format/ext
-  write_func <- get_write_function(format, compression)
+  write_func <- get_write_function(format, compression, num_groups)
   write_func(tab, file_out)
 
   file_out
 }
 
+get_chunk_size <- function(table, num_groups) {
+  ceiling(nrow(table) / num_groups)
+}
 
 #' Get a writer
 #'
 #' @param format format to write
 #' @param compression compression to use
+#' @param num_groups how many rows groups to create (if the format supports it)
 #'
 #' @return the write function to use
 #' @export
-get_write_function <- function(format, compression) {
+get_write_function <- function(format, compression, num_groups) {
   force(compression)
   if (format == "feather") {
-    return(function(...) arrow::write_feather(..., compression = compression))
+    return(function(x, ...) arrow::write_feather(x, ..., chunk_size=get_chunk_size(x, num_groups), compression = compression))
   } else if (format == "parquet") {
-    return(function(...) arrow::write_parquet(..., compression = compression))
+    return(function(x, ...) arrow::write_parquet(x, ..., chunk_size=get_chunk_size(x, num_groups), compression = compression))
   } else if (format == "fst") {
     # fst is always zstd, just a question of what level of compression
     level <- ifelse(compression == "uncompressed", 0, 50)

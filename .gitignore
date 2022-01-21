@@ -5,3 +5,4 @@
 tests/testthat/results
 .DS_Store
 results/
+.vscode/
