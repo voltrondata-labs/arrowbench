@@ -9,6 +9,8 @@
 #'   applicable to arrow, native. `FALSE` will result in the file being explicitly
 #'   read into memory before the benchmark)
 #' * `output` the format of the output (either `"data_frame"` (default) or `"arrow_table"`)
+#' * `chunk_size` a size of row groups to aim for in parquet or feather files (default:
+#'    NULL is the default for `arrow:write_parquet()` or `arrow::write_feather()`)
 #'
 #' @export
 tpc_h <- Benchmark("tpc_h",
@@ -17,7 +19,8 @@ tpc_h <- Benchmark("tpc_h",
                    format = c("native", "parquet"),
                    scale_factor = c(1, 10),
                    memory_map = FALSE,
-                   output = "data_frame") {
+                   output = "data_frame",
+                   chunk_size = NULL) {
     # engine defaults to arrow
     engine <- match.arg(engine, c("arrow", "duckdb", "duckdb_sql", "dplyr"))
     # input format
@@ -64,7 +67,8 @@ tpc_h <- Benchmark("tpc_h",
         query_id = query_id,
         format = format,
         con = con,
-        memory_map = memory_map
+        memory_map = memory_map,
+        chunk_size = chunk_size
       ),
       query = get_query_func(query_id, engine),
       engine = engine,
@@ -206,6 +210,7 @@ find_input_func <- function(func) {
 #' @param compression which compression to use (default: "uncompressed")
 #' @param con a connection
 #' @param memory_map should the file be memory mapped? (only relevant for the "native" format with Arrow)
+#' @param chunk_size what chunk_size should be used with the source files? (default: NULL, the default for the file format)
 #'
 #' @export
 get_input_func <- function(engine,
@@ -215,7 +220,7 @@ get_input_func <- function(engine,
                            compression = "uncompressed",
                            con = NULL,
                            memory_map = FALSE,
-                           chunk_size = 1000000) {
+                           chunk_size = NULL) {
   # ensure that we have the _base_ tpc-h files (in parquet)
   tpch_files <- ensure_source("tpch", scale_factor = scale_factor)
 

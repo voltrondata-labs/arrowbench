@@ -8,7 +8,7 @@ ensure_format(
   name,
   format = known_formats,
   compression = known_compressions,
-  num_groups = NULL
+  chunk_size = NULL
 )
 }
 \arguments{
@@ -18,7 +18,7 @@ ensure_format(
 
 \item{compression}{compression to be ensured}
 
-\item{num_groups}{the number of groups to split a file into (default: NULL, which uses the default)}
+\item{chunk_size}{the number of rows to write in each chunk}
 }
 \value{
 the file that was ensured to exist

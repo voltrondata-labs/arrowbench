@@ -28,7 +28,7 @@ ensure_format <- function(
   name,
   format = known_formats,
   compression = known_compressions,
-  chunk_size = 1000000) {
+  chunk_size = NULL) {
   compression <- match.arg(compression)
   format <- match.arg(format)
 
@@ -49,7 +49,18 @@ ensure_format <- function(
   } else if (format == "fst") {
     ext <- paste0(c(compression, format), collapse = ".")
   } else {
-    ext <- paste0(c(chunk_size %||% "", compression, format), collapse = ".")
+    # If chunk_size is not NULL (the default) make a readable string that is not
+    # too long, but has a decent bit of resolution
+    if (!is.null(chunk_size)) {
+      withr::with_options(
+        list(scipen = -10), {
+          chunk_size_str <- paste0("chunk_size_", format(chunk_size, digits = 4))
+      })
+    } else {
+      chunk_size_str <- NULL
+    }
+
+    ext <- paste0(c(chunk_size_str, compression, format), collapse = ".")
   }
 
   # exit quickly if exists already
@@ -112,7 +123,8 @@ get_chunk_size <- function(table, num_groups) {
 #'
 #' @param format format to write
 #' @param compression compression to use
-#' @param num_groups the number of rows to write in each chunk
+#' @param chunk_size the size of chunks to write (default: NULL, the default for
+#' the format)
 #'
 #' @return the write function to use
 #' @export

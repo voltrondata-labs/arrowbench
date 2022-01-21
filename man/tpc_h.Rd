@@ -24,6 +24,8 @@ Benchmark TPC-H queries
 applicable to arrow, native. \code{FALSE} will result in the file being explicitly
 read into memory before the benchmark)
 \item \code{output} the format of the output (either \code{"data_frame"} (default) or \code{"arrow_table"})
+\item \code{chunk_size} a size of row groups to aim for in parquet or feather files (default:
+NULL is the default for \code{arrow:write_parquet()} or \code{arrow::write_feather()})
 }
 }
 

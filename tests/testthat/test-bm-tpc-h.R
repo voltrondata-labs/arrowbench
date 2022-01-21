@@ -47,6 +47,9 @@ test_that("tpch_answer (arrowbench)", {
   expect_s3_class(q22_ans, "tbl_df")
 })
 
+# don't test if we are not already trying to install the custom duckdb
+skip_if(Sys.getenv("ARROWBENCH_TEST_CUSTOM_DUCKDB", "") == "")
+
 test_that("tpch_answer (duckdb)", {
   q22_ans <- tpch_answer(1, 22, source = "duckdb")
   expect_s3_class(q22_ans, "data.frame")
