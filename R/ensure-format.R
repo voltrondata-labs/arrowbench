@@ -45,6 +45,8 @@ ensure_format <- function(
     } else {
       ext <- paste(format)
     }
+  } else if (format == "fst") {
+    ext <- paste(compression, format, sep = ".")
   } else {
     ext <- paste(compression, format, num_groups, sep = ".")
   }
