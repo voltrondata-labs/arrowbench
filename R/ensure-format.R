@@ -18,6 +18,7 @@ known_formats <- c("csv", "parquet", "feather", "fst")
 #' @param name name of the known source
 #' @param format format to be ensured
 #' @param compression compression to be ensured
+#' @param chunk_size the number of rows to write in each chunk
 #'
 #' @return the file that was ensured to exist
 #' @export
@@ -26,7 +27,8 @@ known_formats <- c("csv", "parquet", "feather", "fst")
 ensure_format <- function(
   name,
   format = known_formats,
-  compression = known_compressions) {
+  compression = known_compressions,
+  chunk_size = NULL) {
   compression <- match.arg(compression)
   format <- match.arg(format)
 
@@ -42,10 +44,23 @@ ensure_format <- function(
     if (compression == "gzip") {
       ext <- paste(format, "gz", sep = ".")
     } else {
-      ext <- format
+      ext <- paste(format)
     }
+  } else if (format == "fst") {
+    ext <- paste0(c(compression, format), collapse = ".")
   } else {
-    ext <- paste(compression, format, sep = ".")
+    # If chunk_size is not NULL (the default) make a readable string that is not
+    # too long, but has a decent bit of resolution
+    if (!is.null(chunk_size)) {
+      withr::with_options(
+        list(scipen = -10), {
+          chunk_size_str <- paste0("chunk_size_", format(chunk_size, digits = 4))
+      })
+    } else {
+      chunk_size_str <- NULL
+    }
+
+    ext <- paste0(c(chunk_size_str, compression, format), collapse = ".")
   }
 
   # exit quickly if exists already
@@ -90,26 +105,35 @@ ensure_format <- function(
   tab <- read_source(file_in, as_data_frame = FALSE)
 
   # write the reformatted data based on the format/ext
-  write_func <- get_write_function(format, compression)
+  write_func <- get_write_function(format, compression, chunk_size)
   write_func(tab, file_out)
 
   file_out
 }
 
+get_chunk_size <- function(table, num_groups) {
+  if (is.null(num_groups)) {
+    return(NULL)
+  }
+
+  ceiling(nrow(table) / num_groups)
+}
 
 #' Get a writer
 #'
 #' @param format format to write
 #' @param compression compression to use
+#' @param chunk_size the size of chunks to write (default: NULL, the default for
+#' the format)
 #'
 #' @return the write function to use
 #' @export
-get_write_function <- function(format, compression) {
+get_write_function <- function(format, compression, chunk_size) {
   force(compression)
   if (format == "feather") {
-    return(function(...) arrow::write_feather(..., compression = compression))
+    return(function(...) arrow::write_feather(..., chunk_size = chunk_size %||% 65536L, compression = compression))
   } else if (format == "parquet") {
-    return(function(...) arrow::write_parquet(..., compression = compression))
+    return(function(...) arrow::write_parquet(..., chunk_size = chunk_size, compression = compression))
   } else if (format == "fst") {
     # fst is always zstd, just a question of what level of compression
     level <- ifelse(compression == "uncompressed", 0, 50)

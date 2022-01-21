@@ -11,7 +11,8 @@ get_input_func(
   format,
   compression = "uncompressed",
   con = NULL,
-  memory_map = FALSE
+  memory_map = FALSE,
+  chunk_size = NULL
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ get_input_func(
 \item{con}{a connection}
 
 \item{memory_map}{should the file be memory mapped? (only relevant for the "native" format with Arrow)}
+
+\item{chunk_size}{what chunk_size should be used with the source files? (default: NULL, the default for the file format)}
 }
 \description{
 This returns a function which will return a table reference with the specified

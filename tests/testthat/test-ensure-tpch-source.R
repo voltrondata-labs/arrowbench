@@ -2,6 +2,7 @@
 # tpc-h extension built. This doesn't work well when coverage is running, so
 # skip these tests when generating coverage.
 skip_on_covr()
+skip_if(Sys.getenv("ARROWBENCH_TEST_CUSTOM_DUCKDB", "") == "")
 
 temp_dir <- tempfile()
 dir.create(temp_dir)

@@ -4,14 +4,17 @@
 \alias{get_write_function}
 \title{Get a writer}
 \usage{
-get_write_function(format, compression)
+get_write_function(format, compression, chunk_size)
 
-get_write_function(format, compression)
+get_write_function(format, compression, chunk_size)
 }
 \arguments{
 \item{format}{format to write}
 
 \item{compression}{compression to use}
+
+\item{chunk_size}{the size of chunks to write (default: NULL, the default for
+the format)}
 }
 \value{
 the write function to use

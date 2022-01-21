@@ -16,10 +16,24 @@ withr::with_envvar(
     ensure_format("nyctaxi_sample", "parquet")
     expect_true(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.uncompressed.parquet")))
 
-    ensure_format("nyctaxi_sample", "parquet", "snappy")
+    ensure_format("nyctaxi_sample", "parquet", compression = "snappy")
     expect_true(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.snappy.parquet")))
 
-    ensure_format("nyctaxi_sample", "csv", "gzip")
+    ensure_format("nyctaxi_sample", "parquet", compression = "snappy", chunk_size = 100000)
+    expect_true(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.chunk_size_1e+05.snappy.parquet")))
+
+    ensure_format("nyctaxi_sample", "feather", compression = "lz4")
+    expect_true(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.lz4.feather")))
+
+    # note: this is sliiightly bigger than the chunk_size above, but we get the same rounded value
+    ensure_format("nyctaxi_sample", "feather", chunk_size = 100010)
+    expect_true(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.chunk_size_1e+05.uncompressed.feather")))
+
+    # But, if the difference is bigger, we get that value reflected
+    ensure_format("nyctaxi_sample", "feather", chunk_size = 100100)
+    expect_true(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.chunk_size_1.001e+05.uncompressed.feather")))
+
+    ensure_format("nyctaxi_sample", "csv", compression = "gzip")
     expect_true(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.csv.gz")))
 
     # but because we started as a csv, this doesn't create a new file in the
@@ -30,6 +44,9 @@ withr::with_envvar(
   })
 
   test_that("ensure_format with tpch", {
+    # don't test if we are not already trying to install the custom duckdb
+    skip_if(Sys.getenv("ARROWBENCH_TEST_CUSTOM_DUCKDB", "") == "")
+
     # there are no temp files yet
     expect_false(file.exists(file.path(temp_dir, "lineitem_0.001.parquet")))
     expect_false(file.exists(file.path(temp_dir, "temp", "lineitem_0.001.uncompressed.parquet")))
