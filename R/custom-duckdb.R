@@ -24,6 +24,7 @@ ensure_custom_duckdb <- function(lib = custom_duckdb_lib_dir(), install = TRUE,
     }
   )
 
+  # Check that the result has a query in it
   if (identical(result$query_nr, 1L)) {
     return(invisible(NULL))
   }
