@@ -100,7 +100,7 @@ ORDER BY
     con = con_one
   )
 
-  expect_s3_class(input_func("lineitem"), "tbl_duckdb_connection")
+  # expect_s3_class(input_func("lineitem"), "tbl_duckdb_connection")
   query_01_func <- get_sql_query_func(1)
   expect_s3_class(query_01_func(con = con_one), "data.frame")
 
