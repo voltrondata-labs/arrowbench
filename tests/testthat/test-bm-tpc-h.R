@@ -92,7 +92,7 @@ ORDER BY
   con_one <- DBI::dbConnect(duckdb::duckdb())
 
   # use it to populate the tables needed for query 1
-  get_input_func(
+  input_func <- get_input_func(
     engine = "duckdb",
     scale_factor = 0.001,
     format = "parquet",
@@ -100,13 +100,10 @@ ORDER BY
     con = con_one
   )
 
+  expect_s3_class(input_func("lineitem"), "tbl_duckdb_connection")
   query_01_func <- get_sql_query_func(1)
   expect_s3_class(query_01_func(con = con_one), "data.frame")
 
   # clean up
   DBI::dbDisconnect(con_one, shutdown = TRUE)
-})
-
-test_that("tpch_answer() works", {
-
 })
