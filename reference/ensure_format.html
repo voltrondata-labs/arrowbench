@@ -44,7 +44,12 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">ensure_format</span><span class="op">(</span><span class="va">name</span>, format <span class="op">=</span> <span class="va">known_formats</span>, compression <span class="op">=</span> <span class="va">known_compressions</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">ensure_format</span><span class="op">(</span>
+  <span class="va">name</span>,
+  format <span class="op">=</span> <span class="va">known_formats</span>,
+  compression <span class="op">=</span> <span class="va">known_compressions</span>,
+  chunk_size <span class="op">=</span> <span class="cn">NULL</span>
+<span class="op">)</span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -55,6 +60,8 @@
 <dd><p>format to be ensured</p></dd>
 <dt>compression</dt>
 <dd><p>compression to be ensured</p></dd>
+<dt>chunk_size</dt>
+<dd><p>the number of rows to write in each chunk</p></dd>
 </dl></div>
     <div id="value">
     <h2>Value</h2>

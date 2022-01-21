@@ -46,9 +46,9 @@ Get a writer"><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/lib
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">get_write_function</span><span class="op">(</span><span class="va">format</span>, <span class="va">compression</span><span class="op">)</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">get_write_function</span><span class="op">(</span><span class="va">format</span>, <span class="va">compression</span>, <span class="va">chunk_size</span><span class="op">)</span>
 
-<span class="fu">get_write_function</span><span class="op">(</span><span class="va">format</span>, <span class="va">compression</span><span class="op">)</span></code></pre></div>
+<span class="fu">get_write_function</span><span class="op">(</span><span class="va">format</span>, <span class="va">compression</span>, <span class="va">chunk_size</span><span class="op">)</span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -57,6 +57,9 @@ Get a writer"><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/lib
 <dd><p>format to write</p></dd>
 <dt>compression</dt>
 <dd><p>compression to use</p></dd>
+<dt>chunk_size</dt>
+<dd><p>the size of chunks to write (default: NULL, the default for
+the format)</p></dd>
 </dl></div>
     <div id="value">
     <h2>Value</h2>
