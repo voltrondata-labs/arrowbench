@@ -215,7 +215,7 @@ get_input_func <- function(engine,
                            compression = "uncompressed",
                            con = NULL,
                            memory_map = FALSE,
-                           num_groups = parallel::detectCores()) {
+                           chunk_size = 1000000) {
   # ensure that we have the _base_ tpc-h files (in parquet)
   tpch_files <- ensure_source("tpch", scale_factor = scale_factor)
 
@@ -237,7 +237,7 @@ get_input_func <- function(engine,
       FUN.VALUE = character(1),
       format = format_to_convert,
       compression = compression,
-      num_groups = num_groups
+      chunk_size = chunk_size
     )
 
     # specify readers for each format
