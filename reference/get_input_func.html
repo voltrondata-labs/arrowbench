@@ -51,6 +51,7 @@ parameters</p>
   <span class="va">scale_factor</span>,
   <span class="va">query_id</span>,
   <span class="va">format</span>,
+  compression <span class="op">=</span> <span class="st">"uncompressed"</span>,
   con <span class="op">=</span> <span class="cn">NULL</span>,
   memory_map <span class="op">=</span> <span class="cn">FALSE</span>
 <span class="op">)</span></code></pre></div>
@@ -66,10 +67,12 @@ parameters</p>
 <dd><p>which query is being used</p></dd>
 <dt>format</dt>
 <dd><p>which format</p></dd>
+<dt>compression</dt>
+<dd><p>which compression to use (default: "uncompressed")</p></dd>
 <dt>con</dt>
 <dd><p>a connection</p></dd>
 <dt>memory_map</dt>
-<dd><p>should the file be memory mapped?</p></dd>
+<dd><p>should the file be memory mapped? (only relevant for the "native" format with Arrow)</p></dd>
 </dl></div>
 
   </div>
