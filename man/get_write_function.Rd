@@ -4,14 +4,16 @@
 \alias{get_write_function}
 \title{Get a writer}
 \usage{
-get_write_function(format, compression)
+get_write_function(format, compression, num_groups)
 
-get_write_function(format, compression)
+get_write_function(format, compression, num_groups)
 }
 \arguments{
 \item{format}{format to write}
 
 \item{compression}{compression to use}
+
+\item{num_groups}{how many rows groups to create (if the format supports it)}
 }
 \value{
 the write function to use

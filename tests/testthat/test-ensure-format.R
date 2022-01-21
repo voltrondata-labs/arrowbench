@@ -16,10 +16,19 @@ withr::with_envvar(
     ensure_format("nyctaxi_sample", "parquet")
     expect_true(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.uncompressed.parquet")))
 
-    ensure_format("nyctaxi_sample", "parquet", "snappy")
+    ensure_format("nyctaxi_sample", "parquet", compression = "snappy")
     expect_true(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.snappy.parquet")))
 
-    ensure_format("nyctaxi_sample", "csv", "gzip")
+    ensure_format("nyctaxi_sample", "parquet", compression = "snappy", num_groups = 10)
+    expect_true(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.10.snappy.parquet")))
+
+    ensure_format("nyctaxi_sample", "feather", compression = "lz4")
+    expect_true(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.lz4.feather")))
+
+    ensure_format("nyctaxi_sample", "feather", num_groups = 10)
+    expect_true(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.10.uncompressed.feather")))
+
+    ensure_format("nyctaxi_sample", "csv", compression = "gzip")
     expect_true(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.csv.gz")))
 
     # but because we started as a csv, this doesn't create a new file in the

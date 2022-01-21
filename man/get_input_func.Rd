@@ -11,7 +11,8 @@ get_input_func(
   format,
   compression = "uncompressed",
   con = NULL,
-  memory_map = FALSE
+  memory_map = FALSE,
+  num_groups = parallel::detectCores()
 )
 }
 \arguments{

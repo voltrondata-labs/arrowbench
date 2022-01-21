@@ -4,7 +4,12 @@
 \alias{ensure_format}
 \title{Ensure that a source has a specific format}
 \usage{
-ensure_format(name, format = known_formats, compression = known_compressions)
+ensure_format(
+  name,
+  format = known_formats,
+  compression = known_compressions,
+  num_groups = NULL
+)
 }
 \arguments{
 \item{name}{name of the known source}
@@ -12,6 +17,8 @@ ensure_format(name, format = known_formats, compression = known_compressions)
 \item{format}{format to be ensured}
 
 \item{compression}{compression to be ensured}
+
+\item{num_groups}{the number of groups to split a file into (default: NULL, which uses the default)}
 }
 \value{
 the file that was ensured to exist
