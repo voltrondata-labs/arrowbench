@@ -25,11 +25,11 @@ withr::with_envvar(
     ensure_format("nyctaxi_sample", "feather", compression = "lz4")
     expect_true(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.lz4.feather")))
 
-    # note: this is sliiightly bigger than the chunk_size above, but we use
+    # note: this is sliiightly bigger than the chunk_size above, but we get the same rounded value
     ensure_format("nyctaxi_sample", "feather", chunk_size = 100010)
     expect_true(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.chunk_size_1e+05.uncompressed.feather")))
 
-    # But, if the  bigger than the chunk_size above, but we use
+    # But, if the difference is bigger, we get that value reflected
     ensure_format("nyctaxi_sample", "feather", chunk_size = 100100)
     expect_true(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.chunk_size_1.001e+05.uncompressed.feather")))
 
