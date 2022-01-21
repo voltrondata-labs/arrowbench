@@ -203,14 +203,16 @@ find_input_func <- function(func) {
 #' @param scale_factor what scale factor to reference
 #' @param query_id which query is being used
 #' @param format which format
+#' @param compression which compression to use (default: "uncompressed")
 #' @param con a connection
-#' @param memory_map should the file be memory mapped?
+#' @param memory_map should the file be memory mapped? (only relevant for the "native" format with Arrow)
 #'
 #' @export
 get_input_func <- function(engine,
                            scale_factor,
                            query_id,
                            format,
+                           compression = "uncompressed",
                            con = NULL,
                            memory_map = FALSE) {
   # ensure that we have the _base_ tpc-h files (in parquet)
@@ -232,7 +234,8 @@ get_input_func <- function(engine,
       tpch_files[tpch_tables_needed],
       ensure_format,
       FUN.VALUE = character(1),
-      format = format_to_convert
+      format = format_to_convert,
+      compression = compression
     )
 
     # specify readers for each format

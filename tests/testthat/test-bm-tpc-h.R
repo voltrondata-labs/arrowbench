@@ -61,6 +61,37 @@ test_that("get_query_func()", {
   expect_type(out, "closure")
 })
 
+# create a temporary directory to be used as the data directory
+temp_dir <- tempfile()
+dir.create(temp_dir)
+
+withr::with_envvar(
+  list(ARROWBENCH_DATA_DIR = temp_dir), {
+    test_that("get_input_func()", {
+      input_func <- get_input_func(
+        engine = "arrow",
+        scale_factor = 0.01,
+        query_id = 1,
+        format = "parquet",
+        compression = "uncompressed"
+      )
+
+      linteitem_ds <- input_func("lineitem")
+      expect_true(grepl("lineitem_0.01.uncompressed.parquet", linteitem_ds$files, fixed = TRUE))
+
+      input_func <- get_input_func(
+        engine = "arrow",
+        scale_factor = 0.01,
+        query_id = 1,
+        format = "parquet",
+        compression = "snappy"
+      )
+
+      linteitem_ds <- input_func("lineitem")
+      expect_true(grepl("lineitem_0.01.snappy.parquet", linteitem_ds$files, fixed = TRUE))
+    })
+  })
+
 test_that("tpch sql queries", {
   query_01 <- get_sql_tpch_query(1)
   expect_equal(
