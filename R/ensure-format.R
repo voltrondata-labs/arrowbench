@@ -128,7 +128,7 @@ get_chunk_size <- function(table, num_groups) {
 #'
 #' @return the write function to use
 #' @export
-get_write_function <- function(format, compression, chunk_size) {
+get_write_function <- function(format, compression, chunk_size = NULL) {
   force(compression)
   if (format == "feather") {
     return(function(...) arrow::write_feather(..., chunk_size = chunk_size %||% 65536L, compression = compression))

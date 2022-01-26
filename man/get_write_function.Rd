@@ -4,9 +4,9 @@
 \alias{get_write_function}
 \title{Get a writer}
 \usage{
-get_write_function(format, compression, chunk_size)
+get_write_function(format, compression, chunk_size = NULL)
 
-get_write_function(format, compression, chunk_size)
+get_write_function(format, compression, chunk_size = NULL)
 }
 \arguments{
 \item{format}{format to write}
