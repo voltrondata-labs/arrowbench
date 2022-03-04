@@ -121,7 +121,7 @@
 <div class="section level3">
 <h3 id="a-contrived-example">A (contrived) example<a class="anchor" aria-label="anchor" href="#a-contrived-example"></a>
 </h3>
-<p>Here we create a new kind of csv benchmark that uses <code><a href="https://arrow.apache.org/docs/r//reference/read_delim_arrow.html" class="external-link">arrow::read_csv_arrow()</a></code> and varies the arguments <code>as_data_frame</code> and <code>skip_empty_rows</code>. This is a bit of a contrived example, see <code>read_csv</code> for how we actually test csv reading. There are comments in the code block explaining what each section does.</p>
+<p>Here we create a new kind of csv benchmark that uses <code><a href="https://arrow.apache.org/docs/r/reference/read_delim_arrow.html" class="external-link">arrow::read_csv_arrow()</a></code> and varies the arguments <code>as_data_frame</code> and <code>skip_empty_rows</code>. This is a bit of a contrived example, see <code>read_csv</code> for how we actually test csv reading. There are comments in the code block explaining what each section does.</p>
 <pre><code>new_csv_benchmark &lt;- Benchmark(
   "new_csv_benchmark",
   # This setup block will be run before the benchmark is started. This is run
