@@ -211,6 +211,7 @@ global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL, te
   if (is.numeric(cpu_count) && cpu_count > 0) {
     script <- c(
       script,
+      "options(error = function() { traceback(3); q(status = 1)})",
       paste0('options(Ncpus = ', cpu_count, ')'),
       # TODO: only set on linux? only on binaries? This is needed for RSPM to
       # identify + serve the appropriate binaries (otherwise it falls back to
