@@ -85,23 +85,18 @@ test_that("form of the results, including output", {
   expect_message(res <- run_benchmark(placebo, cpu_count = 1, output_type = "message"))
 
   results_df <- as.data.frame(res)
-  print(str(results_df))
 
-  print(str(data.frame(
+  expected <- data.frame(
     iteration = 1L,
     cpu_count = 1L,
     lib_path = "latest",
     output = "A message: here's some output\n### RESULTS HAVE BEEN PARSED ###"
-  )))
+  )
+  # output is always a character, even < 4.0, where it would default to factors
+  expected$output <- as.character(expected$output)
 
   expect_identical(
     results_df[,c("iteration", "cpu_count", "lib_path", "output")],
-    data.frame(
-      iteration = 1L,
-      cpu_count = 1L,
-      lib_path = "latest",
-      output = "A message: here's some output\n### RESULTS HAVE BEEN PARSED ###"
-    )
   )
   expect_true(all(
     c("real", "process", "version_arrow") %in% colnames(results_df)
