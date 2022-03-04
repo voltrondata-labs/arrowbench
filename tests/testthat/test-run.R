@@ -91,7 +91,8 @@ test_that("form of the results, including output", {
       iteration = 1L,
       cpu_count = 1L,
       lib_path = "latest",
-      output = "A message: here's some output\n### RESULTS HAVE BEEN PARSED ###"
+      output = "A message: here's some output\n### RESULTS HAVE BEEN PARSED ###",
+      stringsAsFactors = FALSE
     )
   )
   expect_true(all(
