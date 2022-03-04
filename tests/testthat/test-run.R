@@ -97,6 +97,7 @@ test_that("form of the results, including output", {
 
   expect_identical(
     results_df[,c("iteration", "cpu_count", "lib_path", "output")],
+    expected
   )
   expect_true(all(
     c("real", "process", "version_arrow") %in% colnames(results_df)
