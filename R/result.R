@@ -21,5 +21,7 @@ as.data.frame.arrowbench_result <- function(x, row.names = NULL, optional = FALS
   for (p in packages) {
     x$params[[paste0("version_", p)]] <- pkgs[p, "version"]
   }
-  cbind(iteration = seq_len(nrow(x$result)), x$result, x$params)
+  out <- cbind(iteration = seq_len(nrow(x$result)), x$result, x$params)
+  out$output <- x$output
+  out
 }
