@@ -8,5 +8,5 @@ test_that("with_gc_info + errors", {
 
   capture.output(rlang_error <- run_one(placebo, error_type = "rlang::abort"), type = "message")
   expect_true("error" %in% names(rlang_error))
-  expect_match(rlang_error$error[[1]], "Error.*something went wrong \\(but I knew that\\)")
+  expect_match(paste0(rlang_error$error, collapse = "\n"), "Error.*something went wrong \\(but I knew that\\)")
 })
