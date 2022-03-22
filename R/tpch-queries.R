@@ -5,7 +5,7 @@
 #' @export
 tpc_h_queries <- list()
 
-tpc_h_queries[[1]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
+tpc_h_queries[[1]] <- function(input_func, collect_func = dplyr::collect, con = NULL, metadata = list()) {
   input_func("lineitem") %>%
     select(l_shipdate, l_returnflag, l_linestatus, l_quantity,
            l_extendedprice, l_discount, l_tax) %>%
@@ -26,10 +26,10 @@ tpc_h_queries[[1]] <- function(input_func, collect_func = dplyr::collect, con = 
     ) %>%
     ungroup() %>%
     arrange(l_returnflag, l_linestatus) %>%
-    collect_func()
+    collect_func(metadata=metadata)
 }
 
-tpc_h_queries[[2]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
+tpc_h_queries[[2]] <- function(input_func, collect_func = dplyr::collect, con = NULL, metadata = list()) {
   ps <- input_func("partsupp") %>% select(ps_partkey, ps_suppkey, ps_supplycost)
 
   p <- input_func("part") %>%
@@ -71,10 +71,10 @@ tpc_h_queries[[2]] <- function(input_func, collect_func = dplyr::collect, con = 
            s_address, s_phone, s_comment) %>%
     arrange(desc(s_acctbal), n_name, s_name, p_partkey) %>%
     head(100) %>%
-    collect_func()
+    collect_func(metadata=metadata)
 }
 
-tpc_h_queries[[3]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
+tpc_h_queries[[3]] <- function(input_func, collect_func = dplyr::collect, con = NULL, metadata = list()) {
   oc <- inner_join(
     input_func("orders") %>%
       select(o_orderkey, o_custkey, o_orderdate, o_shippriority) %>%
@@ -102,10 +102,10 @@ tpc_h_queries[[3]] <- function(input_func, collect_func = dplyr::collect, con = 
     ungroup() %>%
     arrange(desc(revenue), o_orderdate) %>%
     head(10) %>%
-    collect_func()
+    collect_func(metadata=metadata)
 }
 
-tpc_h_queries[[4]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
+tpc_h_queries[[4]] <- function(input_func, collect_func = dplyr::collect, con = NULL, metadata = list()) {
   l <- input_func("lineitem") %>%
     select(l_orderkey, l_commitdate, l_receiptdate) %>%
     filter(l_commitdate < l_receiptdate) %>%
@@ -127,10 +127,10 @@ tpc_h_queries[[4]] <- function(input_func, collect_func = dplyr::collect, con = 
     summarise(order_count = n()) %>%
     ungroup() %>%
     arrange(o_orderpriority) %>%
-    collect_func()
+    collect_func(metadata=metadata)
 }
 
-tpc_h_queries[[5]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
+tpc_h_queries[[5]] <- function(input_func, collect_func = dplyr::collect, con = NULL, metadata = list()) {
   nr <- inner_join(
     input_func("nation") %>%
       select(n_nationkey, n_regionkey, n_name),
@@ -173,10 +173,10 @@ tpc_h_queries[[5]] <- function(input_func, collect_func = dplyr::collect, con = 
     summarise(revenue = sum(volume)) %>%
     ungroup() %>%
     arrange(desc(revenue)) %>%
-    collect_func()
+    collect_func(metadata=metadata)
 }
 
-tpc_h_queries[[6]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
+tpc_h_queries[[6]] <- function(input_func, collect_func = dplyr::collect, con = NULL, metadata = list()) {
   input_func("lineitem") %>%
     select(l_shipdate, l_extendedprice, l_discount, l_quantity) %>%
     # kludge, should be: filter(l_shipdate >= "1994-01-01",
@@ -192,10 +192,10 @@ tpc_h_queries[[6]] <- function(input_func, collect_func = dplyr::collect, con = 
            l_quantity < 24) %>%
     select(l_extendedprice, l_discount) %>%
     summarise(revenue = sum(l_extendedprice * l_discount)) %>%
-    collect_func()
+    collect_func(metadata=metadata)
 }
 
-tpc_h_queries[[7]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
+tpc_h_queries[[7]] <- function(input_func, collect_func = dplyr::collect, con = NULL, metadata = list()) {
   sn <- inner_join(
     input_func("supplier") %>%
       select(s_nationkey, s_suppkey),
@@ -245,10 +245,10 @@ tpc_h_queries[[7]] <- function(input_func, collect_func = dplyr::collect, con = 
     summarise(revenue = sum(volume)) %>%
     ungroup() %>%
     arrange(supp_nation, cust_nation, l_year) %>%
-    collect_func()
+    collect_func(metadata=metadata)
 }
 
-tpc_h_queries[[8]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
+tpc_h_queries[[8]] <- function(input_func, collect_func = dplyr::collect, con = NULL, metadata = list()) {
   # kludge, swapped the table order around because of ARROW-14184
   # nr <- inner_join(
   #   input_func("nation") %>%
@@ -320,10 +320,10 @@ tpc_h_queries[[8]] <- function(input_func, collect_func = dplyr::collect, con = 
     summarise(mkt_share = sum(ifelse(nation == "BRAZIL", volume, 0)) / sum(volume)) %>%
     ungroup() %>%
     arrange(o_year) %>%
-    collect_func()
+    collect_func(metadata=metadata)
 }
 
-tpc_h_queries[[9]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
+tpc_h_queries[[9]] <- function(input_func, collect_func = dplyr::collect, con = NULL, metadata = list()) {
   p <- input_func("part") %>%
     select(p_name, p_partkey) %>%
     filter(grepl(".*green.*", p_name)) %>%
@@ -370,10 +370,10 @@ tpc_h_queries[[9]] <- function(input_func, collect_func = dplyr::collect, con = 
     summarise(sum_profit = sum(amount)) %>%
     ungroup() %>%
     arrange(nation, desc(o_year)) %>%
-    collect_func()
+    collect_func(metadata=metadata)
 }
 
-tpc_h_queries[[10]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
+tpc_h_queries[[10]] <- function(input_func, collect_func = dplyr::collect, con = NULL, metadata = list()) {
   l <- input_func("lineitem") %>%
     select(l_orderkey, l_returnflag, l_extendedprice, l_discount) %>%
     filter(l_returnflag == "R") %>%
@@ -408,10 +408,10 @@ tpc_h_queries[[10]] <- function(input_func, collect_func = dplyr::collect, con =
            c_address, c_phone, c_comment) %>%
     arrange(desc(revenue)) %>%
     head(20) %>%
-    collect_func()
+    collect_func(metadata=metadata)
 }
 
-tpc_h_queries[[11]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
+tpc_h_queries[[11]] <- function(input_func, collect_func = dplyr::collect, con = NULL, metadata = list()) {
   nation <- input_func("nation") %>%
     filter(n_name == "GERMANY")
 
@@ -435,10 +435,10 @@ tpc_h_queries[[11]] <- function(input_func, collect_func = dplyr::collect, con =
     filter(value > global_value) %>%
     arrange(desc(value)) %>%
     select(ps_partkey, value) %>%
-    collect_func()
+    collect_func(metadata=metadata)
 }
 
-tpc_h_queries[[12]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
+tpc_h_queries[[12]] <- function(input_func, collect_func = dplyr::collect, con = NULL, metadata = list()) {
   input_func("lineitem") %>%
     filter(
       l_shipmode %in% c("MAIL", "SHIP"),
@@ -470,10 +470,10 @@ tpc_h_queries[[12]] <- function(input_func, collect_func = dplyr::collect, con =
     ) %>%
     ungroup() %>%
     arrange(l_shipmode) %>%
-    collect_func()
+    collect_func(metadata=metadata)
 }
 
-tpc_h_queries[[13]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
+tpc_h_queries[[13]] <- function(input_func, collect_func = dplyr::collect, con = NULL, metadata = list()) {
   c_orders <- input_func("customer") %>%
     left_join(
       input_func("orders") %>%
@@ -490,10 +490,10 @@ tpc_h_queries[[13]] <- function(input_func, collect_func = dplyr::collect, con =
     summarise(custdist = n()) %>%
     ungroup() %>%
     arrange(desc(custdist), desc(c_count)) %>%
-    collect_func()
+    collect_func(metadata=metadata)
 }
 
-tpc_h_queries[[14]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
+tpc_h_queries[[14]] <- function(input_func, collect_func = dplyr::collect, con = NULL, metadata = list()) {
   input_func("lineitem") %>%
     filter(
       l_shipdate >= as.Date("1995-01-01"),
@@ -505,10 +505,10 @@ tpc_h_queries[[14]] <- function(input_func, collect_func = dplyr::collect, con =
         if_else(grepl("^PROMO", p_type), l_extendedprice * (1 - l_discount), 0)
       ) / sum(l_extendedprice * (1 - l_discount))
     ) %>%
-    collect_func()
+    collect_func(metadata=metadata)
 }
 
-tpc_h_queries[[15]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
+tpc_h_queries[[15]] <- function(input_func, collect_func = dplyr::collect, con = NULL, metadata = list()) {
   revenue_by_supplier <- input_func("lineitem") %>%
     filter(
       l_shipdate >= as.Date("1996-01-01"),
@@ -532,10 +532,10 @@ tpc_h_queries[[15]] <- function(input_func, collect_func = dplyr::collect, con =
     filter(abs(total_revenue - max_total_revenue) < 1e-9) %>%
     inner_join(input_func("supplier"), by = c("l_suppkey" = "s_suppkey")) %>%
     select(s_suppkey = l_suppkey, s_name, s_address, s_phone, total_revenue) %>%
-    collect_func()
+    collect_func(metadata=metadata)
 }
 
-tpc_h_queries[[16]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
+tpc_h_queries[[16]] <- function(input_func, collect_func = dplyr::collect, con = NULL, metadata = list()) {
   part_filtered <- input_func("part") %>%
     filter(
       p_brand != "Brand#45",
@@ -557,10 +557,10 @@ tpc_h_queries[[16]] <- function(input_func, collect_func = dplyr::collect, con =
     ungroup() %>%
     select(p_brand, p_type, p_size, supplier_cnt) %>%
     arrange(desc(supplier_cnt), p_brand, p_type, p_size) %>%
-    collect_func()
+    collect_func(metadata=metadata)
 }
 
-tpc_h_queries[[17]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
+tpc_h_queries[[17]] <- function(input_func, collect_func = dplyr::collect, con = NULL, metadata = list()) {
   parts_filtered <- input_func("part") %>%
     filter(
       p_brand == "Brand#23",
@@ -578,10 +578,10 @@ tpc_h_queries[[17]] <- function(input_func, collect_func = dplyr::collect, con =
     inner_join(quantity_by_part, by = "l_partkey") %>%
     filter(l_quantity < quantity_threshold) %>%
     summarise(avg_yearly = sum(l_extendedprice) / 7.0) %>%
-    collect_func()
+    collect_func(metadata=metadata)
 }
 
-tpc_h_queries[[18]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
+tpc_h_queries[[18]] <- function(input_func, collect_func = dplyr::collect, con = NULL, metadata = list()) {
   big_orders <- input_func("lineitem") %>%
     group_by(l_orderkey) %>%
     summarise(`sum(l_quantity)` = sum(l_quantity)) %>%
@@ -596,10 +596,10 @@ tpc_h_queries[[18]] <- function(input_func, collect_func = dplyr::collect, con =
     ) %>%
     arrange(desc(o_totalprice), o_orderdate) %>%
     head(100) %>%
-    collect_func()
+    collect_func(metadata=metadata)
 }
 
-tpc_h_queries[[19]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
+tpc_h_queries[[19]] <- function(input_func, collect_func = dplyr::collect, con = NULL, metadata = list()) {
   joined <- input_func("lineitem") %>%
     inner_join(input_func("part"), by = c("l_partkey" = "p_partkey"))
 
@@ -641,10 +641,10 @@ tpc_h_queries[[19]] <- function(input_func, collect_func = dplyr::collect, con =
     summarise(
       revenue = sum(l_extendedprice * (1 - l_discount))
     ) %>%
-    collect_func()
+    collect_func(metadata=metadata)
 }
 
-tpc_h_queries[[20]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
+tpc_h_queries[[20]] <- function(input_func, collect_func = dplyr::collect, con = NULL, metadata = list()) {
   supplier_ca <- input_func("supplier") %>%
     inner_join(
       input_func("nation") %>% filter(n_name == "CANADA"),
@@ -679,10 +679,10 @@ tpc_h_queries[[20]] <- function(input_func, collect_func = dplyr::collect, con =
     semi_join(partsupp_forest_ca_filtered, by = c("s_suppkey" = "ps_suppkey")) %>%
     select(s_name, s_address) %>%
     arrange(s_name) %>%
-    collect_func()
+    collect_func(metadata=metadata)
 }
 
-tpc_h_queries[[21]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
+tpc_h_queries[[21]] <- function(input_func, collect_func = dplyr::collect, con = NULL, metadata = list()) {
   orders_with_more_than_one_supplier <- input_func("lineitem") %>%
     group_by(l_orderkey) %>%
     count(l_suppkey) %>%
@@ -713,10 +713,10 @@ tpc_h_queries[[21]] <- function(input_func, collect_func = dplyr::collect, con =
     ungroup() %>%
     arrange(desc(numwait), s_name) %>%
     head(100) %>%
-    collect_func()
+    collect_func(metadata=metadata)
 }
 
-tpc_h_queries[[22]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
+tpc_h_queries[[22]] <- function(input_func, collect_func = dplyr::collect, con = NULL, metadata = list()) {
   acctbal_mins <- input_func("customer") %>%
     filter(
       substr(c_phone, 1, 2) %in% c("13", "31", "23", "29", "30", "18", "17") &
@@ -740,5 +740,5 @@ tpc_h_queries[[22]] <- function(input_func, collect_func = dplyr::collect, con =
     ) %>%
     ungroup() %>%
     arrange(cntrycode) %>%
-    collect_func()
+    collect_func(metadata=metadata)
 }
