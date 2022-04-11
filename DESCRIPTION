@@ -6,11 +6,10 @@ Authors@R: c(
     person("Neal", "Richardson", email = "neal.p.richardson@gmail.com", role = "aut"),
     person("Jonathan", "Keane", email = "jkeane@gmail.com", role = c("aut", "cre"))
   )
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: Tools for defining benchmarks, running them across a 
+    range of parameters, and reporting their results in a standardized form.
 License: MIT + file LICENSE
 Encoding: UTF-8
-LazyData: true
 Depends: R (>= 3.5.0)
 Imports:
   bench,
