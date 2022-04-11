@@ -50,6 +50,7 @@ Collate:
     'bm-remote-dataset.R'
     'bm-table-to-df.R'
     'bm-tpc-h.R'
+    'bm-write-csv.R'
     'bm-write-file.R'
     'custom-duckdb.R'
     'ensure-format.R'
