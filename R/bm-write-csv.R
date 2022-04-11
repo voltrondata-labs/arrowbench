@@ -9,7 +9,7 @@
 write_csv <- Benchmark(
   "write_csv",
   setup = function(source = names(known_sources),
-                   writer = c("arrow", "data.table", "vroom", "readr", "utils"),
+                   writer = "arrow",
                    input = c("arrow_table", "data_frame")) {
     writer <- match.arg(writer)
     input <- match.arg(input)
