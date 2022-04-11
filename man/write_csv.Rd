@@ -18,8 +18,7 @@ Benchmark CSV writing
 \itemize{
 \item \code{source} A CSV file path to write to
 \item \code{writer} One of \code{c("arrow", "data.table", "vroom", "readr",)}
-\item \code{compression} One of \code{c("uncompressed", "gzip")}
-\item \code{output} One of \code{c("arrow_table", "data_frame")}
+\item \code{input} One of \code{c("arrow_table", "data_frame")}
 }
 }
 

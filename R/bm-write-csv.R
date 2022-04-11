@@ -3,11 +3,9 @@
 #' @section Parameters:
 #' * `source` A CSV file path to write to
 #' * `writer` One of `c("arrow", "data.table", "vroom", "readr",)`
-#' * `compression` One of `c("uncompressed", "gzip")`
-#' * `output` One of `c("arrow_table", "data_frame")`
+#' * `input` One of `c("arrow_table", "data_frame")`
 #'
 #' @export
-#' @importFrom R.utils gzip
 write_csv <- Benchmark(
   "write_csv",
   setup = function(source = names(known_sources),
