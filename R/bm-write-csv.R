@@ -11,7 +11,7 @@ write_csv <- Benchmark(
   setup = function(source = names(known_sources),
                    writer = "arrow",
                    input = c("arrow_table", "data_frame")) {
-    writer <- match.arg(writer)
+    writer <- match.arg(writer, c("arrow", "data.table", "vroom", "readr", "utils"))
     input <- match.arg(input)
 
     # source defaults are retrieved from the function definition (all available
