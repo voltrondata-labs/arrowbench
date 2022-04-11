@@ -20,7 +20,7 @@ write_csv <- Benchmark(
     df <- read_source(source, as_data_frame = match.arg(input) == "data_frame")
 
     # Map string param name to functions
-  BenchEnvironment(
+    BenchEnvironment(
       write_csv_func = get_csv_writer(writer),
       source = source,
       df = df
