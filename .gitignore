@@ -6,4 +6,5 @@ tests/testthat/results
 .DS_Store
 results/
 data/
+tests/testthat/data/
 .vscode/
