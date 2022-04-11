@@ -36,7 +36,7 @@ write_csv <- Benchmark(
   },
   # after each iteration, check the dimensions and delete the results
   after_each = {
-    stopifnot(file.exists(result_file))
+    stopifnot("Output file does not exist" = file.exists(result_file))
     unlink(result_file)
   },
   valid_params = function(params) {
