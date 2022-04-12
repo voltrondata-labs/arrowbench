@@ -55,6 +55,9 @@
     <loc>/reference/get_csv_reader.html</loc>
   </url>
   <url>
+    <loc>/reference/get_csv_writer.html</loc>
+  </url>
+  <url>
     <loc>/reference/get_dataset_attr.html</loc>
   </url>
   <url>
@@ -134,6 +137,9 @@
   </url>
   <url>
     <loc>/reference/validate_format.html</loc>
+  </url>
+  <url>
+    <loc>/reference/write_csv.html</loc>
   </url>
   <url>
     <loc>/reference/write_file.html</loc>
