@@ -36,6 +36,7 @@ write_csv <- Benchmark(
   },
   # after each iteration, check the dimensions and delete the results
   after_each = {
+    stopifnot(identical(dim(df), dim(arrow::open_dataset(result_file, format = "csv"))))
     stopifnot("Output file does not exist" = file.exists(result_file))
     unlink(result_file)
   },
