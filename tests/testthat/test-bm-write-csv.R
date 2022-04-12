@@ -8,5 +8,3 @@ test_that("write_csv benchmark works", {
   )
 })
 
-
-
