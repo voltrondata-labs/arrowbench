@@ -11,7 +11,7 @@ write_csv <- Benchmark(
   setup = function(source = names(known_sources),
                    writer = "arrow",
                    input = c("arrow_table", "data_frame")) {
-    writer <- match.arg(writer, c("arrow", "data.table", "vroom", "readr", "utils"))
+    writer <- match.arg(writer, c("arrow", "data.table", "vroom", "readr", "base"))
     input <- match.arg(input)
 
     # source defaults are retrieved from the function definition (all available
@@ -66,8 +66,8 @@ get_csv_writer <- function(writer) {
     return(function(..., as_data_frame) data.table::fwrite(...))
   } else if (writer == "vroom") {
     return(function(..., as_data_frame) vroom::vroom_write(..., delim = ","))
-  } else if (writer == "utils") {
-    return(function(...) utils::write.csv(...))
+  } else if (writer == "base") {
+    return(function(...) utils::write.csv(..., row.names = FALSE))
   } else {
     stop("Unsupported writer: ", writer, call. = FALSE)
   }
