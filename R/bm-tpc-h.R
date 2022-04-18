@@ -103,12 +103,10 @@ tpc_h <- Benchmark("tpc_h",
       # of the query validation output data when rounded to the nearest 1/100th
       # > For results from SUM aggregates, the resulting values must be within
       # $100 of the query validation output data.
-      all_equal_out <- all.equal(result, answer, tolerance = 0.01)
+      all_equal_out <- waldo::compare(result, answer, tolerance = 0.01)
 
-      if (!isTRUE(all_equal_out)) {
-        warning("\n", all_equal_out, "\n")
-        warning("\nExpected:\n", paste0(capture.output(print(answer, width = Inf)), collapse = "\n"))
-        warning("\n\nGot:\n", paste0(capture.output(print(result, width = Inf)), collapse = "\n"))
+      if (length(all_equal_out) != 0) {
+        warning(paste0("\n", all_equal_out, "\n"))
         stop("The answer does not match")
       }
     } else {
@@ -138,11 +136,9 @@ tpc_h <- Benchmark("tpc_h",
         answer[, col] <- as.Date(answer[, col])
       }
 
-      all_equal_out <- all.equal(result, answer, check.attributes = FALSE, tolerance = 0.01)
-      if (!isTRUE(all_equal_out)) {
-        warning("\n", all_equal_out, "\n")
-        warning("\nExpected:\n", paste0(capture.output(print(answer, width = Inf)), collapse = "\n"))
-        warning("\n\nGot:\n", paste0(capture.output(print(result, width = Inf)), collapse = "\n"))
+      all_equal_out <- waldo::compare(result, answer, ignore_attr = TRUE, tolerance = 0.01)
+      if (length(all_equal_out) != 0) {
+        warning(paste0("\n", all_equal_out, "\n"))
         stop("The answer does not match")
       }
     }

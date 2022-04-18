@@ -22,7 +22,7 @@ test_that("custom DuckDB can be installed to and used from a custom lib", {
   skip_if(Sys.getenv("ARROWBENCH_TEST_CUSTOM_DUCKDB", "") == "")
 
   # install a non-custom duckdb and make sure it fails properly
-  install.packages("duckdb", lib = tf, quiet = TRUE)
+  install.packages("duckdb", lib = tf, quiet = TRUE, repos = "https://cloud.r-project.org")
   expect_error(
     ensure_custom_duckdb(tf, install = FALSE),
     "and `install = FALSE`"
