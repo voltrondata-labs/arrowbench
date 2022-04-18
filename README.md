@@ -41,6 +41,12 @@ can be benchmarked with arrowbench. And then running `R CMD INSTALL .` in a
 terminal (for both, you should do this in the root directory of arrowbench, or 
 pass the path to arrowbench instead of `.`).
 
+## Contributing
+
+To run DuckDB tests, set `ARROWBENCH_TEST_CUSTOM_DUCKDB` to `1` or another 
+non-empty value in `~/.Renviron` or elsewhere such that it will be set during
+testing.
+
 ## Running benchmarks
 
 Pass a Benchmark to `run_benchmark()` and it will run it across the range of 
