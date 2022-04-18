@@ -12,6 +12,7 @@
 #' * `chunk_size` a size of row groups to aim for in parquet or feather files (default:
 #'    NULL is the default for `arrow:write_parquet()` or `arrow::write_feather()`)
 #'
+#' @importFrom waldo compare
 #' @export
 tpc_h <- Benchmark("tpc_h",
   setup = function(engine = "arrow",
