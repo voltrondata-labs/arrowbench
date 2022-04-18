@@ -80,6 +80,11 @@
 <p>If you’ve downloaded the source, or you’re making changes to arrow bench you should make sure that you have the dependencies with <code>remotes::install_deps(".", dependencies = TRUE)</code> in R (this will also install the arrow package along with other packages that can be benchmarked with arrowbench. And then running <code>R CMD INSTALL .</code> in a terminal (for both, you should do this in the root directory of arrowbench, or pass the path to arrowbench instead of <code>.</code>).</p>
 </div>
 <div class="section level2">
+<h2 id="contributing">Contributing<a class="anchor" aria-label="anchor" href="#contributing"></a>
+</h2>
+<p>To run DuckDB tests, set <code>ARROWBENCH_TEST_CUSTOM_DUCKDB</code> to <code>1</code> or another non-empty value in <code>~/.Renviron</code> or elsewhere such that it will be set during testing.</p>
+</div>
+<div class="section level2">
 <h2 id="running-benchmarks">Running benchmarks<a class="anchor" aria-label="anchor" href="#running-benchmarks"></a>
 </h2>
 <p>Pass a Benchmark to <code><a href="reference/run_benchmark.html">run_benchmark()</a></code> and it will run it across the range of parameters specified. For parameters specified in <code>bm$setup</code> that are omitted when calling <code>run_benchmark(bm)</code>, it will test across all combinations of them (what we call a benchmark matrix). If some parameter combinations are not valid, define a <code>bm$valid_params(params)</code> function that will filter that expanded <code>data.frame</code> of parameters down to the valid set.</p>
