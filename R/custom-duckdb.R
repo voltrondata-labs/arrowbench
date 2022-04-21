@@ -113,7 +113,8 @@ install_custom_duckdb <- function(lib = custom_duckdb_lib_dir(), force = TRUE, q
 
     if (!requireNamespace("remotes", quietly = TRUE)) {
       install.packages("remotes", lib = lib)
-    }    
+    }
+    .libPaths(lib)
 
     remotes::install_cran("DBI", lib = lib, force = force)
     remotes::install_github(
