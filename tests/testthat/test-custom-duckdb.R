@@ -2,8 +2,8 @@
 test_that("custom DuckDB can be installed to and used from a custom lib", {
   # an unexpected error shouldn't trigger an install
   expect_error(
-    ensure_custom_duckdb(lib = new.env()),
-    "An unexpected error occured"
+    ensure_custom_duckdb(lib = NA),
+    "invalid filename argument"
   )
 
   # an empty library without duckdb should trigger an install
