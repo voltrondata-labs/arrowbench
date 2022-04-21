@@ -65,7 +65,7 @@ query_custom_duckdb <- function(sql, dbdir = ":memory:", lib = custom_duckdb_lib
     DBI::dbGetQuery(con, sql)
   }
 
-  callr::r(fun, list(sql, dbdir, lib), libpath = lib)
+  callr::r(fun, list(sql, dbdir, lib), libpath = c(lib, .libPaths()))
 }
 
 export_custom_duckdb <- function(sql, sink, dbdir = ":memory:", lib = custom_duckdb_lib_dir()) {
@@ -91,7 +91,7 @@ export_custom_duckdb <- function(sql, sink, dbdir = ":memory:", lib = custom_duc
     sink
   }
 
-  callr::r(fun, list(sql, sink, dbdir, lib), libpath = lib)
+  callr::r(fun, list(sql, sink, dbdir, lib), libpath = c(lib, .libPaths()))
 }
 
 install_custom_duckdb <- function(lib = custom_duckdb_lib_dir(), force = TRUE, quiet = FALSE) {
@@ -111,11 +111,6 @@ install_custom_duckdb <- function(lib = custom_duckdb_lib_dir(), force = TRUE, q
       dir.create(lib, recursive = TRUE)
     }
 
-    if (!requireNamespace("remotes", quietly = TRUE)) {
-      install.packages("remotes", lib = lib)
-    }
-    .libPaths(lib)
-
     remotes::install_cran("DBI", lib = lib, force = force)
     remotes::install_github(
       "duckdb/duckdb/tools/rpkg",
@@ -127,7 +122,7 @@ install_custom_duckdb <- function(lib = custom_duckdb_lib_dir(), force = TRUE, q
 
   withr::with_envvar(
     list(DUCKDB_R_EXTENSIONS = "tpch"),
-    callr::r(fun, list(lib), libpath = lib, show = !quiet)
+    callr::r(fun, list(lib), libpath = c(lib, .libPaths()), show = !quiet)
   )
 }
 
