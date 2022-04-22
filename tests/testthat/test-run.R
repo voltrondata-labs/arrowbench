@@ -36,6 +36,14 @@ test_that("run_one", {
   wipe_results()
 })
 
+test_that("get_params_summary returns a tibble",{
+  bm <- run_benchmark(placebo, cpu_count = 1, output_type = "message")
+
+  expect_s3_class(get_params_summary(bm), "tbl_df")
+  wipe_results()
+})
+
+
 test_that("Argument validation", {
   # note: these tests will call an installed version of arrowbench as well as
   # the one being tested (e.g. when using devtools::test())

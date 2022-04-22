@@ -148,4 +148,22 @@ default_params <- function(bm, ...) {
   out
 }
 
-
+#' Extract the parameter summary as a tibble
+#'
+#' Extract a tibble that provides the parameters used in a run and the
+#' error status
+#'
+#' @param run The object returned by either `run_benchmark` or `run_one`
+#' @return a tibble
+#' @export
+get_params_summary <- function(run) {
+  if (!inherits(run, "arrowbench_results")) {
+    stop("run objects need to be of class arrowbench_results")
+  }
+  purrr::map_df(seq_along(run), ~{
+    d <- run[[.x]]$params
+    d <- dplyr::as_tibble(d)
+    d$did_error <- !is.null(run[[.x]]$error)
+    d
+  })
+}
