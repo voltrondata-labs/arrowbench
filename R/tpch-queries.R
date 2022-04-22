@@ -695,7 +695,7 @@ tpc_h_queries[[21]] <- function(input_func, collect_func = dplyr::collect, con =
     inner_join(input_func("orders"), by = c("l_orderkey" = "o_orderkey")) %>%
     filter(o_orderstatus == "F") %>%
     group_by(l_orderkey, l_suppkey) %>%
-    summarise(failed_delivery_commit = any(l_receiptdate > l_commitdate)) %>%
+    summarise(failed_delivery_commit = sum(ifelse(l_receiptdate > l_commitdate, 1L, 0L))) %>%
     group_by(l_orderkey) %>%
     summarise(n_supplier = n(), num_failed = sum(failed_delivery_commit)) %>%
     filter(n_supplier > 1 & num_failed == 1)
