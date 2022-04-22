@@ -29,7 +29,7 @@ tpc_h_queries[[1]] <- function(input_func, collect_func = dplyr::collect, con = 
     collect_func()
 }
 
-tpc_h_queries[[2]] <- function(input_func, collect_func = dplyr::collect, con = NULL, engine) {
+tpc_h_queries[[2]] <- function(input_func, collect_func = dplyr::collect, con = NULL, grep_func = grepl) {
   ps <- input_func("partsupp") %>% select(ps_partkey, ps_suppkey, ps_supplycost)
 
   p <- input_func("part") %>%
