@@ -36,6 +36,26 @@ test_that("run_one", {
   wipe_results()
 })
 
+test_that("get_params_summary returns a data.frame",{
+  bm_success <- run_benchmark(placebo, duration = 0.01, grid = TRUE, cpu_count = 1,  output_type = "message")
+  success_summary <- get_params_summary(bm_success)
+  expect_s3_class(success_summary, "data.frame")
+
+  expected_summary <- data.frame(
+    duration = 0.01, grid = TRUE, cpu_count = 1L,
+    output_type = "message", lib_path = "latest", did_error = FALSE
+  )
+  expect_identical(success_summary, expected_summary)
+
+})
+
+test_that("get_params_summary correctly returns an error column", {
+  bm_error <- run_benchmark(placebo, cpu_count = 1, output_type = "message", error_type = "abort")
+  error_summary <- get_params_summary(bm_error)
+  expect_true(error_summary$did_error)
+})
+
+
 test_that("Argument validation", {
   # note: these tests will call an installed version of arrowbench as well as
   # the one being tested (e.g. when using devtools::test())
