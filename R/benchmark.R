@@ -148,9 +148,9 @@ default_params <- function(bm, ...) {
   out
 }
 
-#' Extract the parameter summary as a tibble
+#' Extract the parameter summary as a data.frame
 #'
-#' Extract a tibble that provides the parameters used in a run and the
+#' Extract a data.frame that provides the parameters used in a run and the
 #' error status
 #'
 #' @param run The object returned by either `run_benchmark` or `run_one`
@@ -162,7 +162,8 @@ get_params_summary <- function(run) {
   }
   purrr::map_df(seq_along(run), ~{
     d <- run[[.x]]$params
-    d <- dplyr::as_tibble(d)
+    d$packages <- NULL
+    d <- as.data.frame(d)
     d$did_error <- !is.null(run[[.x]]$error)
     d
   })
