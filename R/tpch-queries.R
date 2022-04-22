@@ -29,14 +29,23 @@ tpc_h_queries[[1]] <- function(input_func, collect_func = dplyr::collect, con = 
     collect_func()
 }
 
-tpc_h_queries[[2]] <- function(input_func, collect_func = dplyr::collect, con = NULL) {
+tpc_h_queries[[2]] <- function(input_func, collect_func = dplyr::collect, con = NULL, engine) {
   ps <- input_func("partsupp") %>% select(ps_partkey, ps_suppkey, ps_supplycost)
 
   p <- input_func("part") %>%
     select(p_partkey, p_type, p_size, p_mfgr) %>%
-    filter(p_size == 15, grepl(".*BRASS$", p_type)) %>%
-    select(p_partkey, p_mfgr)
+    filter(p_size == 15)
 
+  if (engine == "duckdb") {
+    p <- p %>%
+      filter(p_type %like% "%BRASS") %>%
+      select(p_partkey, p_mfgr)
+  } else {
+    p <- p %>%
+      filter(grepl(".*BRASS$", p_type)) %>%
+      select(p_partkey, p_mfgr)
+
+  }
   psp <- inner_join(p, ps, by = c("p_partkey" = "ps_partkey"))
 
   sp <- input_func("supplier") %>%

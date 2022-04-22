@@ -85,7 +85,7 @@ tpc_h <- Benchmark("tpc_h",
   },
   # the benchmark to run
   run = {
-    result <- query(input_func, collect_func, con)
+    result <- query(input_func, collect_func, con, engine)
   },
   # after each iteration, check the dimensions and delete the results
   after_each = {
