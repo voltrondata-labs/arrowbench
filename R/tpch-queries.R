@@ -34,9 +34,8 @@ tpc_h_queries[[2]] <- function(input_func, collect_func = dplyr::collect, con = 
 
   p <- input_func("part") %>%
     select(p_partkey, p_type, p_size, p_mfgr) %>%
-      filter(p_size == 15) %>%
-      grep_func(".*BRASS$", p_type) %>%
-      select(p_partkey, p_mfgr)
+    filter(p_size == 15, grepl(".*BRASS$", p_type)) %>%
+    select(p_partkey, p_mfgr)
   psp <- inner_join(p, ps, by = c("p_partkey" = "ps_partkey"))
 
   sp <- input_func("supplier") %>%
