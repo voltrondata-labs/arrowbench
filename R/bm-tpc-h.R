@@ -47,6 +47,19 @@ tpc_h <- Benchmark("tpc_h",
       collect_func <- compute
     }
 
+    if (engine == "duckdb") {
+      grep_func <- function(.data, pattern, x) {
+        ## need to strip the regex and sql partial matching
+        pattern <- paste0("%", gsub("\\W+","", pattern))
+        query <- paste0("filter(.data, rlang::enquo(x) %like% '", pattern, "')")
+        eval(parse(text = query))
+      }
+      } else {
+      grep_func <- function(.data, pattern, x) {
+        filter(.data, grepl(pattern, {{ x }}))
+      }
+    }
+
     # we pass a connection around for duckdb, but not others
     con <- NULL
 
@@ -76,6 +89,7 @@ tpc_h <- Benchmark("tpc_h",
       con = con,
       scale_factor = scale_factor,
       query_id = query_id,
+      grep_func = grep_func,
       collect_func = collect_func
     )
   },
@@ -85,7 +99,7 @@ tpc_h <- Benchmark("tpc_h",
   },
   # the benchmark to run
   run = {
-    result <- query(input_func, collect_func, con, engine)
+    result <- query(input_func, collect_func, con, grep_func)
   },
   # after each iteration, check the dimensions and delete the results
   after_each = {
