@@ -48,6 +48,7 @@ Collate:
     'bm-read-csv.R'
     'bm-read-file.R'
     'bm-remote-dataset.R'
+    'bm-row-group-size.R'
     'bm-table-to-df.R'
     'bm-tpc-h.R'
     'bm-write-csv.R'

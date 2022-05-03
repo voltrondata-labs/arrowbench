@@ -28,7 +28,8 @@ ensure_format <- function(
   name,
   format = known_formats,
   compression = known_compressions,
-  chunk_size = NULL) {
+  chunk_size = NULL
+) {
   compression <- match.arg(compression)
   format <- match.arg(format)
 
