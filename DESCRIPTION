@@ -31,7 +31,7 @@ Suggests:
     arrow,
     data.table,
     DBI,
-    duckdb (>= 0.3.3),
+    duckdb,
     fst,
     lubridate,
     mockery,
