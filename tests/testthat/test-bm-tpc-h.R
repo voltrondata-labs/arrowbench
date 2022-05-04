@@ -155,7 +155,7 @@ test_that("grepl queries work with dbplyr style sql", {
 })
 
 
-test_that("query 21 use of logicals passed",{
+test_that("query 21 use of logicals passed", {
   run <- run_benchmark(
     tpc_h,
     engine = "duckdb",
