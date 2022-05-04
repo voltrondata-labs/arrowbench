@@ -148,7 +148,7 @@ test_that("grepl queries work with dbplyr style sql", {
     tpc_h,
     engine = "duckdb",
     query_id = c(2, 9, 13, 14, 16, 20),
-    scale_factor = 1
+    scale_factor = 0.001
   )
   no_fails <- any(vapply(run, function(x) is.null(x$error), logical(1)))
   expect_true(no_fails)
@@ -160,7 +160,7 @@ test_that("query 21 use of logicals passed", {
     tpc_h,
     engine = "duckdb",
     query_id = 21,
-    scale_factor = 1
+    scale_factor = 0.001
   )
   no_fails <- all(vapply(run, function(x) is.null(x$error), logical(1)))
   expect_true(no_fails)
