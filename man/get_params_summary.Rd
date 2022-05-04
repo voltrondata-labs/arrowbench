@@ -2,7 +2,7 @@
 % Please edit documentation in R/benchmark.R
 \name{get_params_summary}
 \alias{get_params_summary}
-\title{Extract the parameter summary as a tibble}
+\title{Extract the parameter summary as a data.frame}
 \usage{
 get_params_summary(run)
 }
@@ -13,6 +13,6 @@ get_params_summary(run)
 a tibble
 }
 \description{
-Extract a tibble that provides the parameters used in a run and the
+Extract a data.frame that provides the parameters used in a run and the
 error status
 }
