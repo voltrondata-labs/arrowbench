@@ -41,6 +41,7 @@ RoxygenNote: 7.1.2
 Roxygen: list(markdown = TRUE, load = "source")
 Collate: 
     'benchmark.R'
+    'bm-array-altrep-materialization.R'
     'bm-array-to-vector.R'
     'bm-dataset-taxi-parquet.R'
     'bm-df-to-table.R'
