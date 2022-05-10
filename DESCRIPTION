@@ -12,20 +12,20 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: R (>= 3.5.0)
 Imports:
-  bench,
-  dplyr,
-  distro,
-  jsonlite,
-  progress,
-  purrr,
-  remotes,
-  rlang,
-  R.utils,
-  sessioninfo,
-  utils,
-  waldo,
-  withr,
-  callr
+    bench,
+    dplyr,
+    distro,
+    jsonlite,
+    progress,
+    purrr,
+    remotes,
+    rlang,
+    R.utils,
+    sessioninfo,
+    utils,
+    waldo,
+    withr,
+    callr
 Suggests:
     testthat (>= 3.0.0),
     arrow,
@@ -33,8 +33,11 @@ Suggests:
     DBI,
     duckdb,
     fst,
+    jsonify,
     lubridate,
     mockery,
+    ndjson,
+    RcppSimdJson,
     readr,
     vroom
 RoxygenNote: 7.1.2
@@ -47,6 +50,7 @@ Collate:
     'bm-placebo.R'
     'bm-read-csv.R'
     'bm-read-file.R'
+    'bm-read-json.R'
     'bm-remote-dataset.R'
     'bm-row-group-size.R'
     'bm-table-to-df.R'

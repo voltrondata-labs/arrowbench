@@ -11,7 +11,7 @@ known_compressions <- c("uncompressed", "snappy", "zstd", "gzip", "lz4", "brotli
 
 #' @rdname knowns
 #' @export
-known_formats <- c("csv", "parquet", "feather", "fst")
+known_formats <- c("csv", "parquet", "feather", "fst", "json")
 
 #' Ensure that a source has a specific format
 #'
@@ -38,10 +38,14 @@ ensure_format <- function(
     format <- "csv"
     compression <- "gzip"
   }
+  if (format == "json.gz") {
+    format <- "json"
+    compression <- "gzip"
+  }
 
   # generate an extension of the form .compression.format (with special cases for
-  # csv: .csv for uncompressed and .csv.gz for gzip)
-  if (format == "csv") {
+  # csv/json: .csv/.json for uncompressed and .csv.gz/.json.gz for gzip)
+  if (format %in% c("csv", "json")) {
     if (compression == "gzip") {
       ext <- paste(format, "gz", sep = ".")
     } else {
@@ -85,12 +89,12 @@ ensure_format <- function(
   # special case if input is csv + gzip compression since we don't need to read
   # that just to compress
   file_in <- ensure_source(name)
-  if(format == "csv" & ( file_ext(file_in) == "csv" | file_ext(file_in) == "csv.gz" )) {
-    if(compression == "gzip" & file_ext(file_in) == "csv") {
+  if(format == "csv" & file_ext(file_in) %in% c("csv", "csv.gz", "json", "json.gz")) {
+    if(compression == "gzip" & file_ext(file_in) %in% c("csv", "json")) {
       # compress if the file doesn't already exist
       R.utils::gzip(file_in, file_out, remove = FALSE)
       return(file_out)
-    } else if(compression == "uncompressed" & file_ext(file_in) == "csv.gz") {
+    } else if(compression == "uncompressed" & file_ext(file_in) %in% c("csv.gz", "json.gz")) {
       # compress if the file doesn't already exist
       R.utils::gunzip(file_in, file_out, remove = FALSE)
       return(file_out)
@@ -141,8 +145,19 @@ get_write_function <- function(format, compression, chunk_size = NULL) {
     return(function(...) fst::write_fst(..., compress = level))
   } else if (format == "csv") {
     return(function(...) readr::write_csv(...))
-    stop("Unsupported format: ", format, call. = FALSE)
+  } else if (format == "json") {
+    fun <- function(x, path, ...) {
+      if (compression == "gzip") {
+        con <- gzfile(path, open = "wb")
+      } else {
+        con <- file(path, open = "w")
+      }
+      on.exit(close(con))
+      jsonlite::stream_out(as.data.frame(x), con = con, na = "null")
+    }
+    return(fun)
   }
+  stop("Unsupported format: ", format, call. = FALSE)
 }
 
 #' Validate format and compression combinations
@@ -164,6 +179,7 @@ validate_format <- Vectorize(function(format, compression) {
 
   valid_combos <- list(
     csv = c("uncompressed", "gzip"),
+    json = c("uncompressed", "gzip"),
     parquet = c("uncompressed", "snappy", "gzip", "zstd", "lz4", "brotli", "lzo", "bz2"),
     feather = c("uncompressed", "lz4", "zstd"),
     # fst is always zstd, just a question of what level of compression, the
