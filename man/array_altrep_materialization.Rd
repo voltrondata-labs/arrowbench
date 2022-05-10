@@ -17,7 +17,9 @@ This flexes a lower level conversion to R data structures from Arrow data struct
 
 \itemize{
 \item \code{source} A known-file id to use (it will be read in to a data.frame first)
-\item \code{exclude_nulls} logical, should any columns with any \code{NULL}s or \code{NA}s in them be removed?
+\item \code{exclude_nulls} Logical. Remove any columns with any \code{NULL}s or \code{NA}s in them?
+\item \code{altrep} Logical. Use altrep storage for vectors?
+\item \code{subset_indices} Length-one list of vector to use to subset rows of source.
 }
 }
 

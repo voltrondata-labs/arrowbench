@@ -4,23 +4,25 @@
 #'
 #' @section Parameters:
 #' * `source` A known-file id to use (it will be read in to a data.frame first)
-#' * `exclude_nulls` logical, should any columns with any `NULL`s or `NA`s in them be removed?
+#' * `exclude_nulls` Logical. Remove any columns with any `NULL`s or `NA`s in them?
+#' * `altrep` Logical. Use altrep storage for vectors?
+#' * `subset_indices` Length-one list of vector to use to subset rows of source.
 #'
 #' @importFrom purrr transpose
 #' @export
 array_altrep_materialization <- Benchmark(
   "array_altrep_materialization",
 
-  setup = function(
-      source = names(known_sources),
-      exclude_nulls = FALSE,
-      altrep = TRUE
-  ) {
+  setup = function(source = names(known_sources),
+                   exclude_nulls = FALSE,
+                   altrep = TRUE,
+                   subset_indices = list(1:10)) {
     stopifnot(
       is.logical(exclude_nulls),
       is.logical(altrep)
     )
     source <- match.arg(source, names(known_sources))
+    subset_indices <- subset_indices[[1]]
 
     options(arrow.use_altrep = altrep)
     path <- ensure_format(source, format = "parquet", compression = "snappy")
@@ -28,7 +30,7 @@ array_altrep_materialization <- Benchmark(
     # exclude non-altrep types
     pq <- arrow::ParquetFileReader$create(path)
     table_arrow_types <- lapply(pq$GetSchema()$fields, function(x) x$type)
-    arrow_altrep_types = list(
+    arrow_altrep_types <- list(
       arrow::float64(),
       arrow::int32(),
       arrow::utf8(),
@@ -78,7 +80,8 @@ array_altrep_materialization <- Benchmark(
 
     BenchEnvironment(
       array_lengths = array_lengths,
-      arrays = arrays
+      arrays = arrays,
+      subset_indices = subset_indices
     )
   },
 
@@ -89,7 +92,8 @@ array_altrep_materialization <- Benchmark(
   run = {
     result <- lapply(arrays, function(a) {
       list(
-        array_subset = a[1:10],
+        # Materialize subset and full vector. Ref: https://github.com/apache/arrow/pull/11225#issuecomment-928981161
+        array_subset = a[subset_indices],
         array_materialized = a[]
       )
     })
@@ -103,7 +107,7 @@ array_altrep_materialization <- Benchmark(
     materialized_is_altrep <- vapply(materialized_altrep_classes, is.null, logical(1))
 
     stopifnot(
-      "The subset array lengths do not match" = all(lengths(result_t[["array_subset"]]) == 10L),
+      "The subset array lengths do not match" = all(lengths(result_t[["array_subset"]]) == length(subset_indices)),
       "The materialized array lengths do not match" = all.equal(lengths(result_t[["array_materialized"]]), array_lengths),
       "Subset array was not materialized from altrep" = all(subset_is_altrep),
       "Full array was not materialized from altrep" = all(materialized_is_altrep)
