@@ -58,7 +58,6 @@ array_altrep_materialization <- Benchmark(
     arrays <- as.list(table)
     array_lengths <- lengths(arrays)
 
-
     # altrep checking
     altrep_classes <- lapply(arrays, function(x) .Internal(altrep_class(x)))
     is_altrep <- vapply(altrep_classes, Negate(is.null), logical(1L))
