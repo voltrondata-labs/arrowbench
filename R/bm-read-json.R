@@ -2,21 +2,21 @@
 #'
 #' @section Parameters:
 #' * `source` A JSON file path to read in
-#' * `reader` One of `c("arrow", "jsonlite", "ndjson", "jsonify", "RcppSimdJson")`
+#' * `reader` One of `c("arrow", "jsonlite", "ndjson", "RcppSimdJson")`
 #' * `compression` One of `c("uncompressed", "gzip")`
-#' * `output` One of `c("arrow_table", "data_frame")`
+#' * `output_format` One of `c("arrow_table", "data_frame")`
 #'
 #' @export
 #' @importFrom R.utils gzip
 read_json <- Benchmark(
   "read_json",
   setup = function(source = names(known_sources),
-                   reader = c("arrow", "jsonlite", "ndjson", "jsonify", "RcppSimdJson"),
+                   reader = c("arrow", "jsonlite", "ndjson", "RcppSimdJson"),
                    compression = c("uncompressed", "gzip"),
-                   output = c("arrow_table", "data_frame")) {
+                   output_format = c("arrow_table", "data_frame")) {
     reader <- match.arg(reader)
     compression <- match.arg(compression)
-    output <- match.arg(output)
+    output_format <- match.arg(output_format)
 
     input_file <- ensure_format(source, "json", compression)
 
@@ -25,7 +25,7 @@ read_json <- Benchmark(
       read_func = get_json_reader(reader),
       input_file = input_file,
       result_dim = get_source_attr(source, "dim"),
-      as_data_frame = output == "data_frame"
+      as_data_frame = output_format == "data_frame"
     )
   },
   before_each = {
@@ -45,13 +45,13 @@ read_json <- Benchmark(
     result <- NULL
   },
   valid_params = function(params) {
-    drop <- ( params$output == "arrow_table" & params$reader != "arrow" ) |
+    drop <- ( params$output_format == "arrow_table" & params$reader != "arrow" ) |
       ( params$reader == "jsonify" & params$compression == "gzip")
     params[!drop, ]
   },
   packages_used = function(params) {
-    if (params$reader == 'RcppSimdJson') {
-      c('RcppSimdJson', 'data.table')
+    if ('RcppSimdJson' %in% params$reader) {
+      c(params$reader, 'data.table')
     } else {
       params$reader
     }
@@ -83,6 +83,7 @@ get_json_reader <- function(reader) {
       jsonlite::stream_in(con = con)
     },
     ndjson = function(..., as_data_frame) ndjson::stream_in(...),
+    # NOTE: Removed jsonify from default options because it's unstable
     jsonify = function(path, ..., as_data_frame) {
       con <- get_con(path)
       on.exit(close(con))

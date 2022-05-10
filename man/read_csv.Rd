@@ -19,7 +19,7 @@ Benchmark CSV reading
 \item \code{source} A CSV file path to read in
 \item \code{reader} One of \code{c("arrow", "data.table", "vroom", "readr")}
 \item \code{compression} One of \code{c("uncompressed", "gzip")}
-\item \code{output} One of \code{c("arrow_table", "data_frame")}
+\item \code{output_format} One of \code{c("arrow_table", "data_frame")}
 }
 }
 

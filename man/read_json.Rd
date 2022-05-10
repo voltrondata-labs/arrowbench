@@ -17,9 +17,9 @@ Benchmark JSON reading
 
 \itemize{
 \item \code{source} A JSON file path to read in
-\item \code{reader} One of \code{c("arrow", "jsonlite", "ndjson", "jsonify", "RcppSimdJson")}
+\item \code{reader} One of \code{c("arrow", "jsonlite", "ndjson", "RcppSimdJson")}
 \item \code{compression} One of \code{c("uncompressed", "gzip")}
-\item \code{output} One of \code{c("arrow_table", "data_frame")}
+\item \code{output_format} One of \code{c("arrow_table", "data_frame")}
 }
 }
 
