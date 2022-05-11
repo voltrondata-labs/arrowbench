@@ -166,7 +166,9 @@ test_that("an rscript is created correctly and respects parameters", {
   expect_true(file.exists(script_path))
 
   script <- read_json(script_path)
-  expect_identical(script[[9]], "out <- run_bm(duration = 0.10000000000000001, grid = TRUE, bm = structure(list(")
+  expect_identical(
+    script[[10]],
+    "    name = \"placebo\", setup = function(duration = 0.01, error_type = NULL, output_type = NULL, grid = TRUE) {")
 
 })
 
