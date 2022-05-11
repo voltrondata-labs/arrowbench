@@ -14,8 +14,6 @@
 #' `profvis::profvis(prof_input = file)`. Default is `FALSE`
 #' @param read_only this will only attempt to read benchmark files and will not
 #' run any that it cannot find.
-#' @param output_script logical: output the rscript used to run the benchmark as a
-#' json file
 #'
 #' @return A `arrowbench_results` object, containing a list of length `nrow(params)`,
 #' each of those a `list` containing "params" and either "result" or "error".
@@ -29,8 +27,7 @@ run_benchmark <- function(bm,
                           n_iter = 1,
                           dry_run = FALSE,
                           profiling = FALSE,
-                          read_only = FALSE,
-                          output_script = TRUE) {
+                          read_only = FALSE) {
   start <- Sys.time()
   stopifnot(is.data.frame(params))
   message("Running ", nrow(params), " benchmarks with ", n_iter, " iterations:")
@@ -52,7 +49,6 @@ run_benchmark <- function(bm,
     profiling = profiling,
     progress_bar = progress_bar,
     read_only = read_only,
-    output_script = output_script,
     test_packages = unique(bm$packages_used(params))
   )
 
@@ -95,7 +91,6 @@ run_one <- function(bm,
                     profiling = FALSE,
                     progress_bar = NULL,
                     read_only = FALSE,
-                    output_script = TRUE,
                     test_packages = NULL) {
   all_params <- list(...)
 
@@ -141,20 +136,6 @@ run_one <- function(bm,
     # the json read in, so use an ending sentinel too.
     paste0('cat("\n', results_sentinel_end, '\n")')
   )
-
-  if (output_script) {
-    script_file <- file.path(
-      "bm-scripts",
-      bm$name,
-      paste0(
-        "rscript-",
-        paste0(all_params[sort(names(all_params))], collapse = "-"),
-        ".json"
-        )
-      )
-    dir.create(dirname(script_file), showWarnings = FALSE, recursive = TRUE)
-    writeLines(toJSON(script), script_file)
-  }
 
   if (dry_run) {
     return(script)
@@ -327,6 +308,8 @@ run_script <- function(lines, cmd = find_r(), ..., progress_bar, read_only = FAL
     }
     result <- fromJSON(result_json, simplifyDataFrame = TRUE)
     result$output <- result_output
+    ## add actual script
+    result$rscript <- lines
     writeLines(toJSON(result, digits = 15), file)
   } else {
     # This means the script errored.

@@ -11,8 +11,7 @@ run_benchmark(
   n_iter = 1,
   dry_run = FALSE,
   profiling = FALSE,
-  read_only = FALSE,
-  output_script = TRUE
+  read_only = FALSE
 )
 }
 \arguments{
@@ -36,9 +35,6 @@ contain a \code{prof_file} field, which you can read in with
 
 \item{read_only}{this will only attempt to read benchmark files and will not
 run any that it cannot find.}
-
-\item{output_script}{logical: output the rscript used to run the benchmark as a
-json file}
 }
 \value{
 A \code{arrowbench_results} object, containing a list of length \code{nrow(params)},

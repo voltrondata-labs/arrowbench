@@ -12,7 +12,6 @@ run_one(
   profiling = FALSE,
   progress_bar = NULL,
   read_only = FALSE,
-  output_script = TRUE,
   test_packages = NULL
 )
 }
@@ -34,9 +33,6 @@ contain a \code{prof_file} field, which you can read in with
 
 \item{read_only}{this will only attempt to read benchmark files and will not
 run any that it cannot find.}
-
-\item{output_script}{logical: output the rscript used to run the benchmark as a
-json file}
 
 \item{test_packages}{a character vector of packages that the benchmarks test (default \code{NULL})}
 }

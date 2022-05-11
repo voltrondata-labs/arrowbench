@@ -151,24 +151,15 @@ test_that("form of the results during a dry run", {
   expect_true("cat(\"\n##### RESULTS END\n\")" %in% res[[length(res)]])
 })
 
-wipe_results()
-
-test_that("run_benchmark respects output_script=FALSE", {
-  res <- run_benchmark(placebo, cpu_count = 1, output_script = FALSE)
-  expect_false(file.exists(test_path("bm-scripts/placebo/rscript-1-0.01-TRUE.json")))
-})
-
-test_that("an rscript is created correctly and respects parameters", {
+test_that("an rscript is added to the results object", {
   res <- run_benchmark(placebo, cpu_count = 1)
-  expect_true(file.exists(test_path("bm-scripts/placebo/rscript-1-0.01-TRUE.json")))
+  expect_true(file.exists(test_path("results/placebo/1-0.01-TRUE.json")))
   res <- run_benchmark(placebo, cpu_count = 10, duration = 0.1)
-  script_path <- test_path("bm-scripts/placebo/rscript-10-0.1-TRUE.json")
-  expect_true(file.exists(script_path))
+  res_path <- test_path("results/placebo/10-0.1-TRUE.json")
+  expect_true(file.exists(res_path))
 
-  script <- read_json(script_path)
-  expect_true(grepl("run_bm", script[[9]]))
-
-
+  res <- read_json(res_path)
+  expect_true("rscript" %in% names(res))
 })
 
 wipe_results()
