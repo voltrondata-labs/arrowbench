@@ -5,6 +5,7 @@
 tests/testthat/results
 .DS_Store
 results/
+bm-scripts/
 data/
 tests/testthat/data/
 .vscode/
