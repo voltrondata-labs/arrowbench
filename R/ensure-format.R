@@ -153,6 +153,10 @@ get_write_function <- function(format, compression, chunk_size = NULL) {
         con <- file(path, open = "w")
       }
       on.exit(close(con))
+      x <- as.data.frame(x)
+      # TODO remove after data fixed; this makes stored dims not match
+      # remove null-type columns
+      x <- x[vapply(x, class, character(1L)) != 'vctrs_unspecified']
       jsonlite::stream_out(as.data.frame(x), con = con, na = "null")
     }
     return(fun)

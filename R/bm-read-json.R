@@ -38,8 +38,13 @@ read_json <- Benchmark(
     result_class <- if (as_data_frame) "data.frame" else c("Table", "ArrowObject")
     correct_format <- inherits(result, result_class)
 
+    # TODO revert to error once null types are removed from sources
+    if (ncol(result) != result_dim[2]) {
+      warning("The number of columns do not match; null types dropped or data missing", call. = FALSE)
+    }
     stopifnot(
-      "The dimensions do not match" = all.equal(dim(result), result_dim),
+      # "The dimensions do not match" = all.equal(dim(result), result_dim),
+      "The number of rows does not match" = nrow(result) == result_dim[1],
       "The format isn't correct" = correct_format
     )
     result <- NULL
