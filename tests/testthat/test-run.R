@@ -1,4 +1,3 @@
-wipe_results <- function() unlink(test_path("results/placebo"), recursive = TRUE)
 
 test_that("run_iteration", {
   b <- Benchmark("test")
@@ -150,6 +149,25 @@ test_that("form of the results during a dry run", {
   expect_true(all(sapply(res[[1]], class) == "character"))
   expect_true("cat(\"\n##### RESULTS FOLLOW\n\")" %in% res[[1]])
   expect_true("cat(\"\n##### RESULTS END\n\")" %in% res[[length(res)]])
+})
+
+wipe_results()
+
+test_that("run_benchmark respects output_script=FALSE", {
+  res <- run_benchmark(placebo, cpu_count = 1, output_script = FALSE)
+  expect_false(file.exists(test_path("bm-scripts/placebo/rscript-1-0.01-TRUE.json")))
+})
+
+test_that("an rscript is created correctly and respects parameters", {
+  res <- run_benchmark(placebo, cpu_count = 1)
+  expect_true(file.exists(test_path("bm-scripts/placebo/rscript-1-0.01-TRUE.json")))
+  res <- run_benchmark(placebo, cpu_count = 10, duration = 0.1)
+  script_path <- test_path("bm-scripts/placebo/rscript-10-0.1-TRUE.json")
+  expect_true(file.exists(script_path))
+
+  script <- read_json(script_path)
+  expect_identical(script[[9]], "out <- run_bm(duration = 0.10000000000000001, grid = TRUE, bm = structure(list(")
+
 })
 
 wipe_results()
