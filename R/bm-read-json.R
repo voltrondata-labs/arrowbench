@@ -85,7 +85,7 @@ get_json_reader <- function(reader) {
     jsonlite = function(path, ...) {
       con <- get_con(path)
       on.exit(close(con))
-      jsonlite::stream_in(con = con)
+      jsonlite::stream_in(con = con, verbose = FALSE)
     },
     ndjson = function(..., as_data_frame) ndjson::stream_in(...),
     # NOTE: Removed jsonify from default options because it's unstable
