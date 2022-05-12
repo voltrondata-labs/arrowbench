@@ -164,5 +164,26 @@ test_that("query 21 use of logicals passed", {
   )
   no_fails <- all(vapply(run, function(x) is.null(x$error), logical(1)))
   expect_true(no_fails)
+
+  # now, try to run tpc_h, after uninstalling duckdb, ensure it does not install
+  # this musts be done after a test like ^^^ which will create the tpc-h data
+
+  # delete the custom library
+  expect_identical(
+    unlink(custom_duckdb_lib_dir(), recursive = TRUE, force = TRUE),
+    0L
+  )
+
+  run <- run_benchmark(
+    tpc_h,
+    engine = "duckdb",
+    query_id = 21,
+    scale_factor = 0.001
+  )
+  no_fails <- all(vapply(run, function(x) is.null(x$error), logical(1)))
+  expect_true(no_fails)
+
+  # but duckdb has not been installed again
+  expect_false(file.exists(file.path(custom_duckdb_lib_dir(), "duckdb")))
 })
 

@@ -114,36 +114,6 @@ tpc_h <- Benchmark("tpc_h",
       warning("There is no validation for scale_factors other than 0.01, 0.1, 1, and 10. Be careful with these results!")
     }
 
-    # double check this result with the duckdb answers, since we can
-    # TODO: DuckDB in principle also has 0.01 and 0.1, but when they are queried
-    # they both come out as 0 and disambiguating them is not totally straightforward
-    if (scale_factor == 1) {
-      answer <- tpch_answer(scale_factor, query_id, source = "duckdb")
-
-      # TODO: different tolerances for different kinds of columns?
-      # > For ratios, results r must be within 1% of the query validation output
-      # data v when rounded to the nearest 1/100th. That is, 0.99*v<=round(r,2)<=1.01*v.
-      # > For results from AVG aggregates, the resulting values r must be within 1%
-      # of the query validation output data when rounded to the nearest 1/100th
-      # > For results from SUM aggregates, the resulting values must be within
-      # $100 of the query validation output data.
-      all_equal_out <- all.equal(result, answer, check.attributes = FALSE, tolerance = 0.01)
-
-      # turn chars into dates in the answer (in DuckDB, they are all chars not dates)
-      # TODO: send duckdb a PR to change that?
-      char_to_date <- purrr::map_lgl(all_equal_out, ~grepl("target is Date, current is character", .x))
-      cols <- sub(paste0("Component ", dQuote("(.*)"), ":.*"), "\\1", all_equal_out[char_to_date])
-      for (col in cols) {
-        answer[, col] <- as.Date(answer[, col])
-      }
-
-      all_equal_out <- waldo::compare(result, answer, ignore_attr = TRUE, tolerance = 0.01)
-      if (length(all_equal_out) != 0) {
-        warning(paste0("\n", all_equal_out, "\n"))
-        stop("The answer does not match")
-      }
-    }
-
     # clear the result
     result <- NULL
   },
