@@ -79,7 +79,7 @@ jobs:
           _R_CHECK_CRAN_INCOMING_: false
           _R_CHECK_FORCE_SUGGESTS_: ${{ matrix.config.force_suggests }}
         run: |
-          if (${{ matrix.config.r == 'release' }}) {
+          if ('${{ matrix.config.r }}' == 'release') {
             Sys.setenv("ARROWBENCH_TEST_CUSTOM_DUCKDB" = TRUE)
           }
           options(crayon.enabled = TRUE)
