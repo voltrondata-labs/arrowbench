@@ -104,6 +104,40 @@ taxi_schema <- function() {
 }
 
 known_datasets <- list(
+  taxi_2013 = list(
+    url = "https://archive.org/download/nycTaxiTripData2013/trip_fare.7z",
+    download = function(path) {
+      archive_path <- file.path(dirname(path), "trip_fare.7z")
+      if (!file.exists(archive_path)) {
+        download.file(
+          "https://archive.org/download/nycTaxiTripData2013/trip_fare.7z",
+          archive_path,
+          mode = 'wb',
+          method = 'wget'
+        )
+      }
+
+      archive::archive_extract(archive_path, dir = path)
+
+      files <- list.files(path, pattern = '\\.csv$', full.names = TRUE)
+      lapply(files, function(file) {
+        message("Fixing headers in ", file)
+        lines <- readr::read_lines(file)
+        lines[[1]] <- gsub(", ", ",", lines[[1]], fixed = TRUE)
+        readr::write_lines(lines, file)
+
+        message("gzipping ", file)
+        R.utils::gzip(file, remove = TRUE)
+      })
+
+      invisible(path)
+    },
+    open = function(paths) {
+      arrow::open_dataset(paths, format = "csv")
+    },
+    dim = c(173179759L, 11L),
+    n_files = 12L
+  ),
   taxi_parquet = list(
     url = "s3://ursa-labs-taxi-data",
     download = function(path) {
