@@ -176,7 +176,7 @@ test_that("query 21 use of logicals passed", {
 
   run <- run_benchmark(
     tpc_h,
-    engine = "duckdb",
+    engine = "arrow",
     query_id = 21,
     scale_factor = 0.001
   )
