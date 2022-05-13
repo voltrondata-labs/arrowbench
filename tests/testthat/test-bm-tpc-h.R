@@ -186,5 +186,3 @@ test_that("query 21 use of logicals passed", {
   # but duckdb has not been installed again
   expect_false(file.exists(file.path(custom_duckdb_lib_dir(), "duckdb")))
 })
-
-wipe_results()
