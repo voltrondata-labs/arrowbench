@@ -12,3 +12,5 @@ test_that("row_group_size benchmark runs", {
     "arrowbench_results"
   )
 })
+
+wipe_results()
