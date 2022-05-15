@@ -137,11 +137,7 @@ tpc_h <- Benchmark("tpc_h",
   },
   # packages used when specific formats are used
   packages_used = function(params) {
-    out <- c(params$engine, "dplyr", "lubridate")
-    if ("duckdb" %in% params$engine) {
-      out <- c(out, "dbplyr")
-    }
-    out
+    c(params$engine, "dplyr", "lubridate", "dbplyr")
   }
 )
 
