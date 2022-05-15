@@ -137,7 +137,7 @@ tpc_h <- Benchmark("tpc_h",
   },
   # packages used when specific formats are used
   packages_used = function(params) {
-    c(params$engine, "dplyr", "lubridate", "dbplyr")
+    c(params$engine, "dplyr", "lubridate")
   }
 )
 
