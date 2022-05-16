@@ -177,7 +177,7 @@ test_that("query 21 use of logicals passed", {
   run <- run_benchmark(
     tpc_h,
     engine = "arrow",
-    query_id = 21,
+    query_id = 20,
     scale_factor = 0.001
   )
   no_fails <- all(vapply(run, function(x) is.null(x$error), logical(1)))
