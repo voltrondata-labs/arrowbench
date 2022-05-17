@@ -1,4 +1,3 @@
-
 test_that("run_iteration", {
   b <- Benchmark("test")
   out <- run_iteration(b, ctx = new.env())
