@@ -10,8 +10,10 @@ write_csv <- Benchmark(
   "write_csv",
   setup = function(source = names(known_sources),
                    writer = "arrow",
+                   compression = "uncompressed",
                    input = c("arrow_table", "data_frame")) {
     writer <- match.arg(writer, c("arrow", "data.table", "vroom", "readr", "base"))
+    compression <- match.arg(compression, c("gzip", "uncompressed"))
     input <- match.arg(input)
 
     # source defaults are retrieved from the function definition (all available
@@ -23,12 +25,20 @@ write_csv <- Benchmark(
     BenchEnvironment(
       write_csv_func = get_csv_writer(writer),
       source = source,
-      df = df
+      df = df,
+      compression = compression
     )
   },
   # delete the results before each iteration
   before_each = {
     result_file <- tempfile(fileext = ".csv")
+    if (compression != "uncompressed") {
+      if (compression == "gzip") {
+        result_file <- paste0(result_file, ".gz")
+      } else {
+        result_file <- paste0(result_file, ".", compression)
+      }
+    }
   },
   # the benchmark to run
   run = {
