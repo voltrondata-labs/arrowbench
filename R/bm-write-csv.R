@@ -21,24 +21,28 @@ write_csv <- Benchmark(
     source <- ensure_source(source)
     df <- read_source(source, as_data_frame = match.arg(input) == "data_frame")
 
+    if (compression != "uncompressed") {
+      if (compression == "gzip") {
+        ext <- ".csv.gz"
+      } else {
+        ext <- paste0(".csv.", compression)
+      }
+    } else {
+      ext <- ".csv"
+    }
+
     # Map string param name to functions
     BenchEnvironment(
       write_csv_func = get_csv_writer(writer),
       source = source,
       df = df,
-      compression = compression
+      ext = ext
     )
   },
   # delete the results before each iteration
   before_each = {
-    result_file <- tempfile(fileext = ".csv")
-    if (compression != "uncompressed") {
-      if (compression == "gzip") {
-        result_file <- paste0(result_file, ".gz")
-      } else {
-        result_file <- paste0(result_file, ".", compression)
-      }
-    }
+    result_file <- tempfile(fileext = ext)
+
   },
   # the benchmark to run
   run = {
