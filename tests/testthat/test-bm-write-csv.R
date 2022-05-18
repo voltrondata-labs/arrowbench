@@ -1,3 +1,5 @@
+
+
 test_that("write_csv benchmark works", {
   expect_s3_class(
     run_benchmark(
@@ -8,3 +10,4 @@ test_that("write_csv benchmark works", {
   )
 })
 
+wipe_results()

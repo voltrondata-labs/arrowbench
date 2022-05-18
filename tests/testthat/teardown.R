@@ -1,0 +1,1 @@
+wipe_results()

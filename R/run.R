@@ -84,7 +84,14 @@ run_benchmark <- function(bm,
 #' @return A `arrowbench_result`: a `list` containing "params" and either
 #' "result" or "error".
 #' @export
-run_one <- function(bm, ..., n_iter = 1, dry_run = FALSE, profiling = FALSE, progress_bar = NULL, read_only = FALSE, test_packages = NULL) {
+run_one <- function(bm,
+                    ...,
+                    n_iter = 1,
+                    dry_run = FALSE,
+                    profiling = FALSE,
+                    progress_bar = NULL,
+                    read_only = FALSE,
+                    test_packages = NULL) {
   all_params <- list(...)
 
   # separate the global parameters, and make sure only those that are specified remain
@@ -301,6 +308,8 @@ run_script <- function(lines, cmd = find_r(), ..., progress_bar, read_only = FAL
     }
     result <- fromJSON(result_json, simplifyDataFrame = TRUE)
     result$output <- result_output
+    ## add actual script
+    result$rscript <- lines
     writeLines(toJSON(result, digits = 15), file)
   } else {
     # This means the script errored.
