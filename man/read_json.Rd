@@ -20,6 +20,7 @@ Benchmark JSON reading
 \item \code{reader} One of \code{c("arrow", "jsonlite", "ndjson", "RcppSimdJson")}
 \item \code{compression} One of \code{c("uncompressed", "gzip")}
 \item \code{output_format} One of \code{c("arrow_table", "data_frame")}
+\item \code{rbinder} Method for simplifying to dataframe. Not relevant for {arrow} and {ndjson}.
 }
 }
 
