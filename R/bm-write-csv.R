@@ -10,10 +10,10 @@ write_csv <- Benchmark(
   "write_csv",
   setup = function(source = names(known_sources),
                    writer = "arrow",
-                   compression = "uncompressed",
+                   compression = c("uncompressed", "gzip"),
                    input = c("arrow_table", "data_frame")) {
     writer <- match.arg(writer, c("arrow", "data.table", "vroom", "readr", "base"))
-    compression <- match.arg(compression, c("gzip", "uncompressed"))
+    compression <- match.arg(compression, c("uncompressed", "gzip"))
     input <- match.arg(input)
 
     # source defaults are retrieved from the function definition (all available
@@ -21,15 +21,12 @@ write_csv <- Benchmark(
     source <- ensure_source(source)
     df <- read_source(source, as_data_frame = match.arg(input) == "data_frame")
 
-    if (compression != "uncompressed") {
-      if (compression == "gzip") {
-        ext <- ".csv.gz"
-      } else {
-        ext <- paste0(".csv.", compression)
-      }
-    } else {
-      ext <- ".csv"
-    }
+    ext <- switch(
+      compression,
+      uncompressed = ".csv",
+      gzip = ".csv.gz",
+      paste0(".csv.", compression)
+    )
 
     # Map string param name to functions
     BenchEnvironment(
