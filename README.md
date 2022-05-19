@@ -41,6 +41,11 @@ can be benchmarked with arrowbench. And then running `R CMD INSTALL .` in a
 terminal (for both, you should do this in the root directory of arrowbench, or 
 pass the path to arrowbench instead of `.`).
 
+Some benchmark data files are downloaded with `download.file(..., method = "wget")`,
+which requires [wget](https://www.gnu.org/software/wget/) to be installed. If not 
+already installed, `wget` is available via most package managers, e.g. with 
+`brew install wget` with Hombrew on MacOS.
+
 ## Contributing
 
 To run DuckDB tests, set `ARROWBENCH_TEST_CUSTOM_DUCKDB` to `1` or another 

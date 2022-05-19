@@ -29,6 +29,7 @@ Imports:
   callr
 Suggests:
     testthat (>= 3.0.0),
+    archive,
     arrow,
     data.table,
     DBI,
