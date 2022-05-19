@@ -78,6 +78,7 @@
 </h2>
 <p>The quickest and easiest way to install is to run <code>remotes::install_github("ursacomputing/arrowbench", dependencies = TRUE)</code> in R. If you need to install remotes you can <code>install.packages("remotes")</code>.</p>
 <p>If you’ve downloaded the source, or you’re making changes to arrow bench you should make sure that you have the dependencies with <code>remotes::install_deps(".", dependencies = TRUE)</code> in R (this will also install the arrow package along with other packages that can be benchmarked with arrowbench. And then running <code>R CMD INSTALL .</code> in a terminal (for both, you should do this in the root directory of arrowbench, or pass the path to arrowbench instead of <code>.</code>).</p>
+<p>Some benchmark data files are downloaded with <code>download.file(..., method = "wget")</code>, which requires <a href="https://www.gnu.org/software/wget/" class="external-link">wget</a> to be installed. If not already installed, <code>wget</code> is available via most package managers, e.g. with <code>brew install wget</code> with Hombrew on MacOS.</p>
 </div>
 <div class="section level2">
 <h2 id="contributing">Contributing<a class="anchor" aria-label="anchor" href="#contributing"></a>
