@@ -79,7 +79,10 @@ get_csv_writer <- function(writer) {
   } else if (writer == "vroom") {
     return(function(..., as_data_frame) vroom::vroom_write(..., delim = ","))
   } else if (writer == "base") {
-    return(function(...) utils::write.csv(..., row.names = FALSE))
+    return(function(df, result_file) {
+      if (tools::file_ext(result_file) == "gz") result_file <- gzfile(result_file)
+      utils::write.csv(df, result_file, row.names = FALSE)
+      })
   } else {
     stop("Unsupported writer: ", writer, call. = FALSE)
   }
