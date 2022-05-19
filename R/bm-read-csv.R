@@ -4,7 +4,7 @@
 #' * `source` A CSV file path to read in
 #' * `reader` One of `c("arrow", "data.table", "vroom", "readr")`
 #' * `compression` One of `c("uncompressed", "gzip")`
-#' * `output` One of `c("arrow_table", "data_frame")`
+#' * `output_format` One of `c("arrow_table", "data_frame")`
 #'
 #' @export
 #' @importFrom R.utils gzip
@@ -13,10 +13,10 @@ read_csv <- Benchmark(
   setup = function(source = names(known_sources),
                    reader = "arrow",
                    compression = c("uncompressed", "gzip"),
-                   output = c("arrow_table", "data_frame")) {
+                   output_format = c("arrow_table", "data_frame")) {
     reader <- match.arg(reader, c("arrow", "data.table", "vroom", "readr"))
     compression <- match.arg(compression)
-    output <- match.arg(output)
+    output_format <- match.arg(output_format)
     # ensure the the file exists
     input_file <- ensure_format(source, "csv", compression)
 
@@ -30,7 +30,7 @@ read_csv <- Benchmark(
       read_func = get_csv_reader(reader, delim),
       input_file = input_file,
       result_dim = result_dim,
-      as_data_frame = output == "data_frame",
+      as_data_frame = output_format == "data_frame",
       delim = delim
     )
   },
@@ -59,7 +59,7 @@ read_csv <- Benchmark(
   valid_params = function(params) {
     # on macOS data.table doesn't (typically) have multi core support
     # TODO: check if this is actually enabled before running?
-    drop <- ( params$output == "arrow_table" & params$reader != "arrow" ) |
+    drop <- ( params$output_format == "arrow_table" & params$reader != "arrow" ) |
       ( params$reader == "readr" & params$cpu_count > 1 ) |
       # compression was only supported from arrow 1.0.0 and onward
       ( params$compression != "uncompressed" & params$reader == "arrow" & params$lib_path < "1.0" )

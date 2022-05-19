@@ -9,7 +9,7 @@
 \format{
 An object of class \code{character} of length 8.
 
-An object of class \code{character} of length 4.
+An object of class \code{character} of length 5.
 }
 \usage{
 known_compressions
