@@ -10,8 +10,10 @@ write_csv <- Benchmark(
   "write_csv",
   setup = function(source = names(known_sources),
                    writer = "arrow",
+                   compression = c("uncompressed", "gzip"),
                    input = c("arrow_table", "data_frame")) {
     writer <- match.arg(writer, c("arrow", "data.table", "vroom", "readr", "base"))
+    compression <- match.arg(compression, c("uncompressed", "gzip"))
     input <- match.arg(input)
 
     # source defaults are retrieved from the function definition (all available
@@ -19,16 +21,25 @@ write_csv <- Benchmark(
     source <- ensure_source(source)
     df <- read_source(source, as_data_frame = match.arg(input) == "data_frame")
 
+    ext <- switch(
+      compression,
+      uncompressed = ".csv",
+      gzip = ".csv.gz",
+      paste0(".csv.", compression)
+    )
+
     # Map string param name to functions
     BenchEnvironment(
       write_csv_func = get_csv_writer(writer),
       source = source,
-      df = df
+      df = df,
+      ext = ext
     )
   },
   # delete the results before each iteration
   before_each = {
-    result_file <- tempfile(fileext = ".csv")
+    result_file <- tempfile(fileext = ext)
+
   },
   # the benchmark to run
   run = {
@@ -68,7 +79,10 @@ get_csv_writer <- function(writer) {
   } else if (writer == "vroom") {
     return(function(..., as_data_frame) vroom::vroom_write(..., delim = ","))
   } else if (writer == "base") {
-    return(function(...) utils::write.csv(..., row.names = FALSE))
+    return(function(df, result_file) {
+      if (tools::file_ext(result_file) == "gz") result_file <- gzfile(result_file)
+      utils::write.csv(df, result_file, row.names = FALSE)
+      })
   } else {
     stop("Unsupported writer: ", writer, call. = FALSE)
   }
