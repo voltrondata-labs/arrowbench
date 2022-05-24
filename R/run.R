@@ -189,6 +189,7 @@ run_bm <- function(bm, ..., n_iter = 1, profiling = FALSE, global_params = list(
   all_params <- modifyList(params, global_params)
   all_params$packages <- package_info()[, c("package", "loadedversion", "date", "source")]
   names(all_params$packages)[2] <- "version"
+  row.names(all_params$packages) <- NULL
   # remove `packages_info` class whose print method won't work anymore
   all_params$packages <- as.data.frame(all_params$packages)
 
