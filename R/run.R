@@ -130,7 +130,7 @@ run_one <- function(bm,
     setup_script,
     eval_script,
     paste0('cat("\n', results_sentinel, '\n")'),
-    "cat(jsonlite::toJSON(unclass(out), digits = 15))",
+    "cat(jsonlite::toJSON(unclass(out), digits = 15, auto_unbox = TRUE, null = 'null'))",
     # The end _should_ include only the json, but sometimes `open_dataset()`
     # results in * Closing connection n being printed at the end which breaks
     # the json read in, so use an ending sentinel too.
@@ -186,14 +186,28 @@ run_bm <- function(bm, ..., n_iter = 1, profiling = FALSE, global_params = list(
   defaults <- lapply(get_default_args(bm$setup), head, 1)
   defaults$cpu_count <- parallel::detectCores()
   params <- modifyList(defaults, list(...))
-  params <- modifyList(params, global_params)
-  params$packages <- package_info()[, c("package", "loadedversion", "date", "source")]
-  names(params$packages)[2] <- "version"
+  all_params <- modifyList(params, global_params)
+  all_params$packages <- package_info()[, c("package", "loadedversion", "date", "source")]
+  names(all_params$packages)[2] <- "version"
+  # remove `packages_info` class whose print method won't work anymore
+  all_params$packages <- as.data.frame(all_params$packages)
 
-  structure(list(
-    result = do.call(rbind, results),
-    params = params
-  ), class = "arrowbench_result")
+  metadata <- assemble_metadata(
+    name = bm$name,
+    params = params,
+    cpu_count = global_params$cpu_count,
+    n_iter = n_iter
+  )
+
+  out <- c(
+    metadata,
+    list(
+      result = do.call(rbind, results),
+      params = all_params
+    )
+  )
+
+  structure(out, class = "arrowbench_result")
 }
 
 run_iteration <- function(bm, ctx, profiling = FALSE) {
@@ -239,6 +253,56 @@ global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL, te
     )
   }
   script
+}
+
+#' Assemble metadata for a benchmark run
+#'
+#' @param name Benchmark name, i.e. `bm$name`
+#' @param params Named list of parameters for the individual run, i.e. the case
+#' @param cpu_count Number of CPUs allocated
+#' @param n_iter Number of iterations
+#'
+#' @keywords internal
+assemble_metadata <- function(name, params, cpu_count, n_iter) {
+  tags <- params
+  tags[["dataset"]] <- params$source
+  tags[["source"]] <- NULL
+  tags[["cpu_count"]] <- cpu_count
+  tags[["language"]] <- "R"
+
+  arrow_info <- arrow::arrow_info()
+  info <- list(
+    arrow_version = arrow_info$build_info$cpp_version,
+    arrow_compiler_id = arrow_info$build_info$cpp_compiler,
+    arrow_compiler_version = arrow_info$build_info$cpp_compiler_version,
+    benchmark_language_version = version[['version.string']],
+    arrow_version_r = as.character(arrow_info$version)
+  )
+
+  context <- list(
+    arrow_compiler_flags = arrow_info$build_info$cpp_compiler_flags,
+    benchmark_language = "R"
+  )
+
+  github <- list(
+    repository = "https://github.com/apache/arrow",
+    commit = arrow_info$build_info$git_id
+  )
+
+  options <- list(
+    iterations = n_iter,
+    drop_caches = FALSE,  # TODO: parameterize when implemented
+    cpu_count = cpu_count
+  )
+
+  list(
+    name = name,
+    tags = tags,
+    info = info,
+    context = context,
+    github = github,
+    options = options
+  )
 }
 
 #' @importFrom jsonlite fromJSON toJSON
@@ -310,7 +374,7 @@ run_script <- function(lines, cmd = find_r(), ..., progress_bar, read_only = FAL
     result$output <- result_output
     ## add actual script
     result$rscript <- lines
-    writeLines(toJSON(result, digits = 15), file)
+    writeLines(toJSON(result, digits = 15, auto_unbox = TRUE, null = 'null'), file)
   } else {
     # This means the script errored.
     message(paste(result, collapse = "\n"))
