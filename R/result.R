@@ -24,6 +24,7 @@ as.data.frame.arrowbench_result <- function(x, row.names = NULL, optional = FALS
   out <- cbind(iteration = seq_len(nrow(x$result)), x$result, x$params)
   out$output <- x$output
 
+  # append metadata fields to dataframe as attributes
   metadata_elements <- c("name", "tags", "info", "context", "github", "options")
   for (element in metadata_elements) {
     if (element %in% names(x)) {
