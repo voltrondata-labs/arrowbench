@@ -121,6 +121,12 @@ test_that("form of the results, including output", {
     c("real", "process", "version_arrow") %in% colnames(results_df)
   ))
 
+  json_keys <- c(
+    "name", "tags", "info", "context", "github", "options", "result", "params",
+    "output", "rscript"
+  )
+  expect_named(res[[1]], json_keys, ignore.order = TRUE)
+
   expect_message(res <- run_benchmark(placebo, cpu_count = 1, output_type = "warning"))
   results_df <- as.data.frame(res)
   expect_identical(
