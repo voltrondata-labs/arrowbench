@@ -153,18 +153,13 @@ default_params <- function(bm, ...) {
 #' Extract a data.frame that provides the parameters used in a run and the
 #' error status
 #'
-#' @param run The object returned by either `run_benchmark` or `run_one`
+#' @param run An instance of `BenchmarkResults` as returned by `run_benchmark`
+#' or `BenchmarkResult` or `BenchmarkFailure` as returned by `run_one` and `run_bm`
 #' @return a tibble
 #' @export
 get_params_summary <- function(run) {
-  if (!inherits(run, "arrowbench_results")) {
-    stop("run objects need to be of class arrowbench_results")
+  if (!inherits(run, c("BenchmarkResults", "BenchmarkResult", "BenchmarkFailure"))) {
+    stop("run objects need to be of class BenchmarkResults, BenchmarkResult, or BenchmarkFailure")
   }
-  purrr::map_df(seq_along(run), ~{
-    d <- run[[.x]]$params
-    d$packages <- NULL
-    d <- as.data.frame(d)
-    d$did_error <- !is.null(run[[.x]]$error)
-    d
-  })
+  run$params_summary
 }

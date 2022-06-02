@@ -5,11 +5,11 @@ test_that("row_group_size benchmark runs", {
   expect_s3_class(
     run_benchmark(
       row_group_size,
-      source = "fanniemae_sample",
+      source = "type_integers",
       queries = "everything",
       chunk_size = list(NULL)
     ),
-    "arrowbench_results"
+    "BenchmarkResults"
   )
 })
 

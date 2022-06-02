@@ -19,6 +19,7 @@ Imports:
     jsonlite,
     progress,
     purrr,
+    R6,
     remotes,
     rlang,
     R.utils,

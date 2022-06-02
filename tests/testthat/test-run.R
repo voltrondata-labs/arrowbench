@@ -19,7 +19,7 @@ test_that("run_bm", {
   )
   out <- run_bm(b, n_iter = 3)
 
-  expect_s3_class(out, "arrowbench_result")
+  expect_s3_class(out, "BenchmarkResult")
   expect_identical(nrow(out$result), 3L)
 
   expect_error(run_bm(b, param1 = "b"), "isTRUE(result) is not TRUE", fixed = TRUE)
@@ -39,7 +39,7 @@ test_that("get_params_summary returns a data.frame",{
   success_summary <- get_params_summary(bm_success)
   expect_s3_class(success_summary, "data.frame")
 
-  expected_summary <- data.frame(
+  expected_summary <- dplyr::tibble(
     duration = 0.01, grid = TRUE, cpu_count = 1L,
     output_type = "message", lib_path = "latest", did_error = FALSE
   )
@@ -88,11 +88,12 @@ test_that("form of the results", {
   results_df <- as.data.frame(res)
   expect_identical(
     results_df[,c("iteration", "cpu_count", "lib_path")],
-    data.frame(
+    dplyr::tibble(
       iteration = 1L,
       cpu_count = 1L,
       lib_path = "latest"
-    )
+    ),
+    ignore_attr = TRUE
   )
   expect_true(all(
     c("real", "process", "version_arrow") %in% colnames(results_df)
@@ -104,7 +105,7 @@ test_that("form of the results, including output", {
 
   results_df <- as.data.frame(res)
 
-  expected <- data.frame(
+  expected <- dplyr::tibble(
     iteration = 1L,
     cpu_count = 1L,
     lib_path = "latest",
@@ -114,8 +115,9 @@ test_that("form of the results, including output", {
   expected$output <- as.character(expected$output)
 
   expect_identical(
-    results_df[,c("iteration", "cpu_count", "lib_path", "output")],
-    expected
+    results_df[, c("iteration", "cpu_count", "lib_path", "output")],
+    expected,
+    ignore_attr = TRUE
   )
   expect_true(all(
     c("real", "process", "version_arrow") %in% colnames(results_df)
@@ -125,7 +127,7 @@ test_that("form of the results, including output", {
     "name", "tags", "info", "context", "github", "options", "result", "params",
     "output", "rscript"
   )
-  expect_named(res[[1]], json_keys, ignore.order = TRUE)
+  expect_named(res$results[[1]]$list, json_keys, ignore.order = TRUE)
 
   expect_message(res <- run_benchmark(placebo, cpu_count = 1, output_type = "warning"))
   results_df <- as.data.frame(res)
@@ -151,9 +153,9 @@ test_that("form of the results, including output", {
 test_that("form of the results during a dry run", {
   res <- run_benchmark(placebo, cpu_count = 10, dry_run = TRUE)
 
-  expect_true(all(sapply(res[[1]], class) == "character"))
-  expect_true("cat(\"\n##### RESULTS FOLLOW\n\")" %in% res[[1]])
-  expect_true("cat(\"\n##### RESULTS END\n\")" %in% res[[length(res)]])
+  expect_true(all(sapply(res$results[[1]], class) == "character"))
+  expect_true("cat(\"\n##### RESULTS FOLLOW\n\")" %in% res$results[[1]])
+  expect_true("cat(\"\n##### RESULTS END\n\")" %in% res$results[[length(res$results)]])
 })
 
 test_that("an rscript is added to the results object", {

@@ -15,8 +15,9 @@
 #' @param read_only this will only attempt to read benchmark files and will not
 #' run any that it cannot find.
 #'
-#' @return A `arrowbench_results` object, containing a list of length `nrow(params)`,
-#' each of those a `list` containing "params" and either "result" or "error".
+#' @return A `BenchmarkResults` object, containing `results` attribute of a list
+#' of length `nrow(params)` each of those either a `BenchmarkResult` or
+#' `BenchmarkFalure` object.
 #' For a simpler view of results, call `as.data.frame()` on it.
 #' @export
 #' @importFrom purrr pmap map_lgl
@@ -54,7 +55,7 @@ run_benchmark <- function(bm,
 
   if (dry_run) {
     # return now so that we don't attempt to process looking for errors, etc.
-    return(out)
+    return(BenchmarkResults$new(results = out))
   }
 
   errors <- map_lgl(out, ~!is.null(.$error))
@@ -64,12 +65,11 @@ run_benchmark <- function(bm,
   }
 
   if (read_only) {
-    # cleanout nulls from not-yet-finished benchmarks
+    # clean out nulls from not-yet-finished benchmarks
     out <- out[!sapply(out, is.null)]
   }
 
-  out <- lapply(out, `class<-`, "arrowbench_result")
-  class(out) <- "arrowbench_results"
+  out <- BenchmarkResults$new(results = out)
   message("Total run time: ", format(Sys.time() - start))
   out
 }
@@ -81,7 +81,7 @@ run_benchmark <- function(bm,
 #' @param test_packages a character vector of packages that the benchmarks test (default `NULL`)
 #' @param ... parameters passed to `bm$setup()`.
 #'
-#' @return A `arrowbench_result`: a `list` containing "params" and either
+#' @return An instance of `BenchmarkResult`: an R6 object containing either
 #' "result" or "error".
 #' @export
 run_one <- function(bm,
@@ -130,7 +130,7 @@ run_one <- function(bm,
     setup_script,
     eval_script,
     paste0('cat("\n', results_sentinel, '\n")'),
-    "cat(jsonlite::toJSON(unclass(out), digits = 15, auto_unbox = TRUE, null = 'null'))",
+    "cat(out$json)",
     # The end _should_ include only the json, but sometimes `open_dataset()`
     # results in * Closing connection n being printed at the end which breaks
     # the json read in, so use an ending sentinel too.
@@ -200,15 +200,18 @@ run_bm <- function(bm, ..., n_iter = 1, profiling = FALSE, global_params = list(
     n_iter = n_iter
   )
 
-  out <- c(
-    metadata,
-    list(
-      result = do.call(rbind, results),
-      params = all_params
-    )
+  out <- BenchmarkResult$new(
+    name = bm$name,
+    result = do.call(rbind, results),
+    params = all_params,
+    tags = metadata$tags,
+    info = metadata$info,
+    context = metadata$context,
+    github = metadata$github,
+    options = metadata$options
   )
 
-  structure(out, class = "arrowbench_result")
+  out
 }
 
 run_iteration <- function(bm, ctx, profiling = FALSE) {
@@ -323,7 +326,7 @@ run_script <- function(lines, cmd = find_r(), ..., progress_bar, read_only = FAL
       progress_bar$tick()
     }
 
-    return(fromJSON(file, simplifyDataFrame = TRUE))
+    return(BenchmarkResult$read_json(file))
   } else if (read_only) {
     msg <- paste0("\U274C results not found: ", file)
     if (!is.null(progress_bar)) {
@@ -371,15 +374,15 @@ run_script <- function(lines, cmd = find_r(), ..., progress_bar, read_only = FAL
     if (!dir.exists(dirname(file))) {
       dir.create(dirname(file))
     }
-    result <- fromJSON(result_json, simplifyDataFrame = TRUE)
+    result <- BenchmarkResult$from_json(result_json)
     result$output <- result_output
     ## add actual script
     result$rscript <- lines
-    writeLines(toJSON(result, digits = 15, auto_unbox = TRUE, null = 'null'), file)
+    result$write_json(file)
   } else {
     # This means the script errored.
     message(paste(result, collapse = "\n"))
-    result <- list(
+    result <- BenchmarkFailure$new(
       error = result,
       params = list(...)
     )
