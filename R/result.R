@@ -6,6 +6,7 @@
 #' @include util.R
 R6.1Class <- function(..., static = NULL) {
   Class <- R6::R6Class(...)
+  Class$parent_env <- parent.frame()
 
   full_static <- modifyList(
     Class$get_inherit()$private_fields$static %||% list(),
