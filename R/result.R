@@ -1,23 +1,16 @@
-# Merge two named vectors, overwriting identically-named elements of x1 with
-# that of x2.
-coalesce_vectors <- function(x1, x2) {
-  out <- x1
-  to_overwrite <- names(x2) %in% names(x1)
-  out[names(x2)[to_overwrite]] <- x2[to_overwrite]
-  out <- c(out, x2[!to_overwrite])
-  out
-}
-
-
 # Version of R6 with heritable static/class methods and attributes
 #
 # Elements in `static` can be called without instantiation, e.g. `Class$method()`.
 # Functions are evaluated in the environment of `Class`, so you can refer to `self`
 # (which is the class—not the instance—here) to create class methods.
+#' @include util.R
 R6.1Class <- function(..., static = NULL) {
   Class <- R6::R6Class(...)
 
-  full_static <- coalesce_vectors(Class$get_inherit()$private_fields$static, static)
+  full_static <- modifyList(
+    Class$get_inherit()$private_fields$static %||% list(),
+    static %||% list()
+  )
   full_static <- lapply(full_static, function(x) {
     if (!is.function(x)) return(x)
     environment(x) <- Class
@@ -75,6 +68,15 @@ Serializable <- R6.1Class(
     }
   ),
 
+  private = list(
+    get_or_set = function(variable, value) {
+      if (!missing(value)) {
+        private[[variable]] <- value
+      }
+      private[[variable]]
+    }
+  ),
+
   static = list(
     from_list = function(list) {
       do.call(self$new, list)
@@ -91,7 +93,9 @@ Serializable <- R6.1Class(
   )
 )
 
+#' @export
 as.list.Serializable <- function(x, ...) x$list
+#' @export
 as.character.Serializable <- function(x, ...) x$json
 
 
@@ -154,66 +158,16 @@ BenchmarkResult <- R6.1Class(
   ),
 
   active = list(
-    name = function(name) {
-      if (!missing(name)) {
-        private$.name <- name
-      }
-      private$.name
-    },
-    result = function(result) {
-      if (!missing(result)) {
-        private$.result <- result
-      }
-      private$.result
-    },
-    params = function(params) {
-      if (!missing(params)) {
-        private$.params <- params
-      }
-      private$.params
-    },
-    tags = function(tags) {
-      if (!missing(tags)) {
-        private$.tags <- tags
-      }
-      private$.tags
-    },
-    info = function(info) {
-      if (!missing(info)) {
-        private$.info <- info
-      }
-      private$.info
-    },
-    context = function(context) {
-      if (!missing(context)) {
-        private$.context <- context
-      }
-      private$.context
-    },
-    github = function(github) {
-      if (!missing(github)) {
-        private$.github <- github
-      }
-      private$.github
-    },
-    options = function(options) {
-      if (!missing(options)) {
-        private$.options <- options
-      }
-      private$.options
-    },
-    output = function(output) {
-      if (!missing(output)) {
-        private$.output <- output
-      }
-      private$.output
-    },
-    rscript = function(rscript) {
-      if (!missing(rscript)) {
-        private$.rscript <- rscript
-      }
-      private$.rscript
-    },
+    name = function(name) private$get_or_set(variable = ".name", value = name),
+    result = function(result) private$get_or_set(variable = ".result", value = result),
+    params = function(params) private$get_or_set(variable = ".params", value = params),
+    tags = function(tags) private$get_or_set(variable = ".tags", value = tags),
+    info = function(info) private$get_or_set(variable = ".info", value = info),
+    context = function(context) private$get_or_set(variable = ".context", value = context),
+    github = function(github) private$get_or_set(variable = ".github", value = github),
+    options = function(options) private$get_or_set(variable = ".options", value = options),
+    output = function(output) private$get_or_set(variable = ".output", value = output),
+    rscript = function(rscript) private$get_or_set(variable = ".rscript", value = rscript),
 
     params_summary = function() {
       d <- self$params
@@ -256,18 +210,9 @@ BenchmarkFailure <- R6.1Class(
     }
   ),
   active = list(
-    error = function(error) {
-      if (!missing(error)) {
-        private$.error <- error
-      }
-      private$.error
-    },
-    params = function(params) {
-      if (!missing(params)) {
-        private$.params <- params
-      }
-      private$.params
-    },
+    error = function(error) private$get_or_set(variable = ".error", value = error),
+    params = function(params) private$get_or_set(variable = ".params", value = params),
+
     params_summary = function() {
       d <- self$params
 
@@ -304,12 +249,8 @@ BenchmarkResults <- R6.1Class(
   ),
 
   active = list(
-    results = function(results) {
-      if (!missing(results)) {
-        private$.results <- results
-      }
-      private$.results
-    },
+    results = function(results) private$get_or_set(variable = ".results", value = results),
+
     params_summary = function() {
       purrr::map_dfr(self$results, ~.x$params_summary)
     }
