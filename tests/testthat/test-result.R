@@ -24,7 +24,7 @@ test_that("R6.1 classes inherit properly", {
 test_that("inherited serialization/deserialization methods work", {
   res <- BenchmarkResult$new(
     name = "fake",
-    result = data.frame(time = 0, status = "superfast"),
+    result = data.frame(time = 0, status = "superfast", stringsAsFactors = FALSE),
     params = list(speed = "lightning"),
     tags = c(is_real = FALSE)
   )
@@ -46,13 +46,14 @@ test_that("inherited serialization/deserialization methods work", {
 test_that("S3 methods work", {
   res <- BenchmarkResult$new(
     name = "fake",
-    result = data.frame(time = 0, status = "superfast"),
+    result = data.frame(time = 0, status = "superfast", stringsAsFactors = FALSE),
     params = list(speed = "lightning"),
     tags = c(is_real = FALSE)
   )
 
   expect_equal(as.character(res), res$json)
   expect_equal(as.list(res), res$list)
+
   expect_equal(as.data.frame(res), res$data.frame())
   expect_equal(
     as.data.frame(res),
