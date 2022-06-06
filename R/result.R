@@ -127,7 +127,7 @@ BenchmarkResult <- R6.1Class(
       self$rscript <- rscript
     },
 
-    data.frame = function(row.names = NULL, optional = FALSE, packages = "arrow", ...) {
+    to_dataframe = function(row.names = NULL, optional = FALSE, packages = "arrow", ...) {
       x <- self$list
 
       pkgs <- x$params$packages
@@ -241,11 +241,11 @@ BenchmarkResults <- R6.1Class(
     initialize = function(results) {
       self$results <- results
     },
-    data.frame = function(row.names = NULL, optional = FALSE, ...) {
+    to_dataframe = function(row.names = NULL, optional = FALSE, ...) {
       x <- self$results
       valid <- map_lgl(x, ~inherits(.x, "BenchmarkResult"))  # failures will be BenchmarkFailure
 
-      dplyr::bind_rows(lapply(x[valid], function(res) res$data.frame(...)))
+      dplyr::bind_rows(lapply(x[valid], function(res) res$to_dataframe(...)))
     }
   ),
 
@@ -274,12 +274,12 @@ BenchmarkResults <- R6.1Class(
 #' @return A data.frame suitable for analysis in R
 #' @export
 as.data.frame.BenchmarkResults <- function(x, row.names = NULL, optional = FALSE, ...) {
-  x$data.frame(row.names = row.names, optional = optional, ...)
+  x$to_dataframe(row.names = row.names, optional = optional, ...)
 }
 
 #' @param packages Packages for which to extract versions
 #' @rdname as.data.frame.BenchmarkResults
 #' @export
 as.data.frame.BenchmarkResult <- function(x, row.names = NULL, optional = FALSE, packages = "arrow", ...) {
-  x$data.frame(row.names = row.names, optional = optional, packages = packages, ...)
+  x$to_dataframe(row.names = row.names, optional = optional, packages = packages, ...)
 }
