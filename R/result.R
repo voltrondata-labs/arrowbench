@@ -4,7 +4,7 @@
 # Functions are evaluated in the environment of `Class`, so you can refer to `self`
 # (which is the class—not the instance—here) to create class methods.
 #' @include util.R
-R6.1Class <- function(..., static = NULL) {
+R6Point1Class <- function(..., static = NULL) {
   Class <- R6::R6Class(...)
   Class$parent_env <- parent.frame()
 
@@ -30,7 +30,7 @@ R6.1Class <- function(..., static = NULL) {
 # Abstract class for a structure that can be written to JSON
 #
 # Private attributes with a `.` prefix will be serialized
-Serializable <- R6.1Class(
+Serializable <- R6Point1Class(
   classname = "Serializable",
 
   public = list(
@@ -100,7 +100,7 @@ as.list.Serializable <- function(x, ...) x$list
 as.character.Serializable <- function(x, ...) x$json
 
 
-BenchmarkResult <- R6.1Class(
+BenchmarkResult <- R6Point1Class(
   classname = "BenchmarkResult",
   inherit = Serializable,
 
@@ -199,7 +199,7 @@ BenchmarkResult <- R6.1Class(
 )
 
 
-BenchmarkFailure <- R6.1Class(
+BenchmarkFailure <- R6Point1Class(
   classname = "BenchmarkFailure",
   inherit = Serializable,
 
@@ -233,7 +233,7 @@ BenchmarkFailure <- R6.1Class(
 )
 
 
-BenchmarkResults <- R6.1Class(
+BenchmarkResults <- R6Point1Class(
   classname = "BenchmarkResults",
   inherit = Serializable,
 

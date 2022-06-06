@@ -1,5 +1,5 @@
 test_that("R6.1 classes inherit properly", {
-  SumClass <- R6.1Class(
+  SumClass <- R6Point1Class(
     classname = "SumClass",
     static = list(sum = sum, x = 1:100)
   )
@@ -8,7 +8,7 @@ test_that("R6.1 classes inherit properly", {
   expect_s3_class(sum_class, "SumClass")
   expect_identical(SumClass$sum, sum)
 
-  SumOtherClass <- R6.1Class(
+  SumOtherClass <- R6Point1Class(
     classname = "SumOtherClass",
     inherit = SumClass
   )
