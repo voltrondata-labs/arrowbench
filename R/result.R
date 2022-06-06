@@ -1,8 +1,49 @@
-# Version of R6 with heritable static/class methods and attributes
-#
-# Elements in `static` can be called without instantiation, e.g. `Class$method()`.
-# Functions are evaluated in the environment of `Class`, so you can refer to `self`
-# (which is the class—not the instance—here) to create class methods.
+#' Version of R6 with heritable static/class methods and attributes
+#'
+#' Elements in `static` can be called without instantiation, e.g. `Class$method()`.
+#' Functions are evaluated in the environment of `Class`, so you can refer to `self`
+#' (which is the class—not the instance—here) to create class methods.
+#'
+#' @param ... Passed through to [R6::R6Class]
+#' @param static A named list of static/class functions/values to turn into
+#' methods/attributes. Note there is currently no differentiation between static
+#' and class methods at the moment; static methods are simply class methods that
+#' do not access `self`, though it will exist in their evaluation environment.
+#' This arrangement can be changed in the future if reason exists.
+#'
+#' @section Why this exists:
+#'
+#' Sometimes we want static/class methods/attributes that can be accessed from
+#' the class (e.g. `MyR6Class$my_static_method()`) instead of an instance of
+#' that class (e.g. `MyR6Class$new(...)$my_normal_method()`). As individual
+#' classes are environments, these can be added after the fact like so:
+#'
+#' ``` r
+#' MyR6Class <- R6Class(...)
+#' MyR6Class$my_static_method <- function(x) ...
+#' ```
+#'
+#' But the problem with the above is it's not heritable; if you make a class that
+#' inherits from `MyR6Class`, it will not have `$my_static_method()` unless you
+#' manually re-add it.
+#'
+#' This class structure abstracts the pattern, so when you create a new class, it
+#' checks if the parent contains anything in `private$static`, and copies over any
+#' methods/attributes there, less any overwritten in the new class.
+#'
+#' @section How static/class methods/attributes may be useful:
+#'
+#' There are lots of reasons you may want static/class methods/attributes, but
+#' the immediate use-case here is to create alternate methods for instantiating
+#' a class besides `$new()`/`$initialize()`. For instance, if a class can be
+#' represented as JSON, it's quite helpful to have a `$from_json()` method that
+#' can recreate an instance from a JSON blob.
+#'
+#' You could have a separate special reader function that returns an instance,
+#' but especially as classes multiply this solution becomes difficult to
+#' maintain.
+#'
+#' @keywords internal
 #' @include util.R
 R6Point1Class <- function(..., static = NULL) {
   Class <- R6::R6Class(...)
@@ -29,7 +70,22 @@ R6Point1Class <- function(..., static = NULL) {
 
 # Abstract class for a structure that can be written to JSON
 #
-# Private attributes with a `.` prefix will be serialized
+# This is an abstract class that is not useful on its own, but if taken as a
+# parent class provides methods for serializing and deserializing to/from
+# JSON-like representations (JSON strings, JSON files, lists representing JSON).
+#
+# Specifically:
+# - `$json`: Active binding that returns a JSON string
+# - `$list`: Active binding that returns a list
+# - `$write_json()`: Method that writes a JSON representation to a file
+# - `$from_json()`: Class method that creates an instance from a JSON string
+# - `$from_list()`: Class method that creates an instance from a list
+# - `$read_json()`: Class method that creates an instance from a JSON file
+#
+# Note that private attributes with a `.` prefix will be serialized to JSON
+# (without the prefix); other private attributes and any public attributes will
+# not. This scheme can be changed if there is reason.
+#
 Serializable <- R6Point1Class(
   classname = "Serializable",
 
@@ -87,9 +143,6 @@ Serializable <- R6Point1Class(
     },
     read_json = function(path) {
       self$from_json(paste(readLines(path), collapse = "\n"))
-    },
-    write_json = function(path) {
-      writeLines(self$json, path)
     }
   )
 )
@@ -100,6 +153,17 @@ as.list.Serializable <- function(x, ...) x$list
 as.character.Serializable <- function(x, ...) x$json
 
 
+# A class for the results of succesfully running a benchmark
+#
+# Because this class inherits from `Serializable`, it can be written to and
+# instantiated from JSON forms.
+#
+# An instance can be passed to `as.data.frame()` and `get_params_summary()`, the
+# returns of which are simply what would be returned from the `$to_dataframe()`
+# method and the `$params_summary` active binding.
+#
+# All attributes are active bindings so that validation can be run when they are
+# set, whether during or after instantiation.
 BenchmarkResult <- R6Point1Class(
   classname = "BenchmarkResult",
   inherit = Serializable,
@@ -199,6 +263,9 @@ BenchmarkResult <- R6Point1Class(
 )
 
 
+# A class for representing an unsuccessful benchmark run
+#
+# Can be serialized to JSON, though as of writing is not anywhere programmatically.
 BenchmarkFailure <- R6Point1Class(
   classname = "BenchmarkFailure",
   inherit = Serializable,
@@ -233,6 +300,18 @@ BenchmarkFailure <- R6Point1Class(
 )
 
 
+# A class for holding a set of benchmark results
+#
+# This class is primarily a list of `BenchmarkResult` instances, one for each
+# combination of arguments for the benchmark's parameters. The list is acessible
+# via the `$results` active binding.
+#
+# An instance can be passed to `as.data.frame()` and `get_params_summary()`, the
+# returns of which are simply what would be returned from the `$to_dataframe()`
+# method and the `$params_summary` active binding.
+#
+# Can be serialized to JSON, though as of writing is not anywhere programmatically.
+#
 BenchmarkResults <- R6Point1Class(
   classname = "BenchmarkResults",
   inherit = Serializable,
