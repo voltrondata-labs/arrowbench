@@ -82,9 +82,9 @@ R6Point1Class <- function(..., static = NULL) {
 # - `$from_list()`: Class method that creates an instance from a list
 # - `$read_json()`: Class method that creates an instance from a JSON file
 #
-# Note that private attributes with a `.` prefix will be serialized to JSON
-# (without the prefix); other private attributes and any public attributes will
-# not. This scheme can be changed if there is reason.
+# Note that attributes stored in `private$to_serialize` will be serialized;
+# other attributes will not, including public attributes not duplicated in
+# `private$to_serialize`. This scheme can be changed if there is reason.
 #
 Serializable <- R6Point1Class(
   classname = "Serializable",
@@ -97,21 +97,13 @@ Serializable <- R6Point1Class(
 
   active = list(
     list = function() {
-      private_names <- ls(private, all.names = TRUE)
-      serializable_names <- private_names[startsWith(private_names, ".")]
-      public_names <- sub('^\\.', '', serializable_names)
-
-      json <- lapply(serializable_names, function(name) private[[name]])
-      # recurse
-      json <- lapply(json, function(element) {
+      lapply(private$to_serialize, function(element) {
+        # recurse
         if (inherits(element, "Serializable")) {
-          element <- element$json
+          element <- element$list
         }
         element
       })
-      names(json) <- public_names
-
-      json
     },
     json = function() {
       jsonlite::toJSON(
@@ -126,11 +118,13 @@ Serializable <- R6Point1Class(
   ),
 
   private = list(
-    get_or_set = function(variable, value) {
+    to_serialize = list(),
+
+    get_or_set_serializable = function(variable, value) {
       if (!missing(value)) {
-        private[[variable]] <- value
+        private$to_serialize[[variable]] <- value
       }
-      private[[variable]]
+      private$to_serialize[[variable]]
     }
   ),
 
@@ -223,16 +217,16 @@ BenchmarkResult <- R6Point1Class(
   ),
 
   active = list(
-    name = function(name) private$get_or_set(variable = ".name", value = name),
-    result = function(result) private$get_or_set(variable = ".result", value = result),
-    params = function(params) private$get_or_set(variable = ".params", value = params),
-    tags = function(tags) private$get_or_set(variable = ".tags", value = tags),
-    info = function(info) private$get_or_set(variable = ".info", value = info),
-    context = function(context) private$get_or_set(variable = ".context", value = context),
-    github = function(github) private$get_or_set(variable = ".github", value = github),
-    options = function(options) private$get_or_set(variable = ".options", value = options),
-    output = function(output) private$get_or_set(variable = ".output", value = output),
-    rscript = function(rscript) private$get_or_set(variable = ".rscript", value = rscript),
+    name = function(name) private$get_or_set_serializable(variable = "name", value = name),
+    result = function(result) private$get_or_set_serializable(variable = "result", value = result),
+    params = function(params) private$get_or_set_serializable(variable = "params", value = params),
+    tags = function(tags) private$get_or_set_serializable(variable = "tags", value = tags),
+    info = function(info) private$get_or_set_serializable(variable = "info", value = info),
+    context = function(context) private$get_or_set_serializable(variable = "context", value = context),
+    github = function(github) private$get_or_set_serializable(variable = "github", value = github),
+    options = function(options) private$get_or_set_serializable(variable = "options", value = options),
+    output = function(output) private$get_or_set_serializable(variable = "output", value = output),
+    rscript = function(rscript) private$get_or_set_serializable(variable = "rscript", value = rscript),
 
     params_summary = function() {
       d <- self$params
@@ -246,19 +240,6 @@ BenchmarkResult <- R6Point1Class(
       d$did_error <- FALSE
       d
     }
-  ),
-
-  private = list(
-    .name = NULL,
-    .result = NULL,
-    .params = NULL,
-    .tags = NULL,
-    .info = NULL,
-    .context = NULL,
-    .github = NULL,
-    .options = NULL,
-    .output = NULL,
-    .rscript = NULL
   )
 )
 
@@ -278,8 +259,8 @@ BenchmarkFailure <- R6Point1Class(
     }
   ),
   active = list(
-    error = function(error) private$get_or_set(variable = ".error", value = error),
-    params = function(params) private$get_or_set(variable = ".params", value = params),
+    error = function(error) private$get_or_set_serializable(variable = "error", value = error),
+    params = function(params) private$get_or_set_serializable(variable = "params", value = params),
 
     params_summary = function() {
       d <- self$params
@@ -292,10 +273,6 @@ BenchmarkFailure <- R6Point1Class(
       d$did_error <- TRUE
       d
     }
-  ),
-  private = list(
-    .error = NULL,
-    .params = NULL
   )
 )
 
@@ -329,15 +306,11 @@ BenchmarkResults <- R6Point1Class(
   ),
 
   active = list(
-    results = function(results) private$get_or_set(variable = ".results", value = results),
+    results = function(results) private$get_or_set_serializable(variable = "results", value = results),
 
     params_summary = function() {
       purrr::map_dfr(self$results, ~.x$params_summary)
     }
-  ),
-
-  private = list(
-    .results = NULL
   )
 )
 
