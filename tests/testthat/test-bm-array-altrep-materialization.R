@@ -6,6 +6,6 @@ test_that("array_altrep_materialization benchmark runs", {
       source = "type_integers",
       altrep = TRUE
     ),
-    "arrowbench_results"
+    "BenchmarkResults"
   )
 })

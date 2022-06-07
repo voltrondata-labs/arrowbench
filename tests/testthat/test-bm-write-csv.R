@@ -6,7 +6,8 @@ test_that("write_csv benchmark works", {
       write_csv,
       source = "nyctaxi_sample",
       writer = c("arrow", "data.table", "vroom", "readr", "base")
-      ), "arrowbench_results"
+    ),
+    "BenchmarkResults"
   )
 })
 

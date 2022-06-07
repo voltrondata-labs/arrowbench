@@ -19,6 +19,7 @@ Imports:
     jsonlite,
     progress,
     purrr,
+    R6,
     remotes,
     rlang,
     R.utils,
@@ -67,9 +68,9 @@ Collate:
     'ensure-source.R'
     'ensure-tpch-source.R'
     'measure.R'
+    'util.R'
     'result.R'
     'run.R'
     'setup.R'
     'tpch-queries.R'
-    'util.R'
 Config/testthat/edition: 3

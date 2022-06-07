@@ -37,7 +37,7 @@ run any that it cannot find.}
 \item{test_packages}{a character vector of packages that the benchmarks test (default \code{NULL})}
 }
 \value{
-A \code{arrowbench_result}: a \code{list} containing "params" and either
+An instance of \code{BenchmarkResult}: an R6 object containing either
 "result" or "error".
 }
 \description{

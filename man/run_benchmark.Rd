@@ -37,8 +37,9 @@ contain a \code{prof_file} field, which you can read in with
 run any that it cannot find.}
 }
 \value{
-A \code{arrowbench_results} object, containing a list of length \code{nrow(params)},
-each of those a \code{list} containing "params" and either "result" or "error".
+A \code{BenchmarkResults} object, containing \code{results} attribute of a list
+of length \code{nrow(params)} each of those either a \code{BenchmarkResult} or
+\code{BenchmarkFalure} object.
 For a simpler view of results, call \code{as.data.frame()} on it.
 }
 \description{
