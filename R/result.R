@@ -163,7 +163,7 @@ BenchmarkResult <- R6Point1Class(
   inherit = Serializable,
 
   public = list(
-    initialize = function(name,
+    initialize = function(benchmark,
                           result,
                           params,
                           tags = NULL,
@@ -173,7 +173,7 @@ BenchmarkResult <- R6Point1Class(
                           options = NULL,
                           output = NULL,
                           rscript = NULL) {
-      self$name <- name
+      self$benchmark <- benchmark
       self$result <- result
       self$params <- params
       self$tags <- tags
@@ -205,7 +205,7 @@ BenchmarkResult <- R6Point1Class(
       out$output <- x$output
 
       # append metadata fields to dataframe as attributes
-      metadata_elements <- c("name", "tags", "info", "context", "github", "options")
+      metadata_elements <- c("benchmark", "tags", "info", "context", "github", "options")
       for (element in metadata_elements) {
         if (element %in% names(x)) {
           attr(out, element) <- x[[element]]
@@ -217,7 +217,20 @@ BenchmarkResult <- R6Point1Class(
   ),
 
   active = list(
-    name = function(name) private$get_or_set_serializable(variable = "name", value = name),
+    benchmark = function(benchmark) {
+      if (!missing(benchmark)) {
+        stopifnot(
+          is.list(benchmark),
+          length(benchmark) == 2L,
+          c("name", "version") %in% names(benchmark),
+          is.character(benchmark[["name"]]),
+          is.numeric_version(numeric_version(benchmark[["version"]], strict = TRUE))
+        )
+        benchmark[["version"]] <- format(benchmark[["version"]])
+        private$to_serialize$benchmark <- benchmark
+      }
+      private$to_serialize$benchmark
+    },
     result = function(result) private$get_or_set_serializable(variable = "result", value = result),
     params = function(params) private$get_or_set_serializable(variable = "params", value = params),
     tags = function(tags) private$get_or_set_serializable(variable = "tags", value = tags),

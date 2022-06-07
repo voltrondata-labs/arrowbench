@@ -6,6 +6,7 @@
 \usage{
 Benchmark(
   name,
+  version,
   setup = function(...) BenchEnvironment(...),
   before_each = TRUE,
   run = TRUE,
@@ -17,6 +18,9 @@ Benchmark(
 }
 \arguments{
 \item{name}{string identifier for the benchmark, included in results}
+
+\item{version}{string or numeric version object (as returned by
+\code{numeric_version()}) of semantic version for the benchmark}
 
 \item{setup}{function having as its arguments the benchmark parameters. See
 the \verb{Parametrizing benchmarks} section. This function is called once

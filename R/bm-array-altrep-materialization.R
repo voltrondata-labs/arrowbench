@@ -12,6 +12,7 @@
 #' @export
 array_altrep_materialization <- Benchmark(
   "array_altrep_materialization",
+  version = "1.0.0",
 
   setup = function(source = names(known_sources),
                    exclude_nulls = FALSE,

@@ -63,6 +63,8 @@
 #' the `teardown()` function.
 #'
 #' @param name string identifier for the benchmark, included in results
+#' @param version string or numeric version object (as returned by
+#' `numeric_version()`) of semantic version for the benchmark
 #' @param setup function having as its arguments the benchmark parameters. See
 #' the `Parametrizing benchmarks` section. This function is called once
 #' to initialize the benchmark context for a given set of parameters.
@@ -87,6 +89,7 @@
 #' @return A `Benchmark` object containing these functions
 #' @export
 Benchmark <- function(name,
+                      version,
                       setup = function(...) BenchEnvironment(...),
                       before_each = TRUE,
                       run = TRUE,
@@ -98,6 +101,7 @@ Benchmark <- function(name,
   structure(
     list(
       name = name,
+      version = numeric_version(version, strict = TRUE),
       setup = setup,
       before_each = substitute(before_each),
       run = substitute(run),

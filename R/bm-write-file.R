@@ -7,7 +7,10 @@
 #' * `input` One of `c("arrow_table", "data_frame")`
 #'
 #' @export
-write_file <- Benchmark("write_file",
+write_file <- Benchmark(
+  "write_file",
+  version = "1.0.0",
+
   setup = function(source = names(known_sources),
                    format = c("parquet", "feather"),
                    compression = c("uncompressed", "snappy", "lz4"),

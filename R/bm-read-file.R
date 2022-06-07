@@ -7,7 +7,10 @@
 #' * `output` One of `c("arrow_table", "data_frame")`
 #'
 #' @export
-read_file <- Benchmark("read_file",
+read_file <- Benchmark(
+  "read_file",
+  version = "1.0.0",
+
   setup = function(source = names(known_sources),
                    # TODO: break out feather_v1 and feather_v2, feather_v2 only in >= 0.17
                    format = c("parquet", "feather"),

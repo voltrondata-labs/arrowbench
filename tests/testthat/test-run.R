@@ -1,5 +1,5 @@
 test_that("run_iteration", {
-  b <- Benchmark("test")
+  b <- Benchmark("test", version = "1.0.0")
   out <- run_iteration(b, ctx = new.env())
   expect_s3_class(out, "data.frame")
   expect_identical(nrow(out), 1L)
@@ -7,6 +7,7 @@ test_that("run_iteration", {
 
 test_that("run_bm", {
   b <- Benchmark("test",
+                 version = "1.0.0",
                  setup = function(param1 = c("a", "b")) {
                    BenchEnvironment(param1 = match.arg(param1))
                  },
@@ -124,7 +125,7 @@ test_that("form of the results, including output", {
   ))
 
   json_keys <- c(
-    "name", "tags", "info", "context", "github", "options", "result", "params",
+    "benchmark", "tags", "info", "context", "github", "options", "result", "params",
     "output", "rscript"
   )
   expect_named(res$results[[1]]$list, json_keys, ignore.order = TRUE)

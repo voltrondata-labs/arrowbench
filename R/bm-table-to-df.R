@@ -6,7 +6,10 @@
 #' * `source` A known-file id to use (it will be read in to a data.frame first)
 #'
 #' @export
-table_to_df <- Benchmark("table_to_df",
+table_to_df <- Benchmark(
+  "table_to_df",
+  version = "1.0.0",
+
   setup = function(source = names(known_sources)) {
     source <- ensure_source(source)
     result_dim <- get_source_attr(source, "dim")

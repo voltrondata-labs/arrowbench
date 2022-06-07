@@ -10,7 +10,10 @@
 #'
 #' @importFrom purrr map flatten
 #' @export
-array_to_vector <- Benchmark("array_to_vector",
+array_to_vector <- Benchmark(
+  "array_to_vector",
+  version = "1.0.0",
+
   setup = function(
       # the only datasets that have any no-null numerics are
       source = c("type_integers", "type_floats"),

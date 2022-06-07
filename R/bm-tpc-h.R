@@ -14,7 +14,10 @@
 #'
 #' @importFrom waldo compare
 #' @export
-tpc_h <- Benchmark("tpc_h",
+tpc_h <- Benchmark(
+  "tpc_h",
+  version = "1.0.0",
+
   setup = function(engine = "arrow",
                    query_id = 1:22,
                    format = c("native", "parquet"),

@@ -9,6 +9,8 @@
 #' @export
 row_group_size <- Benchmark(
   "row_group_size",
+  version = "1.0.0",
+
   setup = function(source = c("fanniemae_2016Q4", "fanniemae_sample"),  # TODO implement more sources
                    queries = c("filters", "everything"),
                    chunk_size = NULL) {

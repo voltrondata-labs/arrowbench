@@ -4,7 +4,10 @@
 #' * `query` Name of a known query to run; see `dataset_taxi_parquet$cases`
 #'
 #' @export
-dataset_taxi_parquet <- Benchmark("dataset_taxi_parquet",
+dataset_taxi_parquet <- Benchmark(
+  "dataset_taxi_parquet",
+  version = "1.0.0",
+
   setup = function(query = names(dataset_taxi_parquet$cases)) {
     library("dplyr", warn.conflicts = FALSE)
     dataset <- ensure_dataset("taxi_parquet")

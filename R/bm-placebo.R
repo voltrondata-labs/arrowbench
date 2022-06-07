@@ -6,7 +6,10 @@
 #' `abort` and any other string (including `"base"`) will use base's `stop`
 #'
 #' @keywords internal
-placebo <- Benchmark("placebo",
+placebo <- Benchmark(
+  "placebo",
+  version = "1.0.0",
+
   setup = function(duration = 0.01, error_type = NULL, output_type = NULL, grid = TRUE) {
     BenchEnvironment(placebo_func = function() {
       if (!is.null(output_type)) {

@@ -201,7 +201,7 @@ run_bm <- function(bm, ..., n_iter = 1, profiling = FALSE, global_params = list(
   )
 
   out <- BenchmarkResult$new(
-    name = bm$name,
+    benchmark = list(name = bm$name, version = bm$version),
     result = do.call(rbind, results),
     params = all_params,
     tags = metadata$tags,

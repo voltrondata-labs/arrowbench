@@ -11,6 +11,8 @@
 #' @importFrom R.utils gzip
 read_json <- Benchmark(
   "read_json",
+  version = "1.0.0",
+
   setup = function(source = names(known_sources),
                    reader = c("arrow", "jsonlite", "ndjson", "RcppSimdJson"),
                    compression = c("uncompressed", "gzip"),

@@ -10,6 +10,8 @@
 #' @importFrom R.utils gzip
 read_csv <- Benchmark(
   "read_csv",
+  version = "1.0.0",
+
   setup = function(source = names(known_sources),
                    reader = "arrow",
                    compression = c("uncompressed", "gzip"),

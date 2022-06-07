@@ -8,6 +8,8 @@
 #' @export
 write_csv <- Benchmark(
   "write_csv",
+  version = "1.0.0",
+
   setup = function(source = names(known_sources),
                    writer = "arrow",
                    compression = c("uncompressed", "gzip"),

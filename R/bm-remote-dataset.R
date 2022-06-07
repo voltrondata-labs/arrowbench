@@ -1,7 +1,10 @@
 #' Remote (S3) dataset reading
 #'
 #' @export
-remote_dataset <- Benchmark("remote_dataset",
+remote_dataset <- Benchmark(
+  "remote_dataset",
+  version = "1.0.0",
+
   setup = function(source = c("taxi_file_list_parquet", "taxi_file_list_feather")) {
     library("dplyr")
     dataset <- ensure_dataset(source, download = FALSE)
