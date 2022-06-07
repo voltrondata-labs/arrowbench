@@ -81,8 +81,9 @@ run any that it cannot find.</p></dd>
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A <code>arrowbench_results</code> object, containing a list of length <code>nrow(params)</code>,
-each of those a <code>list</code> containing "params" and either "result" or "error".
+    <p>A <code>BenchmarkResults</code> object, containing <code>results</code> attribute of a list
+of length <code>nrow(params)</code> each of those either a <code>BenchmarkResult</code> or
+<code>BenchmarkFalure</code> object.
 For a simpler view of results, call <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> on it.</p>
     </div>
 

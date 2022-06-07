@@ -22,13 +22,16 @@
     <loc>/reference/Benchmark.html</loc>
   </url>
   <url>
+    <loc>/reference/R6Point1Class.html</loc>
+  </url>
+  <url>
     <loc>/reference/array_altrep_materialization.html</loc>
   </url>
   <url>
     <loc>/reference/array_to_vector.html</loc>
   </url>
   <url>
-    <loc>/reference/as.data.frame.arrowbench_results.html</loc>
+    <loc>/reference/as.data.frame.BenchmarkResults.html</loc>
   </url>
   <url>
     <loc>/reference/assemble_metadata.html</loc>
