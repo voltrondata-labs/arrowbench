@@ -299,7 +299,7 @@ BenchmarkResults <- R6Point1Class(
     },
     to_dataframe = function(row.names = NULL, optional = FALSE, ...) {
       x <- self$results
-      valid <- map_lgl(x, ~inherits(.x, "BenchmarkResult"))  # failures will be BenchmarkFailure
+      valid <- purrr::map_lgl(x, ~inherits(.x, "BenchmarkResult"))  # failures will be BenchmarkFailure
 
       dplyr::bind_rows(lapply(x[valid], function(res) res$to_dataframe(...)))
     }
