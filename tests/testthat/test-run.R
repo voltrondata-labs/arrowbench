@@ -41,7 +41,7 @@ test_that("get_params_summary returns a data.frame",{
 
   expected_summary <- dplyr::tibble(
     duration = 0.01, grid = TRUE, cpu_count = 1L,
-    output_type = "message", lib_path = "latest", did_error = FALSE
+    output_type = "message", case_version = 1L, lib_path = "latest", did_error = FALSE
   )
   expect_identical(success_summary, expected_summary)
 

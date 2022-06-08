@@ -186,6 +186,8 @@ run_bm <- function(bm, ..., n_iter = 1, profiling = FALSE, global_params = list(
   defaults <- lapply(get_default_args(bm$setup), head, 1)
   defaults$cpu_count <- parallel::detectCores()
   params <- modifyList(defaults, list(...))
+  params$case_version <- bm$case_version(params)
+
   all_params <- modifyList(params, global_params)
   all_params$packages <- package_info()[, c("package", "loadedversion", "date", "source")]
   names(all_params$packages)[2] <- "version"

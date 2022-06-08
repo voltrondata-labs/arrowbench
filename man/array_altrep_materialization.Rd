@@ -5,7 +5,7 @@
 \alias{array_altrep_materialization}
 \title{Benchmark for materializing an altrep Arrow array}
 \format{
-An object of class \code{Benchmark} of length 8.
+An object of class \code{Benchmark} of length 9.
 }
 \usage{
 array_altrep_materialization

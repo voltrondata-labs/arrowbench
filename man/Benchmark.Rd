@@ -12,6 +12,7 @@ Benchmark(
   after_each = TRUE,
   teardown = TRUE,
   valid_params = function(params) params,
+  case_version = function(params) 1L,
   ...
 )
 }
@@ -42,6 +43,10 @@ affecting the benchmark results}
 returning a \code{data.frame} of setup parameters. Use this to filter out invalid
 combinations of parameters (e.g. writing a Feather file with snappy
 compression, which is unsupported)}
+
+\item{case_version}{function taking a named list of setup parameters for a
+single case and returning an integer version for the case. Bump version to
+break conbench history for a case.}
 
 \item{...}{additional attributes or functions, possibly called in \code{setup()}.}
 }
