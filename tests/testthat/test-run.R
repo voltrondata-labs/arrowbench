@@ -34,6 +34,31 @@ test_that("run_one", {
   wipe_results()
 })
 
+test_that("cases can be versioned", {
+  bm_unversioned <- Benchmark(
+    "unversioned",
+    setup = function(x = c('foo', 'bar')) { cat(x) }
+  )
+  res_unversioned <- run_benchmark(bm_unversioned)
+  lapply(res_unversioned$results, function(result) {
+    # when version is not supplied, it should not appear in tags
+    expect_false("case_version" %in% names(result$tags))
+  })
+
+  bm_versioned <- Benchmark(
+    "versioned",
+    setup = function(x = c('foo', 'bar')) cat(x),
+    case_version = function(params) c("foo" = 1L, "bar" = 2L)[params$x]
+  )
+  res_versioned <- run_benchmark(bm_versioned)
+  lapply(res_versioned$results, function(result) {
+    expect_true("case_version" %in% names(result$tags))
+
+    expected_version = c(foo = 1L, bar = 2L)[[result$params$x]]
+    expect_equal(result$tags$case_version, expected_version)
+  })
+})
+
 test_that("get_params_summary returns a data.frame",{
   bm_success <- run_benchmark(placebo, duration = 0.01, grid = TRUE, cpu_count = 1,  output_type = "message")
   success_summary <- get_params_summary(bm_success)
@@ -41,7 +66,7 @@ test_that("get_params_summary returns a data.frame",{
 
   expected_summary <- dplyr::tibble(
     duration = 0.01, grid = TRUE, cpu_count = 1L,
-    output_type = "message", case_version = 1L, lib_path = "latest", did_error = FALSE
+    output_type = "message", lib_path = "latest", did_error = FALSE
   )
   expect_identical(success_summary, expected_summary)
 
