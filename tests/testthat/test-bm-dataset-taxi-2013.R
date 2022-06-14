@@ -5,6 +5,6 @@ test_that("dataset_taxi_2013 exists", {
   expect_named(defaults, c("query"))
   expect_equal(
     defaults$query,
-    c("vignette", "payment_type_crd", "small_no_files", "count_rows")
+    c("basic", "payment_type_crd", "small_no_files", "dims")
   )
 })
