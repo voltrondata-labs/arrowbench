@@ -26,7 +26,7 @@ dataset_taxi_2013 <- Benchmark(
     query$assert(result)
   },
   cases = list(
-    vignette = list(
+    basic = list(
       query = function(ds) {
         ds %>%
           filter(total_amount > 100, vendor_id == "CMT") %>%
@@ -91,12 +91,12 @@ dataset_taxi_2013 <- Benchmark(
         )
       }
     ),
-    count_rows = list(
+    dims = list(
       query = function(ds) {
         dim(ds)
       },
       assert = function(result) {
-        stopifnot("dims does not match" = identical(result, c(173179759L, 11L)))
+        stopifnot("dims do not match" = identical(result, c(173179759L, 11L)))
       }
     )
   ),
