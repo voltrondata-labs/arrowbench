@@ -37,7 +37,7 @@ test_that("run_one", {
 test_that("cases can be versioned", {
   bm_unversioned <- Benchmark(
     "unversioned",
-    setup = function(x = c('foo', 'bar')) { cat(x) }
+    setup = function(x = c('foo', 'bar')) { force(x) }
   )
   res_unversioned <- run_benchmark(bm_unversioned)
   lapply(res_unversioned$results, function(result) {
@@ -57,6 +57,11 @@ test_that("cases can be versioned", {
     expected_version = c(foo = 1L, bar = 2L)[[result$params$x]]
     expect_equal(result$tags$case_version, expected_version)
   })
+
+  expect_error(
+    run_bm(bm_versioned, x = "novel value"),
+    regexp = "Case versions may not be NA; use NULL for no versioning"
+  )
 })
 
 test_that("get_params_summary returns a data.frame",{

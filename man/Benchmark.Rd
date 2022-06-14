@@ -47,7 +47,8 @@ compression, which is unsupported)}
 
 \item{case_version}{function taking a named list of setup parameters for a
 single case and returning an integer version for the case, or \code{NULL} to not
-append a version. Changes to version will break conbench history for a case.}
+append a version; \code{NA} will raise an error. Changes to version will break
+conbench history for a case.}
 
 \item{packages_used}{function taking a \code{data.frame} of setup parameters and
 returning a vector of R package names required}

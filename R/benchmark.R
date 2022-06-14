@@ -84,7 +84,8 @@
 #' compression, which is unsupported)
 #' @param case_version function taking a named list of setup parameters for a
 #' single case and returning an integer version for the case, or `NULL` to not
-#' append a version. Changes to version will break conbench history for a case.
+#' append a version; `NA` will raise an error. Changes to version will break
+#' conbench history for a case.
 #' @param packages_used function taking a `data.frame` of setup parameters and
 #' returning a vector of R package names required
 #' @param ... additional attributes or functions, possibly called in `setup()`.
