@@ -60,7 +60,7 @@ test_that("cases can be versioned", {
 
   expect_error(
     run_bm(bm_versioned, x = "novel value"),
-    regexp = "Case versions may not be NA; use NULL for no versioning"
+    regexp = "[Cc]ase[ _]version"  # 3.* stopifnot doesn't pass names as messages
   )
 })
 
