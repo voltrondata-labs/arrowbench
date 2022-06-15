@@ -5,7 +5,7 @@
 \alias{read_json}
 \title{Benchmark JSON reading}
 \format{
-An object of class \code{Benchmark} of length 8.
+An object of class \code{Benchmark} of length 9.
 }
 \usage{
 read_json

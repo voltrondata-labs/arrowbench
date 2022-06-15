@@ -5,7 +5,7 @@
 \alias{row_group_size}
 \title{Benchmark effect of parquet row group size}
 \format{
-An object of class \code{Benchmark} of length 8.
+An object of class \code{Benchmark} of length 9.
 }
 \usage{
 row_group_size
