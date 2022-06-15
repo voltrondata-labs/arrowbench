@@ -43,6 +43,9 @@
     <loc>/reference/data_file.html</loc>
   </url>
   <url>
+    <loc>/reference/dataset_taxi_2013.html</loc>
+  </url>
+  <url>
     <loc>/reference/dataset_taxi_parquet.html</loc>
   </url>
   <url>
