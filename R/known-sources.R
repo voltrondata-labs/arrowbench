@@ -194,3 +194,48 @@ known_datasets <- list(
     dim = c(28766791L, 18L) # TODO: fix
   )
 )
+
+test_datasets <- list(
+  taxi_2013_sample = list(
+    dirname = "taxi_2013",
+    open = function() {
+      arrow::open_dataset(
+        system.file("test_data", "datasets", "taxi_2013", package = "arrowbench"),
+        format = "csv"
+      )
+    },
+    n_files = 12L,
+    dim = c(1000L, 11L)
+  ),
+  write = function() {
+    library(dplyr)
+
+    ds <- ensure_dataset("taxi_2013")
+    dir <- file.path("inst", "test_data", "datasets", "taxi_2013")
+    unlink(dir, recursive = TRUE)
+    dir.create(dir, recursive = TRUE)
+
+    set.seed(47L)
+    i <- sample(nrow(ds), 1000L)
+
+    df_sample <- ds %>%
+      # this dataset has a suspicious amount of duplicative data; this is all vars in order
+      arrange(medallion, hack_license, vendor_id, pickup_datetime, payment_type,
+              fare_amount, surcharge, mta_tax, tip_amount, tolls_amount, total_amount) %>%
+      .[i, ] %>%
+      collect()
+
+    df_sample %>%
+      arrange(medallion, hack_license, vendor_id, pickup_datetime, payment_type,
+              fare_amount, surcharge, mta_tax, tip_amount, tolls_amount, total_amount) %>%
+      mutate(
+        month = lubridate::month(pickup_datetime),
+        filename = paste0("taxi_2013_", month, ".csv.gz"),
+        path = file.path("inst/test_data/datasets/taxi_2013/", filename)
+      ) %>%
+      tidyr::nest(data = c(-month, -filename, -path)) %>%
+      { purrr::walk2(.$data, .$path, ~arrow::write_csv_arrow(.x, gzfile(.y)) ) }
+  }
+)
+
+all_datasets <- c(known_datasets, test_datasets)

@@ -159,6 +159,10 @@ get_dataset_attr <- function(name, attr) known_datasets[[name]][[attr]]
 #' @return An `arrow::Dataset`, validated to have the correct number of rows
 #' @export
 ensure_dataset <- function(name, download = TRUE) {
+  if (name %in% names(test_datasets)) {
+    return(test_datasets[[name]]$open())
+  }
+
   if (!(name %in% names(known_datasets))) {
     stop("Unknown dataset: ", name, call. = FALSE)
   }

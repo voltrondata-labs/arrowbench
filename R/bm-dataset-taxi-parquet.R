@@ -31,11 +31,11 @@ dataset_taxi_parquet <- Benchmark("dataset_taxi_parquet",
           filter(total_amount > 100, year == 2015) %>%
           select(tip_amount, total_amount, passenger_count) %>%
           group_by(passenger_count) %>%
-          collect() %>%
           summarize(
             tip_pct = median(100 * tip_amount / total_amount),
             n = n()
-          )
+          ) %>%
+          collect()
       },
       assert = function(result) {
         stopifnot(
@@ -51,11 +51,11 @@ dataset_taxi_parquet <- Benchmark("dataset_taxi_parquet",
           filter(payment_type == "3") %>%
           select(year, month, passenger_count) %>%
           group_by(year, month) %>%
-          collect() %>%
           summarize(
             total_passengers = sum(passenger_count, na.rm = TRUE),
             n = n()
-          )
+          ) %>%
+          collect()
       },
       assert = function(result) {
         stopifnot(
@@ -74,11 +74,11 @@ dataset_taxi_parquet <- Benchmark("dataset_taxi_parquet",
           filter(total_amount > 20, year %in% c(2011, 2019) & month == 2) %>%
           select(tip_amount, total_amount, passenger_count) %>%
           group_by(passenger_count) %>%
-          collect() %>%
           summarize(
             tip_pct = median(100 * tip_amount / total_amount),
             n = n()
-          )
+          ) %>%
+          collect()
       },
       assert = function(result) {
         stopifnot(
@@ -88,12 +88,12 @@ dataset_taxi_parquet <- Benchmark("dataset_taxi_parquet",
         )
       }
     ),
-    count_rows = list(
+    dims = list(
       query = function(ds) {
         dim(ds)
       },
       assert = function(result) {
-        stopifnot("dims does not match" = identical(result, c(1547741381L, 20L)))
+        stopifnot("dims do not match" = identical(result, c(1547741381L, 20L)))
       }
     )
   ),

@@ -49,6 +49,7 @@ Collate:
     'benchmark.R'
     'bm-array-altrep-materialization.R'
     'bm-array-to-vector.R'
+    'bm-dataset-taxi-2013.R'
     'bm-dataset-taxi-parquet.R'
     'bm-df-to-table.R'
     'bm-placebo.R'
