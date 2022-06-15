@@ -194,3 +194,19 @@ known_datasets <- list(
     dim = c(28766791L, 18L) # TODO: fix
   )
 )
+
+test_datasets <- list(
+  taxi_2013_sample = list(
+    dirname = "taxi_2013",
+    open = function() {
+      arrow::open_dataset(
+        system.file("test_data", "datasets", "taxi_2013", package = "arrowbench"),
+        format = "csv"
+      )
+    },
+    n_files = 12L,
+    dim = c(1000L, 11L)
+  )
+)
+
+all_datasets <- c(known_datasets, test_datasets)

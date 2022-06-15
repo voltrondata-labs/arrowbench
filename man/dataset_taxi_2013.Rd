@@ -16,6 +16,7 @@ Benchmark Taxi 2013 dataset reading
 \section{Parameters}{
 
 \itemize{
+\item \code{dataset} Name of dataset to use, either \code{taxi_2013} or \code{taxi_2013_sample} (for testing)
 \item \code{query} Name of a known query to run; see \code{dataset_taxi_2013$cases}
 }
 }

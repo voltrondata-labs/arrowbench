@@ -1,17 +1,21 @@
 #' Benchmark Taxi 2013 dataset reading
 #'
 #' @section Parameters:
+#' * `dataset` Name of dataset to use, either `taxi_2013` or `taxi_2013_sample` (for testing)
 #' * `query` Name of a known query to run; see `dataset_taxi_2013$cases`
 #'
 #' @export
 dataset_taxi_2013 <- Benchmark(
   "dataset_taxi_2013",
-  setup = function(query = names(dataset_taxi_2013$cases)) {
+  setup = function(dataset = "taxi_2013",
+                   query = names(dataset_taxi_2013$cases)) {
+    name <- match.arg(dataset, c("taxi_2013", "taxi_2013_sample"))
     library("dplyr", warn.conflicts = FALSE)
-    dataset <- ensure_dataset("taxi_2013")
+    dataset <- ensure_dataset(name)
     query <- dataset_taxi_2013$cases[[match.arg(query)]]
 
     BenchEnvironment(
+      name = name,
       query = query,
       dataset = dataset
     )
@@ -23,7 +27,7 @@ dataset_taxi_2013 <- Benchmark(
     result <- query$query(dataset)
   },
   after_each = {
-    query$assert(result)
+    query$assert(result, name)
   },
   cases = list(
     basic = list(
@@ -38,11 +42,11 @@ dataset_taxi_2013 <- Benchmark(
           ) %>%
           collect()
       },
-      assert = function(result) {
+      assert = function(result, name) {
         stopifnot(
-          identical(dim(result), c(4L, 3L)),
+          identical(dim(result), c(if (name == "taxi_2013_sample") 0L else 4L, 3L)),
           identical(names(result), c("payment_type", "tip_pct", "n")),
-          identical(sum(result$n), 68158L)
+          identical(sum(result$n), if (name == "taxi_2013_sample") 0L else 68158L)
         )
       }
     ),
@@ -59,11 +63,11 @@ dataset_taxi_2013 <- Benchmark(
           ) %>%
           collect()
       },
-      assert = function(result) {
+      assert = function(result, name) {
         stopifnot(
           identical(dim(result), c(12L, 4L)),
           identical(names(result), c("year", "month", "total_amount", "n")),
-          identical(sum(result$n), 93334004L)
+          identical(sum(result$n), if (name == "taxi_2013_sample") 520L else 93334004L)
         )
       }
     ),
@@ -83,11 +87,11 @@ dataset_taxi_2013 <- Benchmark(
           ) %>%
           collect()
       },
-      assert = function(result) {
+      assert = function(result, name) {
         stopifnot(
-          identical(dim(result), c(5L, 3L)),
+          identical(dim(result), c(if (name == "taxi_2013_sample") 2L else 5L, 3L)),
           identical(names(result), c("payment_type", "tip_pct", "n")),
-          identical(sum(result$n), 4797187L)
+          identical(sum(result$n), if (name == "taxi_2013_sample") 30L else 4797187L)
         )
       }
     ),
@@ -95,8 +99,8 @@ dataset_taxi_2013 <- Benchmark(
       query = function(ds) {
         dim(ds)
       },
-      assert = function(result) {
-        stopifnot("dims do not match" = identical(result, c(173179759L, 11L)))
+      assert = function(result, name) {
+        stopifnot("dims do not match" = identical(result, c(if (name == "taxi_2013_sample") 1000L else 173179759L, 11L)))
       }
     )
   ),
