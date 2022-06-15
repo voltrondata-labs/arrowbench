@@ -67,7 +67,7 @@ dataset_taxi_2013 <- Benchmark(
         stopifnot(
           identical(dim(result), c(12L, 4L)),
           identical(names(result), c("year", "month", "total_amount", "n")),
-          identical(sum(result$n), if (name == "taxi_2013_sample") 520L else 93334004L)
+          identical(sum(result$n), if (name == "taxi_2013_sample") 567L else 93334004L)
         )
       }
     ),
@@ -91,7 +91,7 @@ dataset_taxi_2013 <- Benchmark(
         stopifnot(
           identical(dim(result), c(if (name == "taxi_2013_sample") 2L else 5L, 3L)),
           identical(names(result), c("payment_type", "tip_pct", "n")),
-          identical(sum(result$n), if (name == "taxi_2013_sample") 30L else 4797187L)
+          identical(sum(result$n), if (name == "taxi_2013_sample") 36L else 4797187L)
         )
       }
     ),
