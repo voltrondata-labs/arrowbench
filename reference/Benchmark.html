@@ -52,6 +52,8 @@
   after_each <span class="op">=</span> <span class="cn">TRUE</span>,
   teardown <span class="op">=</span> <span class="cn">TRUE</span>,
   valid_params <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">params</span><span class="op">)</span> <span class="va">params</span>,
+  case_version <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">params</span><span class="op">)</span> <span class="cn">NULL</span>,
+  packages_used <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">params</span><span class="op">)</span> <span class="st">"arrow"</span>,
   <span class="va">...</span>
 <span class="op">)</span></code></pre></div>
     </div>
@@ -60,37 +62,66 @@
     <h2>Arguments</h2>
     <dl><dt>name</dt>
 <dd><p>string identifier for the benchmark, included in results</p></dd>
+
+
 <dt>setup</dt>
 <dd><p>function having as its arguments the benchmark parameters. See
 the <code>Parametrizing benchmarks</code> section. This function is called once
 to initialize the benchmark context for a given set of parameters.
 It should return <code><a href="BenchEnvironment.html">BenchEnvironment()</a></code> with any parameter values or resources
 that the other expressions will need to run.</p></dd>
+
+
 <dt>before_each</dt>
 <dd><p>expression that is evaluated before every iteration. You may
 not need to define one.</p></dd>
+
+
 <dt>run</dt>
 <dd><p>expression that executes what we want to measure (and nothing more).
 Only code in this function is benchmarked.</p></dd>
+
+
 <dt>after_each</dt>
 <dd><p>expression evaluated after every iteration. You can put here
 assertions about the result of <code>run()</code>--errors in this function will fail
 the benchmark (not record results)</p></dd>
+
+
 <dt>teardown</dt>
 <dd><p>expression evaluated after all iterations are complete. Use this to
 clean up any artifacts created, for example. This function may error without
 affecting the benchmark results</p></dd>
+
+
 <dt>valid_params</dt>
 <dd><p>function taking a <code>data.frame</code> of setup parameters and
 returning a <code>data.frame</code> of setup parameters. Use this to filter out invalid
 combinations of parameters (e.g. writing a Feather file with snappy
 compression, which is unsupported)</p></dd>
+
+
+<dt>case_version</dt>
+<dd><p>function taking a named list of setup parameters for a
+single case and returning an integer version for the case, or <code>NULL</code> to not
+append a version; <code>NA</code> will raise an error. Changes to version will break
+conbench history for a case.</p></dd>
+
+
+<dt>packages_used</dt>
+<dd><p>function taking a <code>data.frame</code> of setup parameters and
+returning a vector of R package names required</p></dd>
+
+
 <dt>...</dt>
 <dd><p>additional attributes or functions, possibly called in <code>setup()</code>.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A <code>Benchmark</code> object containing these functions</p>
+    
+
+<p>A <code>Benchmark</code> object containing these functions</p>
     </div>
     <div id="evaluation">
     <h2>Evaluation</h2>
@@ -162,7 +193,7 @@ the <code>teardown()</code> function.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
       </footer></div>

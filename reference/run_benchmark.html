@@ -59,29 +59,44 @@
     <h2>Arguments</h2>
     <dl><dt>bm</dt>
 <dd><p><code><a href="Benchmark.html">Benchmark()</a></code> object</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Optional benchmark parameters to run across</p></dd>
+
+
 <dt>params</dt>
 <dd><p><code>data.frame</code> of parameter combinations. By default, this will
 be constructed from the expansion of the <code>...</code> arguments, the declared
 parameter options in <code>bm$setup</code>, and any restrictions potentially defined in
 <code>bm$valid_params()</code>.</p></dd>
+
+
 <dt>n_iter</dt>
 <dd><p>integer number of iterations to replicate each benchmark</p></dd>
+
+
 <dt>dry_run</dt>
 <dd><p>logical: just return the R source code that would be run in
 a subprocess? Default is <code>FALSE</code>, meaning that the benchmarks will be run.</p></dd>
+
+
 <dt>profiling</dt>
 <dd><p>Logical: collect prof info? If <code>TRUE</code>, the result data will
 contain a <code>prof_file</code> field, which you can read in with
 <code>profvis::profvis(prof_input = file)</code>. Default is <code>FALSE</code></p></dd>
+
+
 <dt>read_only</dt>
 <dd><p>this will only attempt to read benchmark files and will not
 run any that it cannot find.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A <code>BenchmarkResults</code> object, containing <code>results</code> attribute of a list
+    
+
+<p>A <code>BenchmarkResults</code> object, containing <code>results</code> attribute of a list
 of length <code>nrow(params)</code> each of those either a <code>BenchmarkResult</code> or
 <code>BenchmarkFalure</code> object.
 For a simpler view of results, call <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> on it.</p>
@@ -99,7 +114,7 @@ For a simpler view of results, call <code><a href="https://rdrr.io/r/base/as.dat
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
       </footer></div>
