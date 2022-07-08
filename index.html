@@ -91,16 +91,16 @@
 <p>Pass a Benchmark to <code><a href="reference/run_benchmark.html">run_benchmark()</a></code> and it will run it across the range of parameters specified. For parameters specified in <code>bm$setup</code> that are omitted when calling <code>run_benchmark(bm)</code>, it will test across all combinations of them (what we call a benchmark matrix). If some parameter combinations are not valid, define a <code>bm$valid_params(params)</code> function that will filter that expanded <code>data.frame</code> of parameters down to the valid set.</p>
 <p>For example,</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">arrowbench</span><span class="op">)</span>
-
-<span class="fu"><a href="reference/run_benchmark.html">run_benchmark</a></span><span class="op">(</span><span class="va">write_file</span>, source <span class="op">=</span> <span class="st">"nyctaxi_2010-01"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">arrowbench</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/run_benchmark.html">run_benchmark</a></span><span class="op">(</span><span class="va">write_file</span>, source <span class="op">=</span> <span class="st">"nyctaxi_2010-01"</span><span class="op">)</span></span></code></pre></div>
 <p>will run the <code>write_file</code> benchmark with “nyctaxi_2010-01” source file on the Cartesian product of the other function parameters–<code>format</code>, <code>compression</code>, and <code>input</code>–along with <code>cpu_count</code>s of <code>c(1, Ncpus)</code>.</p>
 <p>Another example:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">arrowbench</span><span class="op">)</span>
-
-<span class="fu"><a href="reference/run_benchmark.html">run_benchmark</a></span><span class="op">(</span><span class="va">write_file</span>, source <span class="op">=</span> <span class="st">"nyctaxi_2010-01"</span>, writer <span class="op">=</span> <span class="st">"feather"</span>, 
-  input <span class="op">=</span> <span class="st">"data.frame"</span>, cpu_count <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">4</span>, <span class="fl">8</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">arrowbench</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/run_benchmark.html">run_benchmark</a></span><span class="op">(</span><span class="va">write_file</span>, source <span class="op">=</span> <span class="st">"nyctaxi_2010-01"</span>, writer <span class="op">=</span> <span class="st">"feather"</span>, </span>
+<span>  input <span class="op">=</span> <span class="st">"data.frame"</span>, cpu_count <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">4</span>, <span class="fl">8</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>will run only the Feather writing tests with the two valid compression variants, each one done for 1, 4, and 8 threads, for a total of 6 runs.</p>
 <p>If <code>lib_path</code> is not provided to <code><a href="reference/run_benchmark.html">run_benchmark()</a></code>, it will use the default <code>.libPath</code> and whatever is installed there. You can also indicate a subset of released <code>x.y</code> Arrow version numbers, or <code>lib_path = "all"</code> to test all past releases of <code>arrow</code> plus <code>"latest"</code>.</p>
 <div class="section level3">
@@ -201,19 +201,19 @@
   }
 )</code></pre>
 <p>And now we could run our benchmark with the following for the default matrix, using 4 cpu cores and 5 iterations per case.</p>
-<pre><code><span class="fu"><a href="reference/run_benchmark.html">run_benchmark</a></span><span class="op">(</span>
-  <span class="va">new_csv_benchmark</span>,
-  cpu_count <span class="op">=</span> <span class="fl">4</span>,
-  n_iter <span class="op">=</span> <span class="fl">5</span>
-<span class="op">)</span></code></pre>
+<pre><code><span><span class="fu"><a href="reference/run_benchmark.html">run_benchmark</a></span><span class="op">(</span></span>
+<span>  <span class="va">new_csv_benchmark</span>,</span>
+<span>  cpu_count <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  n_iter <span class="op">=</span> <span class="fl">5</span></span>
+<span><span class="op">)</span></span></code></pre>
 <p>Or specify parameters (including non-default parameters) with:</p>
-<pre><code><span class="fu"><a href="reference/run_benchmark.html">run_benchmark</a></span><span class="op">(</span>
-  <span class="va">new_csv_benchmark</span>,
-  as_data_frame <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">FALSE</span><span class="op">)</span>,
-  skip_empty_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">FALSE</span><span class="op">)</span>,
-  cpu_count <span class="op">=</span> <span class="fl">4</span>,
-  n_iter <span class="op">=</span> <span class="fl">5</span>
-<span class="op">)</span></code></pre>
+<pre><code><span><span class="fu"><a href="reference/run_benchmark.html">run_benchmark</a></span><span class="op">(</span></span>
+<span>  <span class="va">new_csv_benchmark</span>,</span>
+<span>  as_data_frame <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>  skip_empty_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>  cpu_count <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  n_iter <span class="op">=</span> <span class="fl">5</span></span>
+<span><span class="op">)</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="enabling-benchmarks-to-be-run-on-conbench">Enabling benchmarks to be run on conbench<a class="anchor" aria-label="anchor" href="#enabling-benchmarks-to-be-run-on-conbench"></a>
@@ -280,7 +280,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
       </footer>

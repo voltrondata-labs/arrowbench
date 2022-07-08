@@ -44,18 +44,18 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">Benchmark</span><span class="op">(</span>
-  <span class="va">name</span>,
-  setup <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">...</span><span class="op">)</span> <span class="fu"><a href="BenchEnvironment.html">BenchEnvironment</a></span><span class="op">(</span><span class="va">...</span><span class="op">)</span>,
-  before_each <span class="op">=</span> <span class="cn">TRUE</span>,
-  run <span class="op">=</span> <span class="cn">TRUE</span>,
-  after_each <span class="op">=</span> <span class="cn">TRUE</span>,
-  teardown <span class="op">=</span> <span class="cn">TRUE</span>,
-  valid_params <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">params</span><span class="op">)</span> <span class="va">params</span>,
-  case_version <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">params</span><span class="op">)</span> <span class="cn">NULL</span>,
-  packages_used <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">params</span><span class="op">)</span> <span class="st">"arrow"</span>,
-  <span class="va">...</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">Benchmark</span><span class="op">(</span></span>
+<span>  <span class="va">name</span>,</span>
+<span>  setup <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">...</span><span class="op">)</span> <span class="fu"><a href="BenchEnvironment.html">BenchEnvironment</a></span><span class="op">(</span><span class="va">...</span><span class="op">)</span>,</span>
+<span>  before_each <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  run <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  after_each <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  teardown <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  valid_params <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">params</span><span class="op">)</span> <span class="va">params</span>,</span>
+<span>  case_version <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">params</span><span class="op">)</span> <span class="cn">NULL</span>,</span>
+<span>  packages_used <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">params</span><span class="op">)</span> <span class="st">"arrow"</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -127,13 +127,13 @@ returning a vector of R package names required</p></dd>
     <h2>Evaluation</h2>
     
 
-<p>A <code>Benchmark</code> is evaluated something like:</p><div class="sourceCode"><pre><code><span class="va">env</span> <span class="op">&lt;-</span> <span class="va">bm</span><span class="op">$</span><span class="fu">setup</span><span class="op">(</span>param1 <span class="op">=</span> <span class="st">"value"</span>, param2 <span class="op">=</span> <span class="st">"value"</span><span class="op">)</span>
-<span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n_iter</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/eval.html" class="external-link">eval</a></span><span class="op">(</span><span class="va">bm</span><span class="op">$</span><span class="va">before_each</span>, envir <span class="op">=</span> <span class="va">env</span><span class="op">)</span>
-  <span class="fu"><a href="../reference/measure.html">measure</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/eval.html" class="external-link">eval</a></span><span class="op">(</span><span class="va">bm</span><span class="op">$</span><span class="va">run</span>, envir <span class="op">=</span> <span class="va">env</span><span class="op">)</span><span class="op">)</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/eval.html" class="external-link">eval</a></span><span class="op">(</span><span class="va">bm</span><span class="op">$</span><span class="va">after_each</span>, envir <span class="op">=</span> <span class="va">env</span><span class="op">)</span>
-<span class="op">}</span>
-<span class="fu"><a href="https://rdrr.io/r/base/eval.html" class="external-link">eval</a></span><span class="op">(</span><span class="va">bm</span><span class="op">$</span><span class="va">teardown</span>, envir <span class="op">=</span> <span class="va">env</span><span class="op">)</span></code></pre></div>
+<p>A <code>Benchmark</code> is evaluated something like:</p><div class="sourceCode"><pre><code><span><span class="va">env</span> <span class="op">&lt;-</span> <span class="va">bm</span><span class="op">$</span><span class="fu">setup</span><span class="op">(</span>param1 <span class="op">=</span> <span class="st">"value"</span>, param2 <span class="op">=</span> <span class="st">"value"</span><span class="op">)</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n_iter</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/eval.html" class="external-link">eval</a></span><span class="op">(</span><span class="va">bm</span><span class="op">$</span><span class="va">before_each</span>, envir <span class="op">=</span> <span class="va">env</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="../reference/measure.html">measure</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/eval.html" class="external-link">eval</a></span><span class="op">(</span><span class="va">bm</span><span class="op">$</span><span class="va">run</span>, envir <span class="op">=</span> <span class="va">env</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/eval.html" class="external-link">eval</a></span><span class="op">(</span><span class="va">bm</span><span class="op">$</span><span class="va">after_each</span>, envir <span class="op">=</span> <span class="va">env</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/eval.html" class="external-link">eval</a></span><span class="op">(</span><span class="va">bm</span><span class="op">$</span><span class="va">teardown</span>, envir <span class="op">=</span> <span class="va">env</span><span class="op">)</span></span></code></pre></div>
 
 <p>Benchmarks should run a single combination of parameters. Running across
 a range of parameter combinations is handled by the runner, not the functions
@@ -193,7 +193,7 @@ the <code>teardown()</code> function.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
       </footer></div>

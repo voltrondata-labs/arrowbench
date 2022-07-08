@@ -48,7 +48,7 @@ Functions are evaluated in the environment of <code>Class</code>, so you can ref
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">R6Point1Class</span><span class="op">(</span><span class="va">...</span>, static <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">R6Point1Class</span><span class="op">(</span><span class="va">...</span>, static <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -73,8 +73,8 @@ This arrangement can be changed in the future if reason exists.</p></dd>
 <p>Sometimes we want static/class methods/attributes that can be accessed from
 the class (e.g. <code>MyR6Class$my_static_method()</code>) instead of an instance of
 that class (e.g. <code>MyR6Class$new(...)$my_normal_method()</code>). As individual
-classes are environments, these can be added after the fact like so:</p><div class="sourceCode r"><pre><code><span class="va">MyR6Class</span> <span class="op">&lt;-</span> <span class="kw">R6Class</span><span class="op">(</span><span class="va">...</span><span class="op">)</span>
-<span class="va">MyR6Class</span><span class="op">$</span><span class="va">my_static_method</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">...</span></code></pre><p></p></div>
+classes are environments, these can be added after the fact like so:</p><div class="sourceCode r"><pre><code><span><span class="va">MyR6Class</span> <span class="op">&lt;-</span> <span class="kw">R6Class</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span>
+<span><span class="va">MyR6Class</span><span class="op">$</span><span class="va">my_static_method</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">...</span></span></code></pre><p></p></div>
 <p>But the problem with the above is it's not heritable; if you make a class that
 inherits from <code>MyR6Class</code>, it will not have <code>$my_static_method()</code> unless you
 manually re-add it.</p>
@@ -109,7 +109,7 @@ maintain.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
       </footer></div>
