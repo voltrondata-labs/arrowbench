@@ -5,7 +5,7 @@
 #
 # Data dictionary: https://capitalmarkets.fanniemae.com/resources/file/credit-risk/xls/crt-file-layout-and-glossary.xlsx
 # Names from R code here: https://capitalmarkets.fanniemae.com/media/document/zip/FNMA_SF_Loan_Performance_r_Primary.zip
-fannie_mae_schema <- function() {
+fanniemae_schema <- function() {
   arrow::schema(
     LOAN_ID = arrow::string(),
     # date. Monthly reporting period
@@ -55,8 +55,8 @@ fannie_mae_schema <- function() {
 known_sources <- list(
   fanniemae_2016Q4 = list(
     url = "https://ursa-qa.s3.amazonaws.com/fanniemae_loanperf/2016Q4.csv.gz",
-    schema = fannie_mae_schema(),
-    reader = function(file, ...) arrow::read_delim_arrow(file, delim = "|", schema = fannie_mae_schema(), ...),
+    schema = fanniemae_schema(),
+    reader = function(file, ...) arrow::read_delim_arrow(file, delim = "|", schema = fanniemae_schema(), ...),
     delim = "|",
     dim = c(22180168L, 31L)
   ),
@@ -115,8 +115,8 @@ test_sources <- list(
   fanniemae_sample = list(
     # this is the first 100 lines of the ungzipped PSV
     filename = "fanniemae_sample.csv",
-    schema = fannie_mae_schema(),
-    reader = function(file, ...) arrow::read_delim_arrow(file, delim = "|", schema = fannie_mae_schema(), ...),
+    schema = fanniemae_schema(),
+    reader = function(file, ...) arrow::read_delim_arrow(file, delim = "|", schema = fanniemae_schema(), ...),
     delim = "|",
     dim = c(100L, 31L)
   ),
