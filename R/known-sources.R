@@ -5,47 +5,49 @@
 #
 # Data dictionary: https://capitalmarkets.fanniemae.com/resources/file/credit-risk/xls/crt-file-layout-and-glossary.xlsx
 # Names from R code here: https://capitalmarkets.fanniemae.com/media/document/zip/FNMA_SF_Loan_Performance_r_Primary.zip
-fannie_mae_schema <- arrow::schema(
-  LOAN_ID = arrow::string(),
-  # date. Monthly reporting period
-  ACT_PERIOD = arrow::string(),
-  SERVICER = arrow::string(),
-  ORIG_RATE = arrow::float64(),
-  CURRENT_UPB = arrow::float64(),
-  LOAN_AGE = arrow::int32(),
-  REM_MONTHS = arrow::int32(),
-  ADJ_REM_MONTHS = arrow::int32(),
-  # maturity date
-  MATR_DT = arrow::string(),
-  # Metropolitan Statistical Area code
-  MSA = arrow::string(),
-  # Int of months, but `X` is a valid value. New versions pad with `0`/`X` to two characters
-  DLQ_STATUS = arrow::string(),
-  RELOCATION_MORTGAGE_INDICATOR = arrow::string(),
-  # 0-padded 2 digit ints representing categorical levels, e.g. "01" -> "Prepaid or Matured"
-  Zero_Bal_Code = arrow::string(),
-  # date
-  ZB_DTE = arrow::string(),
-  LAST_PAID_INSTALLMENT_DATE = arrow::string(),
-  FORECLOSURE_DATE = arrow::string(),
-  DISPOSITION_DATE = arrow::string(),
-  FORECLOSURE_COSTS = arrow::float64(),
-  PROPERTY_PRESERVATION_AND_REPAIR_COSTS = arrow::float64(),
-  ASSET_RECOVERY_COSTS = arrow::float64(),
-  MISCELLANEOUS_HOLDING_EXPENSES_AND_CREDITS = arrow::float64(),
-  ASSOCIATED_TAXES_FOR_HOLDING_PROPERTY = arrow::float64(),
-  NET_SALES_PROCEEDS = arrow::float64(),
-  CREDIT_ENHANCEMENT_PROCEEDS = arrow::float64(),
-  REPURCHASES_MAKE_WHOLE_PROCEEDS = arrow::float64(),
-  OTHER_FORECLOSURE_PROCEEDS = arrow::float64(),
-  NON_INTEREST_BEARING_UPB = arrow::float64(),
-  # all null
-  MI_CANCEL_FLAG = arrow::string(),
-  RE_PROCS_FLAG = arrow::string(),
-  # all null
-  LOAN_HOLDBACK_INDICATOR = arrow::string(),
-  SERV_IND = arrow::string()
-)
+fanniemae_schema <- function() {
+  arrow::schema(
+    LOAN_ID = arrow::string(),
+    # date. Monthly reporting period
+    ACT_PERIOD = arrow::string(),
+    SERVICER = arrow::string(),
+    ORIG_RATE = arrow::float64(),
+    CURRENT_UPB = arrow::float64(),
+    LOAN_AGE = arrow::int32(),
+    REM_MONTHS = arrow::int32(),
+    ADJ_REM_MONTHS = arrow::int32(),
+    # maturity date
+    MATR_DT = arrow::string(),
+    # Metropolitan Statistical Area code
+    MSA = arrow::string(),
+    # Int of months, but `X` is a valid value. New versions pad with `0`/`X` to two characters
+    DLQ_STATUS = arrow::string(),
+    RELOCATION_MORTGAGE_INDICATOR = arrow::string(),
+    # 0-padded 2 digit ints representing categorical levels, e.g. "01" -> "Prepaid or Matured"
+    Zero_Bal_Code = arrow::string(),
+    # date
+    ZB_DTE = arrow::string(),
+    LAST_PAID_INSTALLMENT_DATE = arrow::string(),
+    FORECLOSURE_DATE = arrow::string(),
+    DISPOSITION_DATE = arrow::string(),
+    FORECLOSURE_COSTS = arrow::float64(),
+    PROPERTY_PRESERVATION_AND_REPAIR_COSTS = arrow::float64(),
+    ASSET_RECOVERY_COSTS = arrow::float64(),
+    MISCELLANEOUS_HOLDING_EXPENSES_AND_CREDITS = arrow::float64(),
+    ASSOCIATED_TAXES_FOR_HOLDING_PROPERTY = arrow::float64(),
+    NET_SALES_PROCEEDS = arrow::float64(),
+    CREDIT_ENHANCEMENT_PROCEEDS = arrow::float64(),
+    REPURCHASES_MAKE_WHOLE_PROCEEDS = arrow::float64(),
+    OTHER_FORECLOSURE_PROCEEDS = arrow::float64(),
+    NON_INTEREST_BEARING_UPB = arrow::float64(),
+    # all null
+    MI_CANCEL_FLAG = arrow::string(),
+    RE_PROCS_FLAG = arrow::string(),
+    # all null
+    LOAN_HOLDBACK_INDICATOR = arrow::string(),
+    SERV_IND = arrow::string()
+  )
+}
 
 
 #' Known data files
@@ -53,8 +55,8 @@ fannie_mae_schema <- arrow::schema(
 known_sources <- list(
   fanniemae_2016Q4 = list(
     url = "https://ursa-qa.s3.amazonaws.com/fanniemae_loanperf/2016Q4.csv.gz",
-    schema = fannie_mae_schema,
-    reader = function(file, ...) arrow::read_delim_arrow(file, delim = "|", schema = known_sources$fanniemae_2016Q4$schema, ...),
+    schema = fanniemae_schema(),
+    reader = function(file, ...) arrow::read_delim_arrow(file, delim = "|", schema = fanniemae_schema(), ...),
     delim = "|",
     dim = c(22180168L, 31L)
   ),
@@ -113,8 +115,8 @@ test_sources <- list(
   fanniemae_sample = list(
     # this is the first 100 lines of the ungzipped PSV
     filename = "fanniemae_sample.csv",
-    schema = fannie_mae_schema,
-    reader = function(file, ...) arrow::read_delim_arrow(file, delim = "|", schema = test_sources$fanniemae_sample$schema, ...),
+    schema = fanniemae_schema(),
+    reader = function(file, ...) arrow::read_delim_arrow(file, delim = "|", schema = fanniemae_schema(), ...),
     delim = "|",
     dim = c(100L, 31L)
   ),
