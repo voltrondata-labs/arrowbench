@@ -12,6 +12,7 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: R (>= 3.5.0)
 Imports:
+    arrow,
     bench,
     dbplyr,
     dplyr,
@@ -31,7 +32,6 @@ Imports:
 Suggests:
     testthat (>= 3.0.0),
     archive,
-    arrow,
     data.table,
     DBI,
     duckdb,
