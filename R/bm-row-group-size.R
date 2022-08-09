@@ -33,7 +33,7 @@ row_group_size <- Benchmark(
   run = {
     ds <- arrow::open_dataset(input_file)
 
-    # TODO: generalize this to work with fanniemae_sample once https://github.com/ursacomputing/arrowbench/issues/88 is done
+    # TODO: generalize this to work with fanniemae_sample once https://github.com/voltrondata-labs/arrowbench/issues/88 is done
     if (grepl('fanniemae_2016Q4', source)) {
       if ("filters" %in% queries) {
         result[["filters"]] <- ds %>%
