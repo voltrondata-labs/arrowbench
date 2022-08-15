@@ -8,7 +8,7 @@ temp_dir <- tempfile()
 dir.create(temp_dir)
 
 expected_filenames <- as.list(set_names(
-  file.path(temp_dir, paste0(tpch_tables, "_0.0001.parquet")),
+  file.path(temp_dir, "tpc-h", "0.0001", paste0(tpch_tables, ".parquet")),
   nm = tpch_tables
 ))
 

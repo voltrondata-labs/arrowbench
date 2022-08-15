@@ -4,36 +4,70 @@
 #' @export
 tpch_tables <- c("customer", "lineitem", "nation", "orders", "part", "partsupp", "region", "supplier")
 
+datalogistik_available <- function() {
+  exit_code <- system("which datalogistik")
+
+  if (exit_code != 0) {
+    warning(
+      'datalogistik not installed or on $PATH. If installed with pipx, ensure it ',
+      'is on $PATH, e.g. by adding PATH="${PATH}:${HOME}/.local/bin" to ~/.Renviron'
+    )
+  }
+
+  exit_code == 0
+}
+
 generate_tpch <- function(scale_factor = 1) {
-  # Ensure that we have our custom duckdb that has the TPC-H extension built.
-  ensure_custom_duckdb()
+  stopifnot(datalogistik_available())
 
-  duckdb_file <- tempfile()
-  on.exit(unlink(duckdb_file, recursive = TRUE))
+  scale_factor_str <- format(scale_factor, scientific = FALSE)
+  datalogistik_data_dir <- source_data_file("datalogistik")
+  if (!dir.exists(datalogistik_data_dir)) {
+    dir.create(datalogistik_data_dir)
+  }
 
-  # generate the tables
-  query_custom_duckdb(
-    paste0("CALL dbgen(sf=", scale_factor, ");"),
-    dbdir = duckdb_file
+  generation_command <- paste0("datalogistik generate -d='tpc-h' -f='parquet' --bypass-cache -s=", scale_factor_str)
+  command <- paste(
+    paste("pushd", datalogistik_data_dir),
+    generation_command,
+    "popd",
+    sep = " && "
+  )
+  exit_code <- system(command = command)
+  stopifnot("datalogistik tpc-h generation failed" = exit_code == 0)
+
+  source_dir <- source_data_file("tpc-h", scale_factor_str)
+  if (!dir.exists(source_dir)) {
+    dir.create(source_dir, recursive = TRUE, showWarnings = TRUE)
+  }
+  lapply(
+    list.files(file.path(datalogistik_data_dir, "tpc-h"), full.names = TRUE, recursive = TRUE),
+    function(path) {
+      new_path <- file.path(source_dir, basename(ifelse(
+        endsWith(path, "part-0.parquet"),
+        dirname(path),
+        path
+      )))
+
+      if (file.exists(new_path)) {
+        unlink(new_path, recursive = TRUE)
+      }
+      file.link(path, new_path)
+    }
   )
 
-  # write each table to paruqet
-  out <- lapply(tpch_tables, function(name) {
-    filename <- source_data_file(paste0(name, "_", format(scale_factor, scientific = FALSE), ".parquet"))
-    query <- paste0("SELECT * FROM ", name, ";")
-    export_custom_duckdb(query, filename, dbdir = duckdb_file)
+  tpch_files <- list.files(source_dir, pattern = '\\.parquet$', full.names = TRUE)
+  names(tpch_files) <- sub('.parquet', '', basename(tpch_files), fixed = TRUE)
 
-    filename
-  })
-
-  set_names(out, tpch_tables)
+  as.list(tpch_files)
 }
 
 #' @importFrom rlang set_names
 ensure_tpch <- function(scale_factor = 1) {
   ensure_source_dirs_exist()
 
-  filenames <- paste0(paste(tpch_tables, format(scale_factor, scientific = FALSE), sep="_"), ".parquet")
+  scale_factor_str <- format(scale_factor, scientific = FALSE)
+  filenames <- file.path("tpc-h", scale_factor_str, paste0(tpch_tables, ".parquet"))
 
   # Check for places this file might already be and return those.
   cached_files <- map(filenames, data_file)
