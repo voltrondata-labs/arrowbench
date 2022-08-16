@@ -48,17 +48,17 @@ withr::with_envvar(
     skip_if(Sys.getenv("ARROWBENCH_TEST_CUSTOM_DUCKDB", "") == "")
 
     # there are no temp files yet
-    expect_false(file.exists(file.path(temp_dir, "lineitem_0.001.parquet")))
-    expect_false(file.exists(file.path(temp_dir, "temp", "lineitem_0.001.uncompressed.parquet")))
+    expect_false(file.exists(file.path(temp_dir, "tpc-h", "0.01", "lineitem_0.01.parquet")))
+    expect_false(file.exists(file.path(temp_dir, "temp", "lineitem_0.01.uncompressed.parquet")))
 
     # we can generate
-    tpch_files <- ensure_tpch(0.0001)
-    expect_true(file.exists(file.path(temp_dir, "lineitem_0.0001.parquet")))
+    tpch_files <- ensure_tpch(0.01)
+    expect_true(file.exists(file.path(temp_dir, "tpc-h", "0.01", "lineitem_0.01.parquet")))
 
     # and we can ensure format
     lineitem <- ensure_format(tpch_files[["lineitem"]], "parquet")
-    expect_equal(lineitem, file.path(temp_dir, "temp", "lineitem_0.0001.uncompressed.parquet"))
-    expect_true(file.exists(file.path(temp_dir, "temp", "lineitem_0.0001.uncompressed.parquet")))
+    expect_equal(lineitem, file.path(temp_dir, "temp", "lineitem_0.01.uncompressed.parquet"))
+    expect_true(file.exists(file.path(temp_dir, "temp", "lineitem_0.01.uncompressed.parquet")))
   })
 })
 

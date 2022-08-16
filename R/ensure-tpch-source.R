@@ -43,11 +43,8 @@ generate_tpch <- function(scale_factor = 1) {
   lapply(
     list.files(file.path(datalogistik_data_dir, "tpc-h"), full.names = TRUE, recursive = TRUE),
     function(path) {
-      new_path <- file.path(source_dir, basename(ifelse(
-        endsWith(path, "part-0.parquet"),
-        dirname(path),
-        path
-      )))
+      new_filename <- sub('.parquet', paste0("_", scale_factor_str, ".parquet"), basename(path))
+      new_path <- file.path(source_dir, new_filename)
 
       if (file.exists(new_path)) {
         unlink(new_path, recursive = TRUE)
@@ -57,7 +54,7 @@ generate_tpch <- function(scale_factor = 1) {
   )
 
   tpch_files <- list.files(source_dir, pattern = '\\.parquet$', full.names = TRUE)
-  names(tpch_files) <- sub('.parquet', '', basename(tpch_files), fixed = TRUE)
+  names(tpch_files) <- sub(paste0('_', scale_factor_str, '.parquet'), '', basename(tpch_files), fixed = TRUE)
 
   as.list(tpch_files)
 }
@@ -67,7 +64,7 @@ ensure_tpch <- function(scale_factor = 1) {
   ensure_source_dirs_exist()
 
   scale_factor_str <- format(scale_factor, scientific = FALSE)
-  filenames <- file.path("tpc-h", scale_factor_str, paste0(tpch_tables, ".parquet"))
+  filenames <- file.path("tpc-h", scale_factor_str, paste0(tpch_tables, "_", scale_factor_str, ".parquet"))
 
   # Check for places this file might already be and return those.
   cached_files <- map(filenames, data_file)

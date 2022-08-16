@@ -8,7 +8,7 @@ temp_dir <- tempfile()
 dir.create(temp_dir)
 
 expected_filenames <- as.list(set_names(
-  file.path(temp_dir, "tpc-h", "0.0001", paste0(tpch_tables, ".parquet")),
+  file.path(temp_dir, "tpc-h", "0.01", paste0(tpch_tables, "_0.01.parquet")),
   nm = tpch_tables
 ))
 
@@ -17,7 +17,7 @@ withr::with_envvar(
   {
 
     test_that("can generate a small dataset", {
-      tpch_files <- ensure_tpch(0.0001)
+      tpch_files <- ensure_tpch(0.01)
       expect_identical(
         tpch_files,
         expected_filenames
@@ -26,7 +26,7 @@ withr::with_envvar(
 
     test_that("can read that same small dataset if it is in the data folder already", {
       mockery::stub(ensure_tpch, 'generate_tpch', function(scale_factor) stop("this should not be called"))
-      tpch_files <- ensure_tpch(0.0001)
+      tpch_files <- ensure_tpch(0.01)
       expect_identical(
         tpch_files,
         expected_filenames
@@ -34,7 +34,7 @@ withr::with_envvar(
     })
 
     test_that("and ensure gets the same thing", {
-      tpch_files <- ensure_source("tpch", scale_factor = 0.0001)
+      tpch_files <- ensure_source("tpch", scale_factor = 0.01)
       expect_identical(
         tpch_files,
         expected_filenames
