@@ -45,6 +45,20 @@ test_that("tpch_answer (arrowbench)", {
 
   q22_ans <- tpch_answer(1, 22, source = "arrowbench")
   expect_s3_class(q22_ans, "tbl_df")
+
+  # "datalogistik" is the default
+  q02_ans_datalogistik <- tpch_answer(0.01, 2, source = "arrowbench", datasource = "datalogistik")
+  expect_s3_class(q02_ans_datalogistik, "tbl_df")
+
+  q02_ans_duckdb <- tpch_answer(0.01, 2, source = "arrowbench", datasource = "duckdb")
+  expect_s3_class(q02_ans_duckdb, "tbl_df")
+
+  # the answers are not the same
+  expect_false(isTRUE(all.equal(q02_ans_datalogistik, q02_ans_duckdb)))
+
+  # though they are for all other columns
+  address_col <- which(colnames(q02_ans_datalogistik) == "s_address")
+  expect_identical(q02_ans_datalogistik[-address_col], q02_ans_duckdb[-address_col])
 })
 
 # don't test if we are not already trying to install the custom duckdb

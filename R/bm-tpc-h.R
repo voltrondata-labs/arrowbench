@@ -107,8 +107,17 @@ tpc_h <- Benchmark("tpc_h",
       all_equal_out <- waldo::compare(result, answer, tolerance = 0.01)
 
       if (length(all_equal_out) != 0) {
-        warning(paste0("\n", all_equal_out, "\n"))
-        stop("The answer does not match")
+        # DuckDB's data does not actually fit the spec for _address columns (the
+        # values in the answer(s) for those columns aren't found anywhere in the
+        # validation data or data generated with the official tool) so we try
+        # again with the duckdb specific answers
+        answer <- tpch_answer(scale_factor, query_id, datasource = "duckdb")
+        all_equal_out <- waldo::compare(result, answer, tolerance = 0.01)
+
+        if (length(all_equal_out) != 0) {
+          warning(paste0("\n", all_equal_out, "\n"))
+          stop("The answer does not match")
+        }
       }
     } else {
       warning("There is no validation for scale_factors other than 0.01, 0.1, 1, and 10. Be careful with these results!")
@@ -296,17 +305,31 @@ get_query_func <- function(query_id, engine = NULL) {
 #' @param query_id Id of the query (possible values: 1-22)
 #' @param source source of the answer (default: "arrowbench"), "duckdb" can
 #' return answers for scale_factor 1.
+#' @param datasource whcih data source should the answers be from (defualt:
+#'   "datalogistik")? Some data sources have slightly different data in some
+#'   columns (possible other value: "duckdb")
 #'
 #' @return the answer, as a data.frame
 #' @export
-tpch_answer <- function(scale_factor, query_id, source = c("arrowbench", "duckdb")) {
+tpch_answer <- function(scale_factor,
+                        query_id,
+                        source = c("arrowbench", "duckdb"),
+                        datasource = c("datalogistik", "duckdb")
+) {
   source <- match.arg(source)
+  datasource <- match.arg(datasource)
+
+  answer_dir <- "answers"
+  if (datasource == "duckdb") {
+    answer_dir <- paste0(answer_dir, "_duckdb_data")
+  }
+
 
   if (source == "arrowbench") {
     scale_factor_string <- format(scale_factor, scientific = FALSE)
     answer_file <- system.file(
       "tpch",
-      "answers",
+      answer_dir,
       paste0("scale-factor-", scale_factor_string),
       paste0("tpch-q", sprintf("%02i", query_id), "-sf", scale_factor_string, ".parquet"),
       package = "arrowbench"
@@ -318,7 +341,7 @@ tpch_answer <- function(scale_factor, query_id, source = c("arrowbench", "duckdb
         file.path(
           "arrowbench",
           "tpch",
-          "answers",
+          answer_dir,
           paste0("scale-factor-", scale_factor_string),
           paste0("tpch-q", sprintf("%02i", query_id), "-sf", scale_factor_string, ".parquet")
         ),
