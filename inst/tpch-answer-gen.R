@@ -53,6 +53,10 @@ for (q in c(1:22)) {
   sql <- paste0(httr::GET(
     glue::glue("https://raw.githubusercontent.com/duckdb/duckdb/master/extension/tpch/dbgen/queries/q{stringr::str_pad(query, 2, pad = '0')}.sql")
   ), collapse = "\n")
+  # Or if you have duckdb locally, you can:
+  # sql <- paste0(readLines(
+  #   glue::glue("~/repos/duckdb/extension/tpch/dbgen/queries/q{stringr::str_pad(query, 2, pad = '0')}.sql")
+  # ), collapse = "\n")
 
   result_dplyr <- tpc_h_queries[[query]](input_functions[["dplyr"]])
   result_arrow <- tpc_h_queries[[query]](input_functions[["arrow"]], collect_func = compute)
