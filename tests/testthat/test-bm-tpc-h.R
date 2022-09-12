@@ -94,7 +94,7 @@ withr::with_envvar(
       )
 
       lineitem_ds <- input_func("lineitem")
-      expect_true(grepl("lineitem_0.01.uncompressed.parquet", lineitem_ds$files, fixed = TRUE))
+      expect_true(grepl("lineitem.uncompressed.parquet", lineitem_ds$files, fixed = TRUE))
 
       input_func <- get_input_func(
         engine = "arrow",
@@ -105,7 +105,7 @@ withr::with_envvar(
       )
 
       lineitem_ds <- input_func("lineitem")
-      expect_true(grepl("lineitem_0.01.snappy.parquet", lineitem_ds$files, fixed = TRUE))
+      expect_true(grepl("lineitem.snappy.parquet", lineitem_ds$files, fixed = TRUE))
     })
   })
 

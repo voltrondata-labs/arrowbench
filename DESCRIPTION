@@ -22,7 +22,6 @@ Imports:
     purrr,
     R6,
     remotes,
-    rlang,
     R.utils,
     sessioninfo,
     utils,
@@ -63,6 +62,7 @@ Collate:
     'bm-write-csv.R'
     'bm-write-file.R'
     'custom-duckdb.R'
+    'datalogistik.R'
     'ensure-format.R'
     'ensure-lib.R'
     'known-sources.R'

@@ -44,21 +44,16 @@ withr::with_envvar(
   })
 
   test_that("ensure_format with tpch", {
-    # don't test if we are not already trying to install the custom duckdb
-    skip_if(Sys.getenv("ARROWBENCH_TEST_CUSTOM_DUCKDB", "") == "")
-
-    # there are no temp files yet
-    expect_false(file.exists(file.path(temp_dir, "tpc-h", "0.01", "lineitem_0.01.parquet")))
-    expect_false(file.exists(file.path(temp_dir, "temp", "lineitem_0.01.uncompressed.parquet")))
+    skip_if(!datalogistik_available())
 
     # we can generate
     tpch_files <- ensure_tpch(0.01)
-    expect_true(file.exists(file.path(temp_dir, "tpc-h", "0.01", "lineitem_0.01.parquet")))
+    expect_true(file.exists(tpch_files[["lineitem"]]))
 
     # and we can ensure format
     lineitem <- ensure_format(tpch_files[["lineitem"]], "parquet")
-    expect_equal(lineitem, file.path(temp_dir, "temp", "lineitem_0.01.uncompressed.parquet"))
-    expect_true(file.exists(file.path(temp_dir, "temp", "lineitem_0.01.uncompressed.parquet")))
+    expect_equal(lineitem, file.path(temp_dir, "temp", "lineitem.uncompressed.parquet"))
+    expect_true(file.exists(file.path(temp_dir, "temp", "lineitem.uncompressed.parquet")))
   })
 })
 
