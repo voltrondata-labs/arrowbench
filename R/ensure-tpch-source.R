@@ -7,9 +7,14 @@ tpch_tables <- c("customer", "lineitem", "nation", "orders", "part", "partsupp",
 #' Generate tpch data
 #'
 #' Generate tpch data at a given scale factor. By default,
-#' `data` is assumed to be relative to the current working directory, but
-#' you can set the environment variable `ARROWBENCH_DATA_DIR` to point to another
-#' (permanent) base directory.
+#' data is output relative to the current working directory. However,
+#' you can set the environment variable `ARROWBENCH_DATA_DIR` to
+#' point to another directory. Setting this environment variable has
+#' the advantage of being a central location for general usage. Running
+#' this function will install a custom version of duckdb in an `r_libs`
+#' directory, relative to the directory specified by the environment
+#' variable `ARROWBENCH_LOCAL_DIR`. When running this function you will
+#' see significant output from that installation process. This is normal.
 #'
 #' @param scale_factor a relative measure of the size of data in gigabytes.
 #'
