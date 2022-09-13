@@ -4,6 +4,16 @@
 #' @export
 tpch_tables <- c("customer", "lineitem", "nation", "orders", "part", "partsupp", "region", "supplier")
 
+#' Generate tpch data
+#'
+#' Generate tpch data at a given scale factor. By default,
+#' `data` is assumed to be relative to the current working directory, but
+#' you can set the environment variable `ARROWBENCH_DATA_DIR` to point to another
+#' (permanent) base directory.
+#'
+#' @param scale_factor a relative measure of the size of data in gigabytes.
+#'
+#' @export
 generate_tpch <- function(scale_factor = 1) {
   # Ensure that we have our custom duckdb that has the TPC-H extension built.
   ensure_custom_duckdb()
