@@ -13,7 +13,7 @@ tpch_tables <- c("customer", "lineitem", "nation", "orders", "part", "partsupp",
 #' the advantage of being a central location for general usage. Running
 #' this function will install a custom version of duckdb in an `r_libs`
 #' directory, relative to the directory specified by the environment
-#' variable `ARROWBENCH_LOCAL_DIR`. When running this function you will
+#' variable `ARROWBENCH_LOCAL_DIR`. When running this function for the first time you will
 #' see significant output from that installation process. This is normal.
 #'
 #' @param scale_factor a relative measure of the size of data in gigabytes.
