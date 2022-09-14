@@ -17,6 +17,6 @@ point to another directory. Setting this environment variable has
 the advantage of being a central location for general usage. Running
 this function will install a custom version of duckdb in an \code{r_libs}
 directory, relative to the directory specified by the environment
-variable \code{ARROWBENCH_LOCAL_DIR}. When running this function you will
+variable \code{ARROWBENCH_LOCAL_DIR}. When running this function for the first time you will
 see significant output from that installation process. This is normal.
 }
