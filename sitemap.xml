@@ -64,6 +64,9 @@
     <loc>/reference/file_with_ext.html</loc>
   </url>
   <url>
+    <loc>/reference/generate_tpch.html</loc>
+  </url>
+  <url>
     <loc>/reference/get_csv_reader.html</loc>
   </url>
   <url>

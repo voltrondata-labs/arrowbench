@@ -60,7 +60,7 @@
 <div class="section level1">
 <div class="page-header"><h1 id="arrowbench">arrowbench<a class="anchor" aria-label="anchor" href="#arrowbench"></a>
 </h1></div>
-<p><!-- badges: start --> <a href="https://github.com/ursa-labs/arrowbench/actions" class="external-link"><img src="https://github.com/ursacomputing/arrowbench/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a> <!-- badges: end --></p>
+<p><!-- badges: start --> <a href="https://github.com/ursa-labs/arrowbench/actions" class="external-link"><img src="https://github.com/voltrondata-labs/arrowbench/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a> <!-- badges: end --></p>
 <p>This R package contains tools for defining benchmarks, running them across a range of parameters, and reporting their results in a standardized form. It also contains some benchmark code for measuring performance of Apache Arrow and other projects one might compare it to.</p>
 <p>The purpose of the package is to provide developers with better tools for creating, parametrizing, and reproducing benchmarks across a range of library versions, variables, and machines, as well as to facilitate continuous monitoring. While this package could be used for microbenchmarking, it is designed specially for “macrobenchmarks”: workflows that real users do with real data that take longer than microseconds to run.</p>
 <p>It builds on top of existing R benchmarking tools, notably the <code>bench</code> package. Among the features that this package adds are</p>
@@ -76,7 +76,7 @@
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>The quickest and easiest way to install is to run <code>remotes::install_github("ursacomputing/arrowbench", dependencies = TRUE)</code> in R. If you need to install remotes you can <code>install.packages("remotes")</code>.</p>
+<p>The quickest and easiest way to install is to run <code>remotes::install_github("voltrondata-labs/arrowbench", dependencies = TRUE)</code> in R. If you need to install remotes you can <code>install.packages("remotes")</code>.</p>
 <p>If you’ve downloaded the source, or you’re making changes to arrow bench you should make sure that you have the dependencies with <code>remotes::install_deps(".", dependencies = TRUE)</code> in R (this will also install the arrow package along with other packages that can be benchmarked with arrowbench. And then running <code>R CMD INSTALL .</code> in a terminal (for both, you should do this in the root directory of arrowbench, or pass the path to arrowbench instead of <code>.</code>).</p>
 <p>Some benchmark data files are downloaded with <code>download.file(..., method = "wget")</code>, which requires <a href="https://www.gnu.org/software/wget/" class="external-link">wget</a> to be installed. If not already installed, <code>wget</code> is available via most package managers, e.g. with <code>brew install wget</code> with Hombrew on MacOS.</p>
 </div>
@@ -219,7 +219,7 @@
 <h3 id="enabling-benchmarks-to-be-run-on-conbench">Enabling benchmarks to be run on conbench<a class="anchor" aria-label="anchor" href="#enabling-benchmarks-to-be-run-on-conbench"></a>
 </h3>
 <p><a href="https://conbench.ursa.dev/" class="external-link">Conbench</a> is a service that runs benchmarks continuously on a repo. We have a conbench service setup to run benchmarks on the apache/arrow repository (and pull requests, if requested).</p>
-<p>Before a benchmark can be run on conbench, one must add a (or extend an existing) benchmark in the <a href="https://github.com/ursacomputing/benchmarks" class="external-link">benchmarks python package</a>. If you are adding a new benchmark <a href="https://github.com/ursacomputing/benchmarks#example-external-benchmarks" class="external-link">see the R-only example external benchmarks</a> in benchmarks. An example of adding an R-only benchmark is <a href="https://github.com/ursacomputing/benchmarks/pull/14" class="external-link">benchmarks#14</a></p>
+<p>Before a benchmark can be run on conbench, one must add a (or extend an existing) benchmark in the <a href="https://github.com/voltrondata-labs/benchmarks" class="external-link">benchmarks python package</a>. If you are adding a new benchmark <a href="https://github.com/voltrondata-labs/benchmarks#example-external-benchmarks" class="external-link">see the R-only example external benchmarks</a> in benchmarks. An example of adding an R-only benchmark is <a href="https://github.com/voltrondata-labs/benchmarks/pull/14" class="external-link">benchmarks#14</a></p>
 </div>
 </div>
 <div class="section level2">
@@ -227,7 +227,7 @@
 </h2>
 <p>The package knows about certain large data files to use in benchmarks. These are registered in a <code>known_sources</code> object, which specifies where they can be downloaded and how to read them, as well as optional attributes about them (e.g. <code><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim()</a></code>) that can be used to validate that they’ve been read in correctly.</p>
 <p>To use them in benchmarks, use the <code><a href="reference/ensure_source.html">ensure_source()</a></code> function to take a source identifier and mapping it to a file path, downloading and extracting the file if it isn’t found. Pass the result to <code><a href="reference/read_source.html">read_source()</a></code> load the data with the source’s provided <code>reader</code> function.</p>
-<p>Source files are cached in a <code>data</code> directory and are only downloaded if not present. This speeds up repeat benchmark runs on the same host. By default, <code>data</code> is assumed to be relative to the current working directory, but you can set the environment variable <code>ARROWBENCH_DATA_DIR</code> to point to another (permanent) base directory.</p>
+<p>Source files are cached in a <code>data</code> directory and are only downloaded if not present. This speeds up repeat benchmark runs on the same host. By default, <code>data</code> is assumed to be relative to the current working directory, but you can set the environment variable <code>ARROWBENCH_DATA_DIR</code> to point to another base directory. Setting this environment variable has the advantage of being a central location for general usage.</p>
 <p>Similarly, there is an <code>ensure_lib()</code> function called in the <code>global_setup()</code> that supports a list of known <code>arrow</code> package versions, which are mapped to daily snapshots of CRAN hosted by Microsoft. If you specify <code>lib_path = "0.17"</code>, for example, <code>ensure_lib()</code> will use a <code>.libPath</code> for this version and install all Suggested packages into that directory using the MRAN snapshot for “2020-05-29”, a date when 0.17 was the <code>arrow</code> version on CRAN. This lets you test against old versions of the code and to backfill benchmark results.</p>
 <p>These versioned R package libraries are cached in an <code>r_libs</code> directory, like <code>data</code> relative to the directory specified by the environment variable <code>ARROWBENCH_LOCAL_DIR</code>.</p>
 </div>
@@ -280,7 +280,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer>
