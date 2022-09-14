@@ -256,7 +256,8 @@ Source files are cached in a `data` directory and are only downloaded if
 not present. This speeds up repeat benchmark runs on the same host. By default,
 `data` is assumed to be relative to the current working directory, but
 you can set the environment variable `ARROWBENCH_DATA_DIR` to point to another 
-(permanent) base directory.
+base directory. Setting this environment variable has the advantage of being a 
+central location for general usage.
 
 Similarly, there is an `ensure_lib()` function called in the `global_setup()`
 that supports a list of known `arrow` package versions, which are mapped to
