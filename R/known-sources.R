@@ -109,6 +109,18 @@ known_sources <- list(
   )
 )
 
+# Now add the "custom" locator
+# TODO: we need to exclude fanniemae_2016Q4 and nyctaxi_2010-01 for now, until CSVs are better handled
+known_sources <- purrr::map2(known_sources, names(known_sources), function(source, name) {
+  force(name)
+
+  if (is.null(source$locator)) {
+    source$locator <- function(...) datalogistik_locate(name)[[1]]
+  }
+
+  return(source)
+})
+
 # these are similar to known_sources above, with the exception that they come
 # with the package, so they have a filename instead of a url
 test_sources <- list(

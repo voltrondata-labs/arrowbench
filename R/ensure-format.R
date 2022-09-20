@@ -33,6 +33,24 @@ ensure_format <- function(
   compression <- match.arg(compression)
   format <- match.arg(format)
 
+  # TODO: something else for TPC-H?
+  source_locator <- known_sources[[name]]$locator
+  # shunt off to datalogistik, if we can:
+  if (is.null(chunk_size) && !is.null(source_locator)) {
+
+    return(datalogistik_generate(c("-d", name, "-f", format, "-c", compression))$tables[[1]])
+  }
+
+  .ensure_format(name, format, compression, chunk_size)
+}
+
+
+.ensure_format <- function(
+    name,
+    format = known_formats,
+    compression = known_compressions,
+    chunk_size = NULL
+) {
   # if we get "csv.gz" split it up correctly.
   if (format == "csv.gz") {
     format <- "csv"

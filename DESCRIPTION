@@ -22,6 +22,7 @@ Imports:
     purrr,
     R6,
     remotes,
+    rlang,
     R.utils,
     sessioninfo,
     utils,
