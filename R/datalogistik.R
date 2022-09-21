@@ -44,11 +44,12 @@ install_pipx <- function() {
 #'
 #' @export
 install_datalogistik <- function() {
-  stopifnot(interactive(), pipx_available())
+  stopifnot(pipx_available())
 
   if (datalogistik_available()) {
-    ans <- readline("datalogistik already installed. Update? [y/n]: ")
-    if (tolower(ans) == "y") {
+    # default to yes (and also this will make it work in non-interactive sessions)
+    ans <- readline("datalogistik already installed. Update? [Y/n]: ")
+    if (tolower(ans) %in% c("y", "")) {
       return(system("pipx reinstall datalogistik", intern = TRUE))
     } else {
       return(invisible())
