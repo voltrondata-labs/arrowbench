@@ -60,7 +60,7 @@ install_datalogistik <- function() {
 }
 
 
-# Call `datalogistik generate`
+# Call `datalogistik get`
 #
 # @param A character vector of parameters with which to call datalogistik
 #
@@ -71,7 +71,7 @@ datalogistik_generate <- function(params) {
   # This might be needed for certificates to work, somehow we should do this inside of datalogistik too.
   # Sys.setenv(SSL_CERT_FILE = "~/.local/pipx/venvs/datalogistik/lib/python3.9/site-packages/certifi/cacert.pem")
 
-  command <- paste("datalogistik generate", paste(params, collapse = " "))
+  command <- paste("datalogistik get", paste(params, collapse = " "))
   metadata_json <- system(command, intern = TRUE)
   jsonlite::fromJSON(metadata_json)
 }
