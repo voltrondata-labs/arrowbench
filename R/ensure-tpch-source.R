@@ -11,7 +11,8 @@ generate_tpch <- function(scale_factor = 1) {
 
   file_metadata <- datalogistik_generate(paste0("-d='tpc-h' -f='parquet' -s=", scale_factor_str))
 
-  tpch_files <- file_metadata$tables
+  tpch_files <- lapply(file_metadata$tables, `[[`, "path")
+  names(tpch_files) <- names(file_metadata$tables)
 
   as.list(tpch_files)[order(names(tpch_files))]
 }
