@@ -38,7 +38,7 @@ ensure_format <- function(
   # shunt off to datalogistik, if we can:
   if (is.null(chunk_size) && !is.null(source_locator)) {
 
-    return(datalogistik_generate(c("-d", name, "-f", format, "-c", compression))$tables[[1]])
+    return(datalogistik_generate(c("-d", name, "-f", format, "-c", compression))$tables[[1]]$path)
   }
 
   .ensure_format(name, format, compression, chunk_size)

@@ -1,1 +1,3 @@
-install_datalogistik()
+if (!datalogistik_available()) {
+  install_datalogistik()
+}

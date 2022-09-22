@@ -115,7 +115,7 @@ known_sources <- purrr::map2(known_sources, names(known_sources), function(sourc
   force(name)
 
   if (is.null(source$locator)) {
-    source$locator <- function(...) datalogistik_locate(name)[[1]]
+    source$locator <- function(...) datalogistik_locate(name)[[1]]$path
   }
 
   return(source)
