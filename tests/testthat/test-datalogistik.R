@@ -26,6 +26,7 @@ for (format in c("parquet", "csv")) {
   for (source in sources_to_test) {
     test_that(paste0("datalogistik transition: ", source, ", ", format), {
       if (format == "parquet" && tolower(Sys.info()[["sysname"]]) == "darwin") skip_on_ci("GHA runners return an illegal opcode error")
+      if (source == "chi_traffic_2020_Q1" && format == "csv") skip("chi_traffic_2020_Q1 can't be saved as a csv")
       if (source == "type_simple_features" && format == "csv") skip("type_simple_features can't be saved as a csv")
       if (source == "type_nested" && format == "csv") skip("type_nested can't be saved as a csv")
 
