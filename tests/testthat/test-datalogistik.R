@@ -20,10 +20,9 @@ test_that("datalogistik_generate() works", {
 # We won't keep this in long term, but it's helpful for now
 sources_to_test <- names(known_sources)
 # Transition test, for source except for:
-#   * fanniemae_2016Q4 is this a delim issue?
-#   * nyctaxi_2010-01 is a file extension issue?
+#   * nyctaxi_2010-01 is a random NA issue?
 #   * tpch (cause it's different, but it actually works!)
-sources_to_test <- sources_to_test[!sources_to_test %in% c("tpch", "fanniemae_2016Q4", "nyctaxi_2010-01")]
+sources_to_test <- sources_to_test[!sources_to_test %in% c("tpch")]
 for (format in c("parquet", "csv")) {
   for (source in sources_to_test) {
     test_that(paste0("datalogistik transition: ", source, ", ", format), {
