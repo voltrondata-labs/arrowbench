@@ -25,7 +25,7 @@ sources_to_test <- sources_to_test[!sources_to_test %in% c("tpch")]
 for (format in c("parquet", "csv")) {
   for (source in sources_to_test) {
     test_that(paste0("datalogistik transition: ", source, ", ", format), {
-      if (source == "chi_traffic_2020_Q1" && format == "csv") skip("chi_traffic_2020_Q1 can't be saved as a csv")
+      if (source == "fanniemae_2016Q4" && tolower(Sys.info()[["sysname"]]) == "darwin") skip_on_ci("GHA runners return an illegal opcode error")
       if (source == "type_simple_features" && format == "csv") skip("type_simple_features can't be saved as a csv")
       if (source == "type_nested" && format == "csv") skip("type_nested can't be saved as a csv")
 
@@ -39,6 +39,7 @@ for (format in c("parquet", "csv")) {
       }
       expect_identical(dim(tab), dims)
 
+      # In CI, if we don't do this, the GitHub runner runs out of memory and is killed
       rm(tab)
       gc(full = TRUE)
       print(arrow_info())
