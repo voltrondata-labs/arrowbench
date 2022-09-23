@@ -43,7 +43,7 @@ for (format in c("parquet", "csv")) {
       # In CI, if we don't do this, the GitHub runner runs out of memory and is killed
       rm(tab)
       gc(full = TRUE)
-      print(arrow_info())
+      print(arrow::arrow_info())
     })
   }
 }
