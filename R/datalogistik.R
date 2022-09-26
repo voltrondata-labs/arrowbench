@@ -56,7 +56,13 @@ install_datalogistik <- function() {
     }
   }
 
-  system('pipx install git+https://github.com/conbench/datalogistik.git', intern = TRUE)
+  url <- "git+https://github.com/conbench/datalogistik.git"
+
+  if (!is.null(datalogistik_branch <- Sys.getenv("DATALOGISTIK_BRANCH", unset = NULL))) {
+    url <- glue(url, "@", datalogistik_branch)
+  }
+
+  system(glue("pipx install {url}"), intern = TRUE)
 }
 
 
