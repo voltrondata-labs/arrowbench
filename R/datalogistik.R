@@ -44,25 +44,23 @@ install_pipx <- function() {
 #'
 #' @export
 install_datalogistik <- function() {
+  # TODO: install pipx?
   stopifnot(pipx_available())
+
+  ref <- Sys.getenv("DATALOGISTIK_BRANCH", unset = "main")
+  url <- glue::glue("git+https://github.com/conbench/datalogistik.git@{ref}")
 
   if (datalogistik_available()) {
     # default to yes (and also this will make it work in non-interactive sessions)
     ans <- readline("datalogistik already installed. Update? [Y/n]: ")
     if (tolower(ans) %in% c("y", "")) {
-      return(system("pipx reinstall datalogistik", intern = TRUE))
+      return(system(glue::glue("pipx install --force {url}"), intern = TRUE))
     } else {
       return(invisible())
     }
   }
 
-  url <- "git+https://github.com/conbench/datalogistik.git"
-
-  if (!is.null(datalogistik_branch <- Sys.getenv("DATALOGISTIK_BRANCH", unset = NULL))) {
-    url <- glue(url, "@", datalogistik_branch)
-  }
-
-  system(glue("pipx install {url}"), intern = TRUE)
+  system(glue::glue("pipx install {url}"), intern = TRUE)
 }
 
 
