@@ -22,7 +22,7 @@ sources_to_test <- names(known_sources)
 # Transition test, for source except for:
 #   * tpch (cause it's different, but it actually works!)
 sources_to_test <- sources_to_test[!sources_to_test %in% c("tpch")]
-for (format in c("parquet", "csv")) {
+for (format in c("csv", "parquet")) {
   for (source in sources_to_test) {
     test_that(paste0("datalogistik transition: ", source, ", ", format), {
       # GHA runners return an illegal opcode error when saving to parquet
