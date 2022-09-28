@@ -35,7 +35,7 @@ for (format in c("csv", "parquet")) {
       dims <- get_source_attr(source, "dim")
 
       if (format == "csv" && source == "fanniemae_2016Q4") {
-        tab <- arrow::read_delim_arrow(source_file, delim = "|", read_options = CsvReadOptions$create(autogenerate_column_names = TRUE), as_data_frame = FALSE)
+        tab <- arrow::read_delim_arrow(source_file, delim = "|", read_options = arrow::CsvReadOptions$create(autogenerate_column_names = TRUE), as_data_frame = FALSE)
       } else if (format == "csv" ) {
         tab <- arrow::read_csv_arrow(source_file, as_data_frame = FALSE)
       } else {
