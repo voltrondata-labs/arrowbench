@@ -36,9 +36,10 @@ ensure_format <- function(
   # TODO: something else for TPC-H?
   source_locator <- known_sources[[name]]$locator
   # shunt off to datalogistik, if we can:
-  if (is.null(chunk_size) && !is.null(source_locator)) {
+  if (is.null(chunk_size) && !is.null(source_locator) && ! format %in% c("feather", "fst", "json") ) {
 
-    return(datalogistik_generate(c("-d", name, "-f", format, "-c", compression))$tables[[1]]$path)
+    dl_return <- datalogistik_get(c("-d", name, "-f", format, "-c", compression))$tables[[1]]
+    return(dl_return)
   }
 
   .ensure_format(name, format, compression, chunk_size)
@@ -94,7 +95,8 @@ ensure_format <- function(
   }
 
   if (!is.null(file_out)) {
-    return(file_out)
+    # TODO: add dims?
+    return(list(path = file_out))
   }
 
   # the file hasn't been found, so we need to create it in the temp directory
@@ -111,13 +113,13 @@ ensure_format <- function(
     if(compression == "gzip" & file_ext(file_in) %in% c("csv", "json")) {
       # compress if the file doesn't already exist
       R.utils::gzip(file_in, file_out, remove = FALSE)
-      return(file_out)
+      return(list(path = file_out))
     } else if(compression == "uncompressed" & file_ext(file_in) %in% c("csv.gz", "json.gz")) {
       # compress if the file doesn't already exist
       R.utils::gunzip(file_in, file_out, remove = FALSE)
-      return(file_out)
+      return(list(path = file_out))
     }
-    return(file_in)
+    return(list(path = file_in))
   }
 
   # validate that the format + compression is something that file writing knows about
@@ -131,7 +133,7 @@ ensure_format <- function(
   write_func <- get_write_function(format, compression, chunk_size)
   write_func(tab, file_out)
 
-  file_out
+  list(path = file_out)
 }
 
 get_chunk_size <- function(table, num_groups) {

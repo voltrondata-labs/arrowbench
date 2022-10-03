@@ -151,7 +151,7 @@ new_csv_benchmark <- Benchmark(
     skip_empty_rows <- match.arg(skip_empty_rows, c(TRUE, FALSE))
 
     # Ensure the file exists as an uncompressed csv
-    input_file <- ensure_format(source, "csv", "uncompressed")
+    input_file <- ensure_format(source, "csv", "uncompressed")$path
 
     # Extract the dim attribute from a data source for validation later
     result_dim <- get_source_attr(source, "dim")

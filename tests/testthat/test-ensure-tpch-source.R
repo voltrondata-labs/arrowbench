@@ -14,7 +14,7 @@ test_that("can generate a small dataset", {
 
 # TODO: this is probably something that we can defer to Datalogistik's tests soon
 test_that("cached data gets used", {
-  mockery::stub(ensure_tpch, 'datalogistik_generate', function(params) {
+  mockery::stub(ensure_tpch, 'datalogistik_get', function(params) {
     command <- paste("datalogistik get", paste(params, collapse = " "))
     output <- system2(command, stdout = TRUE, stderr = TRUE)
     expect_match(paste(output, collapse = TRUE), "Found cached dataset")

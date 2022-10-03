@@ -1,4 +1,4 @@
-library(dplyr)
+library(dplyr, warn.conflicts = FALSE, quietly = TRUE)
 
 test_that("can find the tables used", {
   test_query <- function(input_func) {

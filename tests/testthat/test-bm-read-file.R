@@ -15,3 +15,18 @@ test_that("read_file validation", {
     0L
   )
 })
+
+
+test_that("read_file benchmark works", {
+  expect_benchmark_run(
+    run_benchmark(
+      read_file,
+      source = "nyctaxi_sample",
+      format = c("parquet", "feather"),
+      compression = c("uncompressed", "snappy", "lz4"),
+      output = c("arrow_table", "data_frame")
+    )
+  )
+})
+
+wipe_results()

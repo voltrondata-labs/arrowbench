@@ -38,7 +38,7 @@ withr::with_envvar(
 
     # but because we started as a csv, this doesn't create a new file in the
     # temp, instead references it in-situ
-    out <- ensure_format("nyctaxi_sample", "csv")
+    out <- ensure_format("nyctaxi_sample", "csv")$path
     expect_identical(out, ensure_source("nyctaxi_sample"))
     expect_false(file.exists(file.path(temp_dir, "temp", "nyctaxi_sample.csv")))
   })
@@ -51,7 +51,7 @@ withr::with_envvar(
     expect_true(file.exists(tpch_files[["lineitem"]]))
 
     # and we can ensure format
-    lineitem <- ensure_format(tpch_files[["lineitem"]], "parquet")
+    lineitem <- ensure_format(tpch_files[["lineitem"]], "parquet")$path
     expect_equal(lineitem, file.path(temp_dir, "temp", "lineitem.uncompressed.parquet"))
     expect_true(file.exists(file.path(temp_dir, "temp", "lineitem.uncompressed.parquet")))
   })

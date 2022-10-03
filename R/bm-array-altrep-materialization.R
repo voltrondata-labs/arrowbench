@@ -25,7 +25,7 @@ array_altrep_materialization <- Benchmark(
     subset_indices <- subset_indices[[1]]
 
     options(arrow.use_altrep = altrep)
-    path <- ensure_format(source, format = "parquet", compression = "snappy")
+    path <- ensure_format(source, format = "parquet", compression = "snappy")$path
 
     # exclude non-altrep types
     pq <- arrow::ParquetFileReader$create(path)

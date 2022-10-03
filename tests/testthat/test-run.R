@@ -29,7 +29,7 @@ test_that("run_bm", {
 test_that("run_one", {
   # note: these tests will call an installed version of arrowbench as well as
   # the one being tested (e.g. when using devtools::test())
-  run_one(placebo)
+  suppress_deparse_warning(expect_s3_class(run_one(placebo), "BenchmarkResult"))
 
   wipe_results()
 })
@@ -39,7 +39,7 @@ test_that("cases can be versioned", {
     "unversioned",
     setup = function(x = c('foo', 'bar')) { force(x) }
   )
-  res_unversioned <- run_benchmark(bm_unversioned)
+  expect_benchmark_run(res_unversioned <- run_benchmark(bm_unversioned))
   lapply(res_unversioned$results, function(result) {
     # when version is not supplied, it should not appear in tags
     expect_false("case_version" %in% names(result$tags))
@@ -50,7 +50,7 @@ test_that("cases can be versioned", {
     setup = function(x = c('foo', 'bar')) cat(x),
     case_version = function(params) c("foo" = 1L, "bar" = 2L)[params$x]
   )
-  res_versioned <- run_benchmark(bm_versioned)
+  expect_benchmark_run(res_versioned <- run_benchmark(bm_versioned))
   lapply(res_versioned$results, function(result) {
     expect_true("case_version" %in% names(result$tags))
 
@@ -59,13 +59,21 @@ test_that("cases can be versioned", {
   })
 
   expect_error(
-    run_bm(bm_versioned, x = "novel value"),
+    expect_output(run_bm(bm_versioned, x = "novel value")),
     regexp = "[Cc]ase[ _]version"  # 3.* stopifnot doesn't pass names as messages
   )
 })
 
 test_that("get_params_summary returns a data.frame",{
-  bm_success <- run_benchmark(placebo, duration = 0.01, grid = TRUE, cpu_count = 1,  output_type = "message")
+  expect_benchmark_run(
+      bm_success <- run_benchmark(
+        placebo,
+        duration = 0.01,
+        grid = TRUE,
+        cpu_count = 1,
+        output_type = "message"
+      )
+  )
   success_summary <- get_params_summary(bm_success)
   expect_s3_class(success_summary, "data.frame")
 
@@ -78,7 +86,9 @@ test_that("get_params_summary returns a data.frame",{
 })
 
 test_that("get_params_summary correctly returns an error column", {
-  bm_error <- run_benchmark(placebo, cpu_count = 1, output_type = "message", error_type = "abort")
+  expect_benchmark_run(
+    bm_error <- run_benchmark(placebo, cpu_count = 1, output_type = "message", error_type = "abort")
+  )
   error_summary <- get_params_summary(bm_error)
   expect_true(error_summary$did_error)
 })
@@ -87,16 +97,22 @@ test_that("get_params_summary correctly returns an error column", {
 test_that("Argument validation", {
   # note: these tests will call an installed version of arrowbench as well as
   # the one being tested (e.g. when using devtools::test())
-  expect_message(
-    run_one(placebo, not_an_arg = 1, cpu_count = 1),
-    "Error.*unused argument.*not_an_arg"
+  suppress_deparse_warning(
+    capture.output(
+      expect_message(
+        run_one(placebo, not_an_arg = 1, cpu_count = 1),
+        "Error.*unused argument.*not_an_arg"
+      ),
+      type = "message"
+    )
   )
 
-  expect_message(
-    run_one(placebo, cpu_count = 1),
-    NA
+  suppress_deparse_warning(
+    expect_message(
+      run_one(placebo, cpu_count = 1),
+      NA
+    )
   )
-
 
   expect_true(file.exists(test_path("results/placebo/1.json")))
 })
@@ -104,16 +120,20 @@ test_that("Argument validation", {
 test_that("Path validation and redaction", {
   # note: these tests will call an installed version of arrowbench as well as
   # the one being tested (e.g. when using devtools::test())
-  expect_message(
-    run_one(placebo, cpu_count = 1, grid = "not/a/file@path"),
-    NA
+  suppress_deparse_warning(
+    expect_message(
+      run_one(placebo, cpu_count = 1, grid = "not/a/file@path"),
+      NA
+    )
   )
 
   expect_true(file.exists(test_path("results/placebo/1-not_a_file@path.json")))
 })
 
 test_that("form of the results", {
-  expect_message(res <- run_benchmark(placebo, cpu_count = 1))
+  expect_benchmark_run(
+    res <- run_benchmark(placebo, cpu_count = 1)
+  )
 
   results_df <- as.data.frame(res)
   expect_identical(
@@ -131,7 +151,11 @@ test_that("form of the results", {
 })
 
 test_that("form of the results, including output", {
-  expect_message(res <- run_benchmark(placebo, cpu_count = 1, output_type = "message"))
+  expect_message(
+    expect_benchmark_run(
+      res <- run_benchmark(placebo, cpu_count = 1, output_type = "message")
+    )
+  )
 
   results_df <- as.data.frame(res)
 
@@ -159,7 +183,11 @@ test_that("form of the results, including output", {
   )
   expect_named(res$results[[1]]$list, json_keys, ignore.order = TRUE)
 
-  expect_message(res <- run_benchmark(placebo, cpu_count = 1, output_type = "warning"))
+  expect_message(
+    expect_benchmark_run(
+      res <- run_benchmark(placebo, cpu_count = 1, output_type = "warning")
+    )
+  )
   results_df <- as.data.frame(res)
   expect_identical(
     results_df$output,
@@ -172,7 +200,11 @@ test_that("form of the results, including output", {
     )
   )
 
-  expect_message(res <- run_benchmark(placebo, cpu_count = 1, output_type = "cat"))
+  expect_message(
+    expect_benchmark_run(
+      res <- run_benchmark(placebo, cpu_count = 1, output_type = "cat")
+    )
+  )
   results_df <- as.data.frame(res)
   expect_identical(
     results_df$output,
@@ -181,7 +213,9 @@ test_that("form of the results, including output", {
 })
 
 test_that("form of the results during a dry run", {
-  res <- run_benchmark(placebo, cpu_count = 10, dry_run = TRUE)
+  expect_benchmark_run(
+    res <- run_benchmark(placebo, cpu_count = 10, dry_run = TRUE)
+  )
 
   expect_true(all(sapply(res$results[[1]], class) == "character"))
   expect_true("cat(\"\n##### RESULTS FOLLOW\n\")" %in% res$results[[1]])
@@ -189,9 +223,9 @@ test_that("form of the results during a dry run", {
 })
 
 test_that("an rscript is added to the results object", {
-  res <- run_benchmark(placebo, cpu_count = 1)
+  expect_benchmark_run(res <- run_benchmark(placebo, cpu_count = 1))
   expect_true(file.exists(test_path("results/placebo/1-0.01-TRUE.json")))
-  res <- run_benchmark(placebo, cpu_count = 10, duration = 0.1)
+  expect_benchmark_run(res <- run_benchmark(placebo, cpu_count = 10, duration = 0.1))
   res_path <- test_path("results/placebo/10-0.1-TRUE.json")
   expect_true(file.exists(res_path))
 

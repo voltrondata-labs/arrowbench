@@ -19,7 +19,7 @@ read_file <- Benchmark("read_file",
     output <- match.arg(output)
 
     # ensure that we have the right kind of file available
-    input_file <- ensure_format(source, format, compression)
+    input_file <- ensure_format(source, format, compression)$path
     # retrieve the dimnesions for run-checking after the benchmark
     result_dim <- get_source_attr(source, "dim")
 

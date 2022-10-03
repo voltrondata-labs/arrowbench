@@ -15,7 +15,7 @@ row_group_size <- Benchmark(
     # ensure that we have the right kind of file available
     input_file <- ensure_format(
       name = source, format = "parquet", compression = "snappy", chunk_size = chunk_size
-    )
+    )$path
 
     library("dplyr", warn.conflicts = FALSE)
 

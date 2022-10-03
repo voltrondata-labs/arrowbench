@@ -1,10 +1,10 @@
 pipx_available <- function() {
-  exit_code <- system("which pipx")
+  exit_code <- system("which pipx", ignore.stdout = TRUE, ignore.stderr = TRUE)
   exit_code == 0L
 }
 
 datalogistik_available <- function() {
-  exit_code <- system("which datalogistik")
+  exit_code <- system("which datalogistik", ignore.stdout = TRUE, ignore.stderr = TRUE)
 
   if (exit_code != 0L) {
     warning(
@@ -69,15 +69,16 @@ install_datalogistik <- function() {
 # @param A character vector of parameters with which to call datalogistik
 #
 # @return The returned metadata JSON parsed into a list
-datalogistik_generate <- function(params) {
+datalogistik_get <- function(params) {
   stopifnot(datalogistik_available())
 
   # This might be needed for certificates to work, somehow we should do this inside of datalogistik too.
   # Sys.setenv(SSL_CERT_FILE = "~/envs/datalogistik/lib/python3.9/site-packages/certifi/cacert.pem")
 
   command <- paste("datalogistik get", paste(params, collapse = " "))
-  metadata_json <- system(command, intern = TRUE)
+  # TODO: if this errors, then actually show the output?
+  dl_out <- metadata_json <- system(command, intern = TRUE, ignore.stderr = TRUE)
   jsonlite::fromJSON(metadata_json)
 }
 
-datalogistik_locate <- function(dataset_name) datalogistik_generate(c("-d", dataset_name, "-f", "parquet"))$tables
+datalogistik_locate <- function(dataset_name) datalogistik_get(c("-d", dataset_name, "-f", "parquet"))$tables
