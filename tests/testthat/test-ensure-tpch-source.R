@@ -6,8 +6,9 @@ expected_filenames <- as.list(setNames(
 
 test_that("can generate a small dataset", {
   tpch_files <- ensure_tpch(0.01)
+  expect_length(tpch_files, length(expected_filenames))
   expect_identical(
-    lapply(tpch_files, basename),
+    lapply(tpch_files, function(x) basename(x$path)),
     expected_filenames
   )
 })
@@ -22,16 +23,18 @@ test_that("cached data gets used", {
   })
 
   tpch_files <- ensure_tpch(0.01)
+  expect_length(tpch_files, length(expected_filenames))
   expect_identical(
-    lapply(tpch_files, basename),
+    lapply(tpch_files, function(x) basename(x$path)),
     expected_filenames
   )
 })
 
-test_that("and ensure gets the same thing", {
-  tpch_files <- ensure_source("tpch", scale_factor = 0.01)
+test_that("and ensure_source gets the same thing", {
+  tpch_files <- ensure_source("tpc-h", format = "parquet", scale_factor = 0.01)
+  expect_length(tpch_files, length(expected_filenames))
   expect_identical(
-    lapply(tpch_files, basename),
+    lapply(tpch_files, function(x) basename(x$path)),
     expected_filenames
   )
 })

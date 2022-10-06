@@ -30,7 +30,7 @@ read_json <- Benchmark(
       base = function(...) do.call(rbind.data.frame, ...)
     )
 
-    input_file <- ensure_format(source, "json", compression)$path
+    input_file <- ensure_source(source, "json", compression)$path
 
     BenchEnvironment(
       # Map string param name to function

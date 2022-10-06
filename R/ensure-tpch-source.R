@@ -4,20 +4,6 @@
 #' @export
 tpch_tables <- c("customer", "lineitem", "nation", "orders", "part", "partsupp", "region", "supplier")
 
-generate_tpch <- function(scale_factor = 1) {
-  stopifnot(datalogistik_available())
-
-  scale_factor_str <- format(scale_factor, scientific = FALSE)
-
-  file_metadata <- datalogistik_get(paste0("-d='tpc-h' -f='parquet' -s=", scale_factor_str))
-
-  tpch_files <- lapply(file_metadata$tables, `[[`, "path")
-  names(tpch_files) <- names(file_metadata$tables)
-
-  as.list(tpch_files)[order(names(tpch_files))]
-}
-
 ensure_tpch <- function(scale_factor = 1) {
-  # let datalogistik handle caching
-  generate_tpch(scale_factor)
+  ensure_source("tpc-h", format = "parquet", scale_factor = scale_factor)
 }

@@ -16,17 +16,30 @@ test_that("read_file validation", {
   )
 })
 
+for (format in c("parquet", "feather", "json", "fst")) {
+  if (format == "parquet") {
+    compression <- c("uncompressed", "snappy", "lz4")
+  } else {
+    compression <- "uncompressed"
+  }
 
-test_that("read_file benchmark works", {
-  expect_benchmark_run(
-    run_benchmark(
-      read_file,
-      source = "nyctaxi_sample",
-      format = c("parquet", "feather"),
-      compression = c("uncompressed", "snappy", "lz4"),
-      output = c("arrow_table", "data_frame")
+  test_that(paste0("read_file benchmark works for ", format), {
+    if (format %in% c("feather", "json", "fst")) {
+      skip("Formats not yet supported by datalogistik")
+    }
+
+    expect_benchmark_run(
+      run_benchmark(
+        read_file,
+        source = "nyctaxi_sample",
+        format = format,
+        compression = compression,
+        output = c("arrow_table", "data_frame"),
+        cpu_count = arrow::cpu_count()
+      )
     )
-  )
-})
+  })
+}
+
 
 wipe_results()

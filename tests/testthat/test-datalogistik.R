@@ -9,10 +9,10 @@ test_that("datalogistik_available() works", {
 type_floats_json <- "{\"path\": \"~/.datalogistik_cache/type_floats/parquet/partitioning_0/compression_brotli\", \"name\": \"type_floats\", \"format\": \"parquet\", \"partitioning-nrows\": 0, \"dim\": [1000000, 5], \"files\": [\"type_floats.parquet\"]}"
 
 test_that("datalogistik_get() works", {
-  mockery::stub(datalogistik_get, "system", function(...) type_floats_json)
+  mockery::stub(datalogistik_get, "run", function(...) list(status = 0, stdout = type_floats_json))
 
   expect_identical(
-    datalogistik_get("-d type_floats -f parquet -c brotli"),
+    datalogistik_get("type_floats", format = "parquet", compression = "brotli"),
     jsonlite::fromJSON(type_floats_json)
   )
 })
@@ -31,7 +31,7 @@ for (format in c("csv", "parquet")) {
       if (source == "type_simple_features" && format == "csv") skip("type_simple_features can't be saved as a csv")
       if (source == "type_nested" && format == "csv") skip("type_nested can't be saved as a csv")
 
-      from_datalogistik <- ensure_format(source, format)
+      from_datalogistik <- ensure_source(source, format)
       source_file <- from_datalogistik$path
       dims <- from_datalogistik$dim
 

@@ -13,7 +13,7 @@ row_group_size <- Benchmark(
                    queries = c("filters", "everything"),
                    chunk_size = NULL) {
     # ensure that we have the right kind of file available
-    input_file <- ensure_format(
+    input_file <- ensure_source(
       name = source, format = "parquet", compression = "snappy", chunk_size = chunk_size
     )$path
 

@@ -56,55 +56,45 @@ known_sources <- list(
   fanniemae_2016Q4 = list(
     url = "https://ursa-qa.s3.amazonaws.com/fanniemae_loanperf/2016Q4.csv.gz",
     schema = fanniemae_schema(),
-    reader = function(file, ...) arrow::read_delim_arrow(file, delim = "|", schema = fanniemae_schema(), ...),
     delim = "|",
     dim = c(22180168L, 31L)
   ),
   `nyctaxi_2010-01` = list(
     url = "https://ursa-qa.s3.amazonaws.com/nyctaxi/yellow_tripdata_2010-01.csv.gz",
-    reader = function(file, ...) arrow::read_csv_arrow(file, ...),
     delim = ",",
     dim = c(14863778L, 18L)
   ),
   chi_traffic_2020_Q1 = list(
     url = "https://ursa-qa.s3.amazonaws.com/chitraffic/chi_traffic_2020_Q1.parquet",
-    reader = function(file, ...) arrow::read_parquet(file, ...),
     dim = c(13038291L, 23L)
   ),
   type_strings = list(
     url = "https://ursa-qa.s3.amazonaws.com/single_types/type_strings.parquet",
-    reader = function(file, ...) arrow::read_parquet(file, ...),
     dim = c(1000000L, 5L)
   ),
   type_dict = list(
     url = "https://ursa-qa.s3.amazonaws.com/single_types/type_dict.parquet",
-    reader = function(file, ...) arrow::read_parquet(file, ...),
     dim = c(1000000L, 5L)
   ),
   type_integers = list(
     url = "https://ursa-qa.s3.amazonaws.com/single_types/type_integers.parquet",
-    reader = function(file, ...) arrow::read_parquet(file, ...),
     dim = c(1000000L, 5L)
   ),
   type_floats = list(
     url = "https://ursa-qa.s3.amazonaws.com/single_types/type_floats.parquet",
-    reader = function(file, ...) arrow::read_parquet(file, ...),
     dim = c(1000000L, 5L)
   ),
   type_nested = list(
     url = "https://ursa-qa.s3.amazonaws.com/single_types/type_nested.parquet",
-    reader = function(file, ...) arrow::read_parquet(file, ...),
     dim = c(1000000L, 4L)
   ),
   type_simple_features = list(
     url = "https://ursa-qa.s3.amazonaws.com/single_types/type_simple_features.parquet",
-    reader = function(file, ...) arrow::read_parquet(file, ...),
     dim = c(1000000L, 5L)
   ),
   tpch = list(
     generator = function(...) generate_tpch(...),
     locator = function(...) ensure_tpch(...),
-    reader = function(file, ...) arrow::read_feather(file, ...),
     dim = c(1000000L, 5L)
   )
 )
@@ -128,19 +118,16 @@ test_sources <- list(
     # this is the first 100 lines of the ungzipped PSV
     filename = "fanniemae_sample.csv",
     schema = fanniemae_schema(),
-    reader = function(file, ...) arrow::read_delim_arrow(file, delim = "|", schema = fanniemae_schema(), ...),
     delim = "|",
     dim = c(100L, 31L)
   ),
   nyctaxi_sample = list(
     filename = "nyctaxi_sample.csv",
-    reader = function(file, ...) arrow::read_delim_arrow(file, ...),
     delim = ",",
     dim = c(998L,  18L)
   ),
   chi_traffic_sample = list(
     filename = "chi_traffic_sample.parquet",
-    reader = function(file, ...) arrow::read_parquet(file, ...),
     dim = c(1000L, 23L)
   )
 )
@@ -277,7 +264,7 @@ test_datasets <- list(
   write = function() {
     library(dplyr)
 
-    ds <- ensure_dataset("taxi_2013")
+    ds <- ensure_source("taxi_2013")
     dir <- file.path("inst", "test_data", "datasets", "taxi_2013")
     unlink(dir, recursive = TRUE)
     dir.create(dir, recursive = TRUE)

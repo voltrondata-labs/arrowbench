@@ -37,7 +37,7 @@ test_that("run_one", {
 test_that("cases can be versioned", {
   bm_unversioned <- Benchmark(
     "unversioned",
-    setup = function(x = c('foo', 'bar')) { force(x) }
+    setup = function(x = c('foo', 'bar')) { cat(x) }
   )
   expect_benchmark_run(res_unversioned <- run_benchmark(bm_unversioned))
   lapply(res_unversioned$results, function(result) {
@@ -82,12 +82,12 @@ test_that("get_params_summary returns a data.frame",{
     output_type = "message", lib_path = "latest", did_error = FALSE
   )
   expect_identical(success_summary, expected_summary)
-
 })
 
 test_that("get_params_summary correctly returns an error column", {
   expect_benchmark_run(
-    bm_error <- run_benchmark(placebo, cpu_count = 1, output_type = "message", error_type = "abort")
+    bm_error <- run_benchmark(placebo, cpu_count = 1, output_type = "message", error_type = "abort"),
+    success = FALSE
   )
   error_summary <- get_params_summary(bm_error)
   expect_true(error_summary$did_error)
@@ -214,7 +214,8 @@ test_that("form of the results, including output", {
 
 test_that("form of the results during a dry run", {
   expect_benchmark_run(
-    res <- run_benchmark(placebo, cpu_count = 10, dry_run = TRUE)
+    res <- run_benchmark(placebo, cpu_count = 10, dry_run = TRUE),
+    success = FALSE
   )
 
   expect_true(all(sapply(res$results[[1]], class) == "character"))

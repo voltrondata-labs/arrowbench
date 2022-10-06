@@ -5,9 +5,10 @@ test_that("row_group_size benchmark runs", {
   expect_benchmark_run(
     run_benchmark(
       row_group_size,
-      source = "type_integers",
+      source = "fanniemae_sample",
       queries = "everything",
-      chunk_size = list(NULL)
+      chunk_size = list(NULL),
+      cpu_count = arrow::cpu_count()
     )
   )
 })

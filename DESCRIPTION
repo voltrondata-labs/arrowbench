@@ -19,6 +19,7 @@ Imports:
     distro,
     glue,
     jsonlite,
+    processx,
     progress,
     purrr,
     R6,
@@ -65,7 +66,6 @@ Collate:
     'bm-write-file.R'
     'custom-duckdb.R'
     'datalogistik.R'
-    'ensure-format.R'
     'ensure-lib.R'
     'known-sources.R'
     'ensure-source.R'

@@ -48,37 +48,51 @@ install_datalogistik <- function() {
   stopifnot(pipx_available())
 
   ref <- Sys.getenv("DATALOGISTIK_BRANCH", unset = "main")
-  url <- glue::glue("git+https://github.com/conbench/datalogistik.git@{ref}")
+  url <- glue("git+https://github.com/conbench/datalogistik.git@{ref}")
 
   if (datalogistik_available()) {
     # default to yes (and also this will make it work in non-interactive sessions)
     ans <- readline("datalogistik already installed. Update? [Y/n]: ")
     if (tolower(ans) %in% c("y", "")) {
-      return(system(glue::glue("pipx install --force {url}"), intern = TRUE))
+      return(system(glue("pipx install --force {url}"), intern = TRUE))
     } else {
       return(invisible())
     }
   }
 
-  system(glue::glue("pipx install {url}"), intern = TRUE)
+  system(glue("pipx install {url}"), intern = TRUE)
 }
 
 
-# Call `datalogistik get`
-#
-# @param A character vector of parameters with which to call datalogistik
-#
-# @return The returned metadata JSON parsed into a list
-datalogistik_get <- function(params) {
+#' Call `datalogistik get`
+#'
+#' @param dataset the dataset to get
+#' @param format the format of the dataset to be in (default: parquet)
+#' @param compression the compression of the dataset to use (default: uncompressed)
+#' @param scale_factor the scale_factor of the dataset (for datasets that use it)
+#'
+#' @return The returned metadata JSON parsed into a list
+#' @importFrom processx run
+datalogistik_get <- function(dataset, format = NULL, compression = NULL, scale_factor = NULL) {
   stopifnot(datalogistik_available())
 
   # This might be needed for certificates to work, somehow we should do this inside of datalogistik too.
   # Sys.setenv(SSL_CERT_FILE = "~/envs/datalogistik/lib/python3.9/site-packages/certifi/cacert.pem")
 
-  command <- paste("datalogistik get", paste(params, collapse = " "))
+  args <- c(
+    "get",
+    glue("--dataset={dataset}"),
+    # these will return character(0) if they are NULL
+    glue("--format={format}"),
+    glue("--compression={compression}"),
+    glue("--scale-factor={scale_factor}")
+  )
   # TODO: if this errors, then actually show the output?
-  dl_out <- metadata_json <- system(command, intern = TRUE, ignore.stderr = TRUE)
-  jsonlite::fromJSON(metadata_json)
-}
+  dl_out <- run("datalogistik", args, error_on_status = FALSE)
 
-datalogistik_locate <- function(dataset_name) datalogistik_get(c("-d", dataset_name, "-f", "parquet"))$tables
+  if (dl_out$status > 0) {
+    stop("There was an error with datalogistik", dl_out$stderr)
+  }
+
+  jsonlite::fromJSON(dl_out$stdout)
+}

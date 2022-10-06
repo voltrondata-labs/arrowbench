@@ -4,8 +4,9 @@
 remote_dataset <- Benchmark("remote_dataset",
   setup = function(source = c("taxi_file_list_parquet", "taxi_file_list_feather")) {
     library("dplyr")
-    dataset <- ensure_dataset(source, download = FALSE)
-    result_dim <- get_dataset_attr(source, "dim")
+    # TODO: need to add back in `download = FALSE` when datalogistik supports it
+    dataset <- ensure_source(source)
+    result_dim <- get_source_attr(source, "dim")
 
     BenchEnvironment(
       dataset = dataset,

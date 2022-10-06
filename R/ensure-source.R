@@ -1,110 +1,120 @@
 #' @include known-sources.R
 NULL
 
-#' Make sure a data file exists
+
+#' Known formats and compressions
 #'
-#' @param name A known-source id, a file path, or a URL
-#' @param ... arguments to pass on to a custom locator
+#' These formats and compression algorithms are known to {arrowbench}. Not all of
+#' them will work with all formats (in fact, parquet is the only one that
+#' supports all of them).
 #'
-#' @return A valid path to a source file. If a known source but not present,
-#' it will be downloaded and possibly decompressed.
+#' @name knowns
 #' @export
-#' @importFrom R.utils gunzip
-#' @importFrom withr with_options
-ensure_source <- function(name, ...) {
-  # if this is a direct file reference, return quickly.
-  if (is_url(name)) {
-    # TODO: validate that it exists?
-    return(name)
-  } else if (file.exists(name)) {
-    # TODO: wrap in some object?
-    return(name)
+known_compressions <- c("uncompressed", "snappy", "zstd", "gzip", "lz4", "brotli", "lzo", "bz2")
+
+#' @rdname knowns
+#' @export
+known_formats <- c("parquet", "csv", "feather", "fst", "json")
+
+#' Ensure that a source has a specific format
+#'
+#' @param name name of the known source
+#' @param format format to be ensured
+#' @param compression compression to be ensured
+#' @param chunk_size the number of rows to write in each chunk
+#' @param scale_factor the scale factor to use (for datasources where that is relevant)
+#'
+#' @return the file that was ensured to exist
+#' @export
+#'
+#' @importFrom utils write.csv
+ensure_source <- function(
+    name,
+    format = known_formats,
+    compression = known_compressions,
+    chunk_size = NULL,
+    scale_factor = NULL
+) {
+  compression <- match.arg(compression)
+  format <- match.arg(format)
+
+  # If there is a single table, then return that one table
+  # TODO: this might actually be a bad idea, honestly
+  tables <- datalogistik_get(name, format = format, compression = compression, scale_factor = scale_factor)$tables
+  if (length(tables) == 1) {
+    return(tables[[1]])
   }
 
-  ensure_source_dirs_exist()
+  tables
+}
 
-  known <- known_sources[[name]]
-  if (!is.null(known) && !is.null(known$locator)) {
-    # if the source has a custom locator, use that.
-    return(known$locator(...))
-  }
-
-  if (!is.null(known)) {
-    filename <- source_filename(name)
-
-    # Check for places this file might already be and return those.
-    cached_file <- data_file(filename)
-    if (!is.null(cached_file)) {
-      # if the file is in our temp storage or source storage, go for it there.
-      return(cached_file)
+#' Get a writer
+#'
+#' @param format format to write
+#' @param compression compression to use
+#' @param chunk_size the size of chunks to write (default: NULL, the default for
+#' the format)
+#'
+#' @return the write function to use
+#' @export
+get_write_function <- function(format, compression, chunk_size = NULL) {
+  force(compression)
+  if (format == "feather") {
+    return(function(...) arrow::write_feather(..., chunk_size = chunk_size %||% 65536L, compression = compression))
+  } else if (format == "parquet") {
+    return(function(...) arrow::write_parquet(..., chunk_size = chunk_size, compression = compression))
+  } else if (format == "fst") {
+    # fst is always zstd, just a question of what level of compression
+    level <- ifelse(compression == "uncompressed", 0, 50)
+    return(function(...) fst::write_fst(..., compress = level))
+  } else if (format == "csv") {
+    return(function(...) readr::write_csv(...))
+  } else if (format == "json") {
+    fun <- function(x, path, ...) {
+      if (compression == "gzip") {
+        con <- gzfile(path, open = "wb")
+      } else {
+        con <- file(path, open = "w")
+      }
+      on.exit(close(con))
+      x <- as.data.frame(x)
+      # TODO remove after data fixed; this makes stored dims not match
+      # remove null-type columns
+      x <- x[vapply(x, class, character(1L)) != 'vctrs_unspecified']
+      jsonlite::stream_out(as.data.frame(x), con = con, na = "null")
     }
-
-    # Look up, download it
-    file <- source_data_file(filename)
-    if (!file.exists(file)) {
-      # override the timeout
-      # TODO: retry with backoff instead of just overriding? or use `curl`?
-      with_options(
-        new = list(timeout = 600),
-        utils::download.file(known$url, file, mode = "wb")
-      )
-    }
-  } else if (!is.null(test_sources[[name]])) {
-    test <- test_sources[[name]]
-    file <- system.file("test_data", test$filename, package = "arrowbench")
-  } else {
-    stop(name, " is not a known source", call. = FALSE)
+    return(fun)
   }
-  file
+  stop("Unsupported format: ", format, call. = FALSE)
 }
 
-ensure_source_dirs_exist <- function() {
-  # If the source doesn't exist we need to create it
-  # Make sure data dirs exist
-  if (!dir.exists(source_data_file(""))) {
-    dir.create(source_data_file(""))
-  }
-  if (!dir.exists(temp_data_file(""))) {
-    dir.create(temp_data_file(""))
-  }
-}
-
-source_data_file <- function(...) {
-  file.path(local_data_dir(), ...)
-}
-
-temp_data_file <- function(...) {
-  source_data_file("temp", ...)
-}
-
-#' Find a data file
+#' Validate format and compression combinations
 #'
-#' This looks in the locations in the following order and returns the first
-#' path that exists:
+#' For a given format + compression, determine if the combination is valid.
+#' `validate_format()` returns a vector of `TRUE`/`FALSE` if the formats are
+#' valid.
 #'
-#'   * source dir ("data")
-#'   * as well as the temp directory ("data/temp")
+#' @param format the format of the file
+#' @param compression the compression codec
 #'
-#' If there is not a file present in either of those, it returns NULL
-#'
-#' @param ... file path to look for
-#'
-#' @return path to the file (or NULL if the file doesn't exist)
+#' @return `TRUE` invisibly
+#' @name validate_format
 #' @keywords internal
-data_file <- function(...) {
-  temp_file <- temp_data_file(...)
-  source_file <- source_data_file(...)
+validate_format <- Vectorize(function(format, compression) {
+  format <- match.arg(format, known_formats)
+  compression <- match.arg(compression, known_compressions)
 
-  if (file.exists(temp_file)) {
-    return(temp_file)
-  } else if (file.exists(source_file)) {
-    return(source_file)
-  }
-
-  return(NULL)
-}
-
-is_url <- function(x) is.character(x) && length(x) == 1 && grepl("://", x)
+  valid_combos <- list(
+    csv = c("uncompressed", "gzip"),
+    json = c("uncompressed", "gzip"),
+    parquet = c("uncompressed", "snappy", "gzip", "zstd", "lz4", "brotli", "lzo", "bz2"),
+    feather = c("uncompressed", "lz4", "zstd"),
+    # fst is always zstd, just a question of what level of compression, the
+    # write function will use level = 0 for uncompressed and 50 for zstd
+    fst = c("uncompressed", "zstd")
+  )
+  compression %in% valid_combos[[format]]
+}, vectorize.args = c("format", "compression"), USE.NAMES = FALSE)
 
 #' Read a known source
 #'
@@ -138,60 +148,3 @@ read_source <- function(file, ...) {
 #' @keywords internal
 #' @export
 get_source_attr <- function(file, attr) all_sources[[file_base(file)]][[attr]]
-
-
-#' Get dataset attributes
-#'
-#' @param dataset the file to get attributes for
-#' @param attr the attribute to get
-#'
-#' @keywords internal
-#' @export
-get_dataset_attr <- function(name, attr) known_datasets[[name]][[attr]]
-
-#' Make sure a multi-file dataset exists
-#'
-#' @param name A known-dataset id. See `known_datasets`.
-#' @param download logical: should the dataset be synced to the local disk
-#' or queried from its remote URL. Default is `TRUE`; files are cached
-#' and not downloaded if they're already found locally.
-#'
-#' @return An `arrow::Dataset`, validated to have the correct number of rows
-#' @export
-ensure_dataset <- function(name, download = TRUE) {
-  if (name %in% names(test_datasets)) {
-    return(test_datasets[[name]]$open())
-  }
-
-  if (!(name %in% names(known_datasets))) {
-    stop("Unknown dataset: ", name, call. = FALSE)
-  }
-  known <- known_datasets[[name]]
-  if (download) {
-    path <- source_data_file(name)
-    if (!(dir.exists(path) && length(dir(path, recursive = TRUE)) == known$n_files)) {
-      # Only download if some/all files are missing
-      known$download(path)
-    }
-  } else if (!is.null(known$files)) {
-    # TODO: split out the region addition to a separate if clause
-    path <- paste(known$url, known$files, "?region=", known$region, sep="")
-  } else {
-    path <- known$url
-  }
-  ds <- known$open(path)
-  # stopifnot(identical(dim(ds), known$dim))
-  ds
-}
-
-source_filename <- function(name) {
-  filename <- get_source_attr(name, "url")
-
-  # if the filename is NULL, this is a test data source
-  if (is.null(filename)) {
-    filename <- get_source_attr(name, "filename")
-  }
-
-  ext <- file_ext(basename(filename))
-  paste(c(name, ext), collapse = ".")
-}

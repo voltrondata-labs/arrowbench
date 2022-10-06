@@ -19,7 +19,7 @@ write_csv <- Benchmark(
     # source defaults are retrieved from the function definition (all available
     # known_sources) and then read the source in as a data.frame
     source <- ensure_source(source)
-    df <- read_source(source, as_data_frame = match.arg(input) == "data_frame")
+    df <- read_source(source$path, as_data_frame = match.arg(input) == "data_frame")
 
     ext <- switch(
       compression,

@@ -9,7 +9,8 @@ test_that("read_csv benchmark works", {
     run_benchmark(
       read_csv,
       source = "nyctaxi_sample",
-      compression = "uncompressed"
+      compression = "uncompressed",
+      cpu_count = arrow::cpu_count()
     )
   )
 })

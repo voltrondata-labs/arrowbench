@@ -18,7 +18,7 @@ read_csv <- Benchmark(
     compression <- match.arg(compression)
     output_format <- match.arg(output_format)
     # ensure the the file exists
-    input_file <- ensure_format(source, "csv", compression)$path
+    input_file <- ensure_source(source, "csv", compression)$path
 
     # Map string param name to function
     delim <- get_source_attr(source, "delim") %||% ","

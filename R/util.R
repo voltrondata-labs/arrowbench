@@ -1,3 +1,6 @@
+#' @importFrom glue glue
+NULL
+
 #' @importFrom purrr map_int
 #' @importFrom stats setNames
 get_default_args <- function(FUN) {

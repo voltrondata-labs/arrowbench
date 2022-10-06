@@ -214,7 +214,7 @@ get_input_func <- function(engine,
 
     tpch_files <- vapply(
       tpch_files[tpch_tables_needed],
-      function(x) ensure_format(x)$path,
+      function(x) ensure_source(x)$path,
       FUN.VALUE = character(1),
       format = format_to_convert,
       compression = compression,
