@@ -19,9 +19,10 @@ read_file <- Benchmark("file-read",
     output_type <- match.arg(output_type)
 
     # ensure that we have the right kind of file available
-    input_file <- ensure_format(source, file_type, compression)
-    # retrieve the dimensions for run-checking after the benchmark
-    result_dim <- get_source_attr(source, "dim")
+    file_up <- ensure_source(source, file_type, compression)
+    input_file <- file_up$path
+    # retrieve the dimnesions for run-checking after the benchmark
+    result_dim <- file_up$dim
 
     # put the necessary variables into a BenchmarkEnvironment to be used when the
     # benchmark is running.
@@ -58,8 +59,10 @@ read_file <- Benchmark("file-read",
   packages_used = function(params) {
     pkg_map <- c(
       "feather" = "arrow",
+      "arrow" = "arrow",
       "parquet" = "arrow",
-      "fst" = "fst"
+      "fst" = "fst",
+      "ndjson" = "arrow"
     )
     pkg_map[params$file_type]
   }
@@ -74,15 +77,19 @@ read_file <- Benchmark("file-read",
 get_read_function <- function(file_type) {
   pkg_map <- c(
     "feather" = "arrow",
+    "arrow" = "arrow",
     "parquet" = "arrow",
-    "fst" = "fst"
+    "fst" = "fst",
+    "ndjson" = "arrow"
   )
   library(pkg_map[[file_type]], character.only = TRUE, warn.conflicts = FALSE)
 
-  if (file_type == "feather") {
+  if (file_type %in% c("feather", "arrow")) {
     return(function(...) arrow::read_feather(...))
   } else if (file_type == "parquet") {
     return(function(...) arrow::read_parquet(...))
+  } else if (file_type == "ndjson") {
+    return(function(..., as_data_frame) arrow::read_json_arrow(...))
   } else if (file_type == "fst") {
     return(function(..., as_data_frame) fst::read_fst(...))
   } else {

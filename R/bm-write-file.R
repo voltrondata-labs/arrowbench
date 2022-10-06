@@ -15,8 +15,8 @@ write_file <- Benchmark("file-write",
     # source defaults are retrieved from the function definition (all available
     # known_sources) and then read the source in as a data.frame
     source <- ensure_source(source)
-    df <- read_source(source, as_data_frame = match.arg(input_type) == "data_frame")
-    # file_type defaults to parquet or feather, but can accept fst as well
+    df <- read_source(source$path, as_data_frame = match.arg(input_type) == "data_frame")
+    # format defaults to parquet or feather, but can accept fst as well
     file_type <- match.arg(file_type, c("parquet", "feather", "fst"))
 
     # Map string param name to functions
@@ -70,8 +70,10 @@ write_file <- Benchmark("file-write",
   packages_used = function(params) {
     pkg_map <- c(
       "feather" = "arrow",
+      "arrow" = "arrow",
       "parquet" = "arrow",
-      "fst" = "fst"
+      "fst" = "fst",
+      "ndjson" = "arrow"
     )
     pkg_map[params$file_type]
   }

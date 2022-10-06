@@ -3,21 +3,13 @@
 
 setup_all <- function() {
   setup_sources()
-  setup_datasets()
   setup_packages()
 }
 
 setup_sources <- function() {
-  for (x in names(known_sources)) {
+  for (x in known_sources) {
     message("Downloading source ", x)
     ensure_source(x)
-  }
-}
-
-setup_datasets <- function() {
-  for (x in names(known_datasets)) {
-    message("Downloading dataset ", x)
-    ensure_dataset(x)
   }
 }
 

@@ -8,7 +8,7 @@ tpch_answer(
   scale_factor,
   query_id,
   source = c("arrowbench", "duckdb"),
-  data_source = c("duckdb", "dbgen")
+  datasource = c("datalogistik", "duckdb")
 )
 }
 \arguments{
@@ -19,9 +19,9 @@ tpch_answer(
 \item{source}{source of the answer (default: "arrowbench"), "duckdb" can
 return answers for scale_factor 1.}
 
-\item{data_source}{which source of data should we construct ansers for? "duckdb"
-(the default) has a slightly different set of data in the *_address columns
-compared to "dbgen"}
+\item{datasource}{whcih data source should the answers be from (defualt:
+"datalogistik")? Some data sources have slightly different data in some
+columns (possible other value: "duckdb")}
 }
 \value{
 the answer, as a data.frame

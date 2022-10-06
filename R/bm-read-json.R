@@ -11,7 +11,7 @@
 #' @importFrom R.utils gzip
 read_json <- Benchmark(
   "read_json",
-  setup = function(source = names(known_sources),
+  setup = function(source = known_sources,
                    reader = c("arrow", "jsonlite", "ndjson", "RcppSimdJson"),
                    compression = c("uncompressed", "gzip"),
                    output_format = c("arrow_table", "data_frame"),
@@ -30,13 +30,13 @@ read_json <- Benchmark(
       base = function(...) do.call(rbind.data.frame, ...)
     )
 
-    input_file <- ensure_format(source, "json", compression)
+    source <- ensure_source(source, "ndjson", compression)
 
     BenchEnvironment(
       # Map string param name to function
       read_func = get_json_reader(reader),
-      input_file = input_file,
-      result_dim = get_source_attr(source, "dim"),
+      input_file = source$path,
+      result_dim = source$dim,
       as_data_frame = output_format == "data_frame",
       rbinder = rbinder,
       rbind_func = rbind_func

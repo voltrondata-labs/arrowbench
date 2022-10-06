@@ -15,6 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      DATALOGISTIK_NO_PERMISSIONS_CHANGE: True
+      DATALOGISTIK_BRANCH: "main"
+
     steps:
       - uses: actions/checkout@v3
 

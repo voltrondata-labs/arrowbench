@@ -23,10 +23,10 @@ array_to_vector <- Benchmark("array_to_vector",
       is.logical(exclude_nulls),
       is.logical(alt_rep)
     )
-    source <- match.arg(source, names(all_sources))
-    source <- ensure_source(source)
-    result_dim <- get_source_attr(source, "dim")
-    table <- read_source(source, as_data_frame = FALSE)
+    source <- ensure_source(source, format = "parquet")
+    result_dim <- source$dim
+
+    table <- read_source(source$path, as_data_frame = FALSE)
 
     if (exclude_nulls) {
       cols_without_nulls <- unlist(lapply(colnames(table), function(x) table[[x]]$null_count == 0))

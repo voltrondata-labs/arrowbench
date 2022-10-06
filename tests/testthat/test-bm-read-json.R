@@ -4,6 +4,7 @@ test_that("read_json setup", {
 })
 
 test_that("read_json benchmark works", {
+  skip("datalogistik does not yet support json")
   expect_benchmark_run(
     run_benchmark(
       read_json,
