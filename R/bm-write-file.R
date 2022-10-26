@@ -8,7 +8,7 @@
 #'
 #' @export
 write_file <- Benchmark("write_file",
-  setup = function(source = names(known_sources),
+  setup = function(source = c("fanniemae_2016Q4", "nyctaxi_2010-01"),
                    format = c("parquet", "feather"),
                    compression = c("uncompressed", "snappy", "lz4"),
                    input = c("arrow_table", "data_frame")) {

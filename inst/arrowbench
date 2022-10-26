@@ -1,0 +1,61 @@
+#!/usr/bin/env Rscript
+library(arrowbench)
+
+
+args <- commandArgs(trailingOnly = TRUE)
+
+benchmark_list <- list(
+  read_file,
+  write_file
+)
+names(benchmark_list) <- vapply(benchmark_list, function(x) x$name, character(1))
+
+benchmark_command_json <- benchmark_list |>
+  purrr::imap(~cbind(data.frame(bm = .y), arrowbench:::default_params(.x))) |>
+  lapply(function(x) split(x, seq(nrow(x)))) |>
+  lapply(unname) |>
+  purrr::flatten() |>
+  lapply(as.list) |>
+  jsonlite::toJSON(auto_unbox = TRUE)
+
+
+switch (args[[1]],
+  "help" = if (length(args) == 1) {
+    cat(
+      "List and run arrowbench benchmarks",
+      "",
+      "Commands:",
+      "    help [run|list]",
+      "    list",
+      "    run BENCHMARK [OPTIONS]",
+      sep = "\n"
+    )
+  } else if (length(args) >= 2 && args[[2]] == "list") {
+    cat(
+      "List available benchmarks in a JSON list.",
+      "",
+      "Usage:",
+      "    arrowbench list",
+      sep = "\n"
+    )
+  } else if (length(args) >= 2 && args[[2]] == "run") {
+    cat(
+      "Run a benchmark.",
+      "",
+      "Usage:",
+      "    arrowbench run BENCHMARK [OPTIONS]",
+      "",
+      "Example:",
+      "    arrowbench run read_file n_iter=2",
+      sep = "\n"
+    )
+  } else {
+    cat("Help topic not found", sep = "\n")
+  },
+  "list" = cat(benchmark_command_json),
+  "run" = {
+    arg_list <- jsonlite::fromJSON(args[[2]])
+    arg_list$bm <- parse(text = arg_list$bm)[[1]]
+    cat(suppressWarnings(do.call(run_one, arg_list)$to_publishable_json()))
+  }
+)

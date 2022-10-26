@@ -8,7 +8,7 @@
 #'
 #' @export
 read_file <- Benchmark("read_file",
-  setup = function(source = names(known_sources),
+  setup = function(source = c("fanniemae_2016Q4", "nyctaxi_2010-01"),
                    # TODO: break out feather_v1 and feather_v2, feather_v2 only in >= 0.17
                    format = c("parquet", "feather"),
                    compression = c("uncompressed", "snappy", "lz4"),

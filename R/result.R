@@ -119,12 +119,20 @@ Serializable <- R6Point1Class(
 
   private = list(
     to_serialize = list(),
+    not_to_serialize = list(),
 
     get_or_set_serializable = function(variable, value) {
       if (!missing(value)) {
         private$to_serialize[[variable]] <- value
       }
       private$to_serialize[[variable]]
+    },
+
+    get_or_set_not_to_serialize = function(variable, value) {
+      if (!missing(value)) {
+        private$not_to_serialize[[variable]] <- value
+      }
+      private$not_to_serialize[[variable]]
     }
   ),
 
@@ -164,15 +172,16 @@ BenchmarkResult <- R6Point1Class(
 
   public = list(
     initialize = function(name,
-                          result,
-                          params,
+                          result = NULL,
+                          params = NULL,
                           tags = NULL,
                           info = NULL,
                           context = NULL,
                           github = NULL,
                           options = NULL,
                           output = NULL,
-                          rscript = NULL) {
+                          rscript = NULL,
+                          error = NULL) {
       self$name <- name
       self$result <- result
       self$params <- params
@@ -183,6 +192,7 @@ BenchmarkResult <- R6Point1Class(
       self$options <- options
       self$output <- output
       self$rscript <- rscript
+      self$error <- error
     },
 
     to_dataframe = function(row.names = NULL, optional = FALSE, packages = "arrow", ...) {
@@ -213,20 +223,41 @@ BenchmarkResult <- R6Point1Class(
       }
 
       out
+    },
+
+    to_publishable_json = function() {
+      res_list <- self$list
+
+      if (!is.null(res_list$result)) {
+        res_list[["stats"]] <- list(
+          data = list(res_list$result$real),
+          units = "s",
+          iterations = length(res_list$result$real),
+          times = list(),
+          times_unit = "s"
+        )
+        res_list$result <- NULL
+      }
+
+      res_list$tags$name <- res_list$name
+      res_list$name <- NULL
+
+      jsonlite::toJSON(res_list, auto_unbox = TRUE)
     }
   ),
 
   active = list(
     name = function(name) private$get_or_set_serializable(variable = "name", value = name),
     result = function(result) private$get_or_set_serializable(variable = "result", value = result),
-    params = function(params) private$get_or_set_serializable(variable = "params", value = params),
+    params = function(params) private$get_or_set_not_to_serialize(variable = "params", value = params),
     tags = function(tags) private$get_or_set_serializable(variable = "tags", value = tags),
     info = function(info) private$get_or_set_serializable(variable = "info", value = info),
     context = function(context) private$get_or_set_serializable(variable = "context", value = context),
     github = function(github) private$get_or_set_serializable(variable = "github", value = github),
-    options = function(options) private$get_or_set_serializable(variable = "options", value = options),
-    output = function(output) private$get_or_set_serializable(variable = "output", value = output),
-    rscript = function(rscript) private$get_or_set_serializable(variable = "rscript", value = rscript),
+    options = function(options) private$get_or_set_not_to_serialize(variable = "options", value = options),
+    output = function(output) private$get_or_set_not_to_serialize(variable = "output", value = output),
+    rscript = function(rscript) private$get_or_set_not_to_serialize(variable = "rscript", value = rscript),
+    error = function(error) private$get_or_set_serializable(variable = "error", value = error),
 
     params_summary = function() {
       d <- self$params
@@ -280,7 +311,7 @@ BenchmarkFailure <- R6Point1Class(
 # A class for holding a set of benchmark results
 #
 # This class is primarily a list of `BenchmarkResult` instances, one for each
-# combination of arguments for the benchmark's parameters. The list is acessible
+# combination of arguments for the benchmark's parameters. The list is accessible
 # via the `$results` active binding.
 #
 # An instance can be passed to `as.data.frame()` and `get_params_summary()`, the
@@ -299,7 +330,7 @@ BenchmarkResults <- R6Point1Class(
     },
     to_dataframe = function(row.names = NULL, optional = FALSE, ...) {
       x <- self$results
-      valid <- purrr::map_lgl(x, ~inherits(.x, "BenchmarkResult"))  # failures will be BenchmarkFailure
+      valid <- purrr::map_lgl(x, ~!is.null(.x$result))
 
       dplyr::bind_rows(lapply(x[valid], function(res) res$to_dataframe(...)))
     }
