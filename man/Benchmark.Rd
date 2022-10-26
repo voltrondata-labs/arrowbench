@@ -63,14 +63,16 @@ Define a Benchmark
 }
 \section{Evaluation}{
 
-A \code{Benchmark} is evaluated something like:\preformatted{env <- bm$setup(param1 = "value", param2 = "value")
+A \code{Benchmark} is evaluated something like:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{env <- bm$setup(param1 = "value", param2 = "value")
 for (i in seq_len(n_iter)) \{
   eval(bm$before_each, envir = env)
   measure(eval(bm$run, envir = env))
   eval(bm$after_each, envir = env)
 \}
 eval(bm$teardown, envir = env)
-}
+}\if{html}{\out{</div>}}
 
 Benchmarks should run a single combination of parameters. Running across
 a range of parameter combinations is handled by the runner, not the functions

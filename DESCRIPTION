@@ -43,7 +43,7 @@ Suggests:
     RcppSimdJson,
     readr,
     vroom
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 Roxygen: list(markdown = TRUE, load = "source")
 Collate: 
     'benchmark.R'
