@@ -97,6 +97,9 @@ Serializable <- R6Point1Class(
 
   active = list(
     list = function() {
+      modifyList(self$list_serializable, private$not_to_serialize)
+    },
+    list_serializable = function() {
       lapply(private$to_serialize, function(element) {
         # recurse
         if (inherits(element, "Serializable")) {
@@ -226,7 +229,7 @@ BenchmarkResult <- R6Point1Class(
     },
 
     to_publishable_json = function() {
-      res_list <- self$list
+      res_list <- self$list_serializable
 
       if (!is.null(res_list$result)) {
         res_list[["stats"]] <- list(

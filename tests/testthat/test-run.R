@@ -194,9 +194,7 @@ test_that("an rscript is added to the results object", {
   res <- run_benchmark(placebo, cpu_count = 10, duration = 0.1)
   res_path <- test_path("results/placebo/10-0.1-TRUE.json")
   expect_true(file.exists(res_path))
-
-  res <- read_json(res_path)
-  expect_true("rscript" %in% names(res))
+  expect_true(!is.null(res$results[[1]]$rscript))
 })
 
 wipe_results()
