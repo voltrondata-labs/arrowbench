@@ -20,7 +20,21 @@ write_file <- Benchmark("file-write",
     file_type <- match.arg(file_type, c("parquet", "feather", "fst"))
 
     # Map string param name to functions
-    write_func <- get_write_function(file_type, compression)
+    get_write_func <- function(file_type, compression) {
+      force(compression)
+      if (file_type == "feather") {
+        return(function(...) arrow::write_feather(..., compression = compression))
+      } else if (file_type == "parquet") {
+        return(function(...) arrow::write_parquet(..., compression = compression))
+      } else if (file_type == "fst") {
+        # fst is always zstd, just a question of what level of compression
+        level <- ifelse(compression == "uncompressed", 0, 50)
+        return(function(...) fst::write_fst(..., compress = level))
+      } else {
+        stop("Unsupported file_type: ", file_type, call. = FALSE)
+      }
+    }
+    write_func <- get_write_func(file_type, compression)
 
     # put the necessary variables into a BenchmarkEnvironment to be used when
     # the benchmark is running.
@@ -62,25 +76,3 @@ write_file <- Benchmark("file-write",
     pkg_map[params$file_type]
   }
 )
-
-#' Get a writer
-#'
-#' @param file_type file_type to write
-#' @param compression compression to use
-#'
-#' @return the write function to use
-#' @export
-get_write_function <- function(file_type, compression) {
-  force(compression)
-  if (file_type == "feather") {
-    return(function(...) arrow::write_feather(..., compression = compression))
-  } else if (file_type == "parquet") {
-    return(function(...) arrow::write_parquet(..., compression = compression))
-  } else if (file_type == "fst") {
-    # fst is always zstd, just a question of what level of compression
-    level <- ifelse(compression == "uncompressed", 0, 50)
-    return(function(...) fst::write_fst(..., compress = level))
-  } else {
-    stop("Unsupported file_type: ", file_type, call. = FALSE)
-  }
-}
