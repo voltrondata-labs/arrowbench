@@ -11,7 +11,7 @@ test_that("read_file validation", {
 
   # specifically feather+snappy is not a possibility
   expect_identical(
-    nrow(params[params$format == "feather" & params$compression == "snappy", ]),
+    nrow(params[params$file_type == "feather" & params$compression == "snappy", ]),
     0L
   )
 })

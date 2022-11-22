@@ -16,8 +16,7 @@
 #' run any that it cannot find.
 #'
 #' @return A `BenchmarkResults` object, containing `results` attribute of a list
-#' of length `nrow(params)` each of those either a `BenchmarkResult` or
-#' `BenchmarkFalure` object.
+#' of length `nrow(params)`, each of those a `BenchmarkResult` object.
 #' For a simpler view of results, call `as.data.frame()` on it.
 #' @export
 #' @importFrom purrr pmap map_lgl
@@ -33,6 +32,13 @@ run_benchmark <- function(bm,
   stopifnot(is.data.frame(params))
   message("Running ", nrow(params), " benchmarks with ", n_iter, " iterations:")
   print(params)
+
+  batch_id <- bm$batch_id_fun(params)
+  stopifnot(
+    "`batch_id_fun` must return a vector of length 1 or `nrow(params)`" =
+      length(batch_id) %in% c(1L, nrow(params))
+  )
+  params$batch_id <- batch_id
 
   progress_bar <- progress_bar$new(
     format = "  [:bar] :percent in :elapsed eta: :eta",
@@ -77,16 +83,18 @@ run_benchmark <- function(bm,
 #' Run a Benchmark with a single set of parameters
 #'
 #' @inheritParams run_benchmark
+#' @param batch_id a length 1 character vector to identify the batch
 #' @param progress_bar a `progress` object to update progress to (default `NULL`)
 #' @param test_packages a character vector of packages that the benchmarks test (default `NULL`)
 #' @param ... parameters passed to `bm$setup()`.
 #'
 #' @return An instance of `BenchmarkResult`: an R6 object containing either
-#' "result" or "error".
+#' "stats" or "error".
 #' @export
 run_one <- function(bm,
                     ...,
                     n_iter = 1,
+                    batch_id = NULL,
                     dry_run = FALSE,
                     profiling = FALSE,
                     progress_bar = NULL,
@@ -115,7 +123,8 @@ run_one <- function(bm,
   # add in other arguments as parameters
   args <- modifyList(
     params,
-    list(bm = bm, n_iter = n_iter, profiling = profiling, global_params = global_params)
+    list(bm = bm, n_iter = n_iter, batch_id = batch_id, profiling = profiling,
+         global_params = global_params)
   )
 
   # transform the arguments into a string representation that can be called in
@@ -154,7 +163,12 @@ run_one <- function(bm,
     ),
     keep.null = TRUE
   )
-  do.call(run_script, run_script_args)
+  result <- do.call(run_script, run_script_args)
+  # If JSON reading fails because `run_bm()` errored, `batch_id` will not be populated
+  if (is.null(result$batch_id)) {
+    result$batch_id <- batch_id
+  }
+  result
 }
 
 #' Execute a benchmark run
@@ -167,7 +181,7 @@ run_one <- function(bm,
 #' @export
 #' @importFrom utils modifyList
 #' @importFrom sessioninfo package_info
-run_bm <- function(bm, ..., n_iter = 1, profiling = FALSE, global_params = list()) {
+run_bm <- function(bm, ..., n_iter = 1, batch_id = NULL, profiling = FALSE, global_params = list()) {
   # We *don't* want to use altrep when we are setting up, or we get surprising results
   withr::with_options(
     list(arrow.use_altrep = FALSE),
@@ -182,6 +196,8 @@ run_bm <- function(bm, ..., n_iter = 1, profiling = FALSE, global_params = list(
   for (i in seq_len(n_iter)) {
     results[[i]] <- run_iteration(bm, ctx, profiling = profiling)
   }
+
+  result_df <- do.call(rbind, results)
 
   defaults <- lapply(get_default_args(bm$setup), head, 1)
   defaults$cpu_count <- parallel::detectCores()
@@ -200,20 +216,39 @@ run_bm <- function(bm, ..., n_iter = 1, profiling = FALSE, global_params = list(
 
   metadata <- assemble_metadata(
     name = bm$name,
-    params = params,
+    params = bm$tags_fun(params),
     cpu_count = global_params$cpu_count,
     n_iter = n_iter
   )
 
   out <- BenchmarkResult$new(
-    name = bm$name,
-    result = do.call(rbind, results),
-    params = all_params,
+    run_name = NULL,
+    run_id = NULL,
+    batch_id = batch_id,
+    run_reason = NULL,
+    # timestamp = utc_now_iso_format(),  # let default populate
+    stats = list(
+      data = as.list(result_df$real),
+      unit = "s",
+      times = list(),
+      time_unit = "s",
+      iterations = n_iter
+    ),
+    error = NULL,
+    validation = NULL,
     tags = metadata$tags,
     info = metadata$info,
+    optional_benchmark_info = list(
+      result = result_df,
+      params = all_params,
+      options = metadata$options,
+      output = NULL,
+      rscript = NULL
+    ),
+    machine_info = NULL,
+    cluster_info = NULL,
     context = metadata$context,
-    github = metadata$github,
-    options = metadata$options
+    github = metadata$github
   )
 
   out
@@ -274,6 +309,7 @@ global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL, te
 #' @keywords internal
 assemble_metadata <- function(name, params, cpu_count, n_iter) {
   tags <- params
+  tags[["name"]] <- name
   tags[["dataset"]] <- params$source
   tags[["source"]] <- NULL
   tags[["cpu_count"]] <- cpu_count
@@ -284,7 +320,7 @@ assemble_metadata <- function(name, params, cpu_count, n_iter) {
     arrow_version = arrow_info$build_info$cpp_version,
     arrow_compiler_id = arrow_info$build_info$cpp_compiler,
     arrow_compiler_version = arrow_info$build_info$cpp_compiler_version,
-    benchmark_language_version = version[['version.string']],
+    benchmark_language_version = R.version.string,
     arrow_version_r = as.character(arrow_info$version)
   )
 
@@ -293,9 +329,11 @@ assemble_metadata <- function(name, params, cpu_count, n_iter) {
     benchmark_language = "R"
   )
 
+  pr_number_env <- Sys.getenv("BENCHMARKABLE_PR_NUMBER")
   github <- list(
     repository = "https://github.com/apache/arrow",
-    commit = arrow_info$build_info$git_id
+    commit = arrow_info$build_info$git_id,
+    pr_number = if (pr_number_env == "") NULL else as.integer(pr_number_env)
   )
 
   options <- list(
@@ -326,6 +364,7 @@ run_script <- function(lines, cmd = find_r(), ..., progress_bar, read_only = FAL
   file <- file.path(result_dir, paste0(bm_run_cache_key(...), ".json"))
   if (file.exists(file)) {
     msg <- paste0("Loading cached results: ", file)
+    message(msg)
     if (!is.null(progress_bar)) {
       progress_bar$message(msg, set_width = FALSE)
       progress_bar$tick()
@@ -380,16 +419,19 @@ run_script <- function(lines, cmd = find_r(), ..., progress_bar, read_only = FAL
       dir.create(dirname(file))
     }
     result <- BenchmarkResult$from_json(result_json)
-    result$output <- result_output
+    if (is.null(result$optional_benchmark_info)) {
+      result$optional_benchmark_info <- list()
+    }
+    result$optional_benchmark_info$output <- result_output
     ## add actual script
-    result$rscript <- lines
+    result$optional_benchmark_info$rscript <- lines
     result$write_json(file)
   } else {
     # This means the script errored.
     message(paste(result, collapse = "\n"))
-    result <- BenchmarkFailure$new(
-      error = result,
-      params = list(...)
+    result <- BenchmarkResult$new(
+      error = list(log = result),
+      optional_benchmark_info = list(params = list(...))
     )
   }
 

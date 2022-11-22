@@ -5,7 +5,7 @@
 \alias{remote_dataset}
 \title{Remote (S3) dataset reading}
 \format{
-An object of class \code{Benchmark} of length 9.
+An object of class \code{Benchmark} of length 11.
 }
 \usage{
 remote_dataset

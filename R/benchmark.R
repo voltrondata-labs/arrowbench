@@ -86,6 +86,12 @@
 #' single case and returning an integer version for the case, or `NULL` to not
 #' append a version; `NA` will raise an error. Changes to version will break
 #' conbench history for a case.
+#' @param batch_id_fun A unary function which takes a dataframe of parameters and
+#' returns a character vector to use as `batch_id` of length 1 or `nrow(params)`
+#' @param tags_fun A unary function which takes a named list of setup parameters
+#' for a single case and returns a named list of tags to send to Conbench for that
+#' case. Can be overwritten to add static tags or postprocess parameters into more
+#' readable forms.
 #' @param packages_used function taking a `data.frame` of setup parameters and
 #' returning a vector of R package names required
 #' @param ... additional attributes or functions, possibly called in `setup()`.
@@ -100,6 +106,8 @@ Benchmark <- function(name,
                       teardown = TRUE,
                       valid_params = function(params) params,
                       case_version = function(params) NULL,
+                      batch_id_fun = function(params) uuid(),
+                      tags_fun = function(params) params,
                       packages_used = function(params) "arrow",
                       ...) {
   stopifnot(is.character(name))
@@ -113,6 +121,8 @@ Benchmark <- function(name,
       teardown = substitute(teardown),
       valid_params = valid_params,
       case_version = case_version,
+      batch_id_fun = batch_id_fun,
+      tags_fun = tags_fun,
       packages_used = packages_used,
       ...),
     class = "Benchmark"
@@ -164,12 +174,12 @@ default_params <- function(bm, ...) {
 #' error status
 #'
 #' @param run An instance of `BenchmarkResults` as returned by `run_benchmark`
-#' or `BenchmarkResult` or `BenchmarkFailure` as returned by `run_one` and `run_bm`
+#' or `BenchmarkResult` as returned by `run_one` and `run_bm`
 #' @return a tibble
 #' @export
 get_params_summary <- function(run) {
-  if (!inherits(run, c("BenchmarkResults", "BenchmarkResult", "BenchmarkFailure"))) {
-    stop("run objects need to be of class BenchmarkResults, BenchmarkResult, or BenchmarkFailure")
+  if (!inherits(run, c("BenchmarkResults", "BenchmarkResult"))) {
+    stop("run objects need to be of class BenchmarkResults or BenchmarkResult")
   }
   run$params_summary
 }

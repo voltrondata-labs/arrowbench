@@ -5,7 +5,7 @@
 \alias{read_file}
 \title{Benchmark file reading}
 \format{
-An object of class \code{Benchmark} of length 9.
+An object of class \code{Benchmark} of length 11.
 }
 \usage{
 read_file
@@ -17,9 +17,9 @@ Benchmark file reading
 
 \itemize{
 \item \code{source} A known-file id, or a CSV(?) file path to read in
-\item \code{format} One of \code{c("parquet", "feather", "fst")}
+\item \code{file_type} One of \code{c("parquet", "feather", "fst")}
 \item \code{compression} One of the values: uncompressed, snappy, zstd, gzip, lz4, brotli, lzo, bz2
-\item \code{output} One of \code{c("arrow_table", "data_frame")}
+\item \code{output_type} One of \code{c("arrow_table", "data_frame")}
 }
 }
 

@@ -1,7 +1,7 @@
 Package: arrowbench
 Type: Package
 Title: Tools for Continuous and Interactive Benchmarking
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: c(
     person("Neal", "Richardson", email = "neal.p.richardson@gmail.com", role = "aut"),
     person("Jonathan", "Keane", email = "jkeane@gmail.com", role = c("aut", "cre"))
@@ -43,7 +43,7 @@ Suggests:
     RcppSimdJson,
     readr,
     vroom
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 Roxygen: list(markdown = TRUE, load = "source")
 Collate: 
     'benchmark.R'

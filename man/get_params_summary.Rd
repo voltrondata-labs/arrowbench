@@ -8,7 +8,7 @@ get_params_summary(run)
 }
 \arguments{
 \item{run}{An instance of \code{BenchmarkResults} as returned by \code{run_benchmark}
-or \code{BenchmarkResult} or \code{BenchmarkFailure} as returned by \code{run_one} and \code{run_bm}}
+or \code{BenchmarkResult} as returned by \code{run_one} and \code{run_bm}}
 }
 \value{
 a tibble

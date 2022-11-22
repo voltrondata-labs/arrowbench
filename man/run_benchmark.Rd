@@ -38,8 +38,7 @@ run any that it cannot find.}
 }
 \value{
 A \code{BenchmarkResults} object, containing \code{results} attribute of a list
-of length \code{nrow(params)} each of those either a \code{BenchmarkResult} or
-\code{BenchmarkFalure} object.
+of length \code{nrow(params)}, each of those a \code{BenchmarkResult} object.
 For a simpler view of results, call \code{as.data.frame()} on it.
 }
 \description{

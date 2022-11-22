@@ -5,9 +5,9 @@ test_that("write_file benchmark works", {
     run_benchmark(
       write_file,
       source = "nyctaxi_sample",
-      format = c("parquet", "feather"),
+      file_type = c("parquet", "feather"),
       compression = c("uncompressed", "snappy", "lz4"),
-      input = c("arrow_table", "data_frame")
+      type = c("arrow_table", "data_frame")
     ),
     "BenchmarkResults"
   )

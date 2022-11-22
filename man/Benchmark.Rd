@@ -13,6 +13,8 @@ Benchmark(
   teardown = TRUE,
   valid_params = function(params) params,
   case_version = function(params) NULL,
+  batch_id_fun = function(params) uuid(),
+  tags_fun = function(params) params,
   packages_used = function(params) "arrow",
   ...
 )
@@ -50,6 +52,14 @@ single case and returning an integer version for the case, or \code{NULL} to not
 append a version; \code{NA} will raise an error. Changes to version will break
 conbench history for a case.}
 
+\item{batch_id_fun}{A unary function which takes a dataframe of parameters and
+returns a character vector to use as \code{batch_id} of length 1 or \code{nrow(params)}}
+
+\item{tags_fun}{A unary function which takes a named list of setup parameters
+for a single case and returns a named list of tags to send to Conbench for that
+case. Can be overwritten to add static tags or postprocess parameters into more
+readable forms.}
+
 \item{packages_used}{function taking a \code{data.frame} of setup parameters and
 returning a vector of R package names required}
 
@@ -63,14 +73,16 @@ Define a Benchmark
 }
 \section{Evaluation}{
 
-A \code{Benchmark} is evaluated something like:\preformatted{env <- bm$setup(param1 = "value", param2 = "value")
+A \code{Benchmark} is evaluated something like:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{env <- bm$setup(param1 = "value", param2 = "value")
 for (i in seq_len(n_iter)) \{
   eval(bm$before_each, envir = env)
   measure(eval(bm$run, envir = env))
   eval(bm$after_each, envir = env)
 \}
 eval(bm$teardown, envir = env)
-}
+}\if{html}{\out{</div>}}
 
 Benchmarks should run a single combination of parameters. Running across
 a range of parameter combinations is handled by the runner, not the functions

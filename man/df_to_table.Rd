@@ -5,7 +5,7 @@
 \alias{df_to_table}
 \title{Benchmark for reading a data.frame into an Arrow table}
 \format{
-An object of class \code{Benchmark} of length 9.
+An object of class \code{Benchmark} of length 11.
 }
 \usage{
 df_to_table

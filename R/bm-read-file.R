@@ -2,35 +2,35 @@
 #'
 #' @section Parameters:
 #' * `source` A known-file id, or a CSV(?) file path to read in
-#' * `format` One of `c("parquet", "feather", "fst")`
+#' * `file_type` One of `c("parquet", "feather", "fst")`
 #' * `compression` One of the values: `r paste(known_compressions, collapse = ", ")`
-#' * `output` One of `c("arrow_table", "data_frame")`
+#' * `output_type` One of `c("arrow_table", "data_frame")`
 #'
 #' @export
-read_file <- Benchmark("read_file",
-  setup = function(source = names(known_sources),
+read_file <- Benchmark("file-read",
+  setup = function(source = c("fanniemae_2016Q4", "nyctaxi_2010-01"),
                    # TODO: break out feather_v1 and feather_v2, feather_v2 only in >= 0.17
-                   format = c("parquet", "feather"),
+                   file_type = c("parquet", "feather"),
                    compression = c("uncompressed", "snappy", "lz4"),
-                   output = c("arrow_table", "data_frame")) {
-    # format defaults to parquet or feather, but can accept fst as well
-    format <- match.arg(format, c("parquet", "feather", "fst"))
-    # the output defaults are retrieved from the function definition (arrow_table and data_frame)
-    output <- match.arg(output)
+                   output_type = c("arrow_table", "data_frame")) {
+    # file_type defaults to parquet or feather, but can accept fst as well
+    file_type <- match.arg(file_type, c("parquet", "feather", "fst"))
+    # the output_type defaults are retrieved from the function definition (arrow_table and data_frame)
+    output_type <- match.arg(output_type)
 
     # ensure that we have the right kind of file available
-    input_file <- ensure_format(source, format, compression)
-    # retrieve the dimnesions for run-checking after the benchmark
+    input_file <- ensure_format(source, file_type, compression)
+    # retrieve the dimensions for run-checking after the benchmark
     result_dim <- get_source_attr(source, "dim")
 
-    # put the necesary variables into a BenchmarkEnvironment to be used when the
+    # put the necessary variables into a BenchmarkEnvironment to be used when the
     # benchmark is running.
     BenchEnvironment(
-      # get the correct read function for the input format
-      read_func = get_read_function(format),
+      # get the correct read function for the input file_type
+      read_func = get_read_function(file_type),
       input_file = input_file,
       result_dim = result_dim,
-      as_data_frame = output == "data_frame"
+      as_data_frame = output_type == "data_frame"
     )
   },
   # delete the results before each iteration
@@ -48,44 +48,44 @@ read_file <- Benchmark("read_file",
   },
   # validate that the parameters given are compatible
   valid_params = function(params) {
-    # make sure that the format and the compression is compatible
-    # and fst doesn't have arrow_table output
-    drop <- !validate_format(params$format, params$compression) |
-            params$output == "arrow_table" & params$format == "fst"
+    # make sure that the file_type and the compression is compatible
+    # and fst doesn't have arrow_table output_type
+    drop <- !validate_format(params$file_type, params$compression) |
+            params$output_type == "arrow_table" & params$file_type == "fst"
     params[!drop,]
   },
-  # packages used when specific formats are used
+  # packages used when specific file_types are used
   packages_used = function(params) {
     pkg_map <- c(
       "feather" = "arrow",
       "parquet" = "arrow",
       "fst" = "fst"
     )
-    pkg_map[params$format]
+    pkg_map[params$file_type]
   }
 )
 
 #' Get a reader
 #'
-#' @param format what format to read
+#' @param file_type what file_type to read
 #'
 #' @return the read function to use
 #' @export
-get_read_function <- function(format) {
+get_read_function <- function(file_type) {
   pkg_map <- c(
     "feather" = "arrow",
     "parquet" = "arrow",
     "fst" = "fst"
   )
-  library(pkg_map[[format]], character.only = TRUE, warn.conflicts = FALSE)
+  library(pkg_map[[file_type]], character.only = TRUE, warn.conflicts = FALSE)
 
-  if (format == "feather") {
+  if (file_type == "feather") {
     return(function(...) arrow::read_feather(...))
-  } else if (format == "parquet") {
+  } else if (file_type == "parquet") {
     return(function(...) arrow::read_parquet(...))
-  } else if (format == "fst") {
+  } else if (file_type == "fst") {
     return(function(..., as_data_frame) fst::read_fst(...))
   } else {
-    stop("Unsupported format: ", format, call. = FALSE)
+    stop("Unsupported file_type: ", file_type, call. = FALSE)
   }
 }

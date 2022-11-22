@@ -15,6 +15,8 @@ get_write_function(format, compression, chunk_size = NULL)
 
 \item{chunk_size}{the size of chunks to write (default: NULL, the default for
 the format)}
+
+\item{file_type}{file_type to write}
 }
 \value{
 the write function to use

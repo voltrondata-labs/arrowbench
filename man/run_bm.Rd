@@ -4,7 +4,14 @@
 \alias{run_bm}
 \title{Execute a benchmark run}
 \usage{
-run_bm(bm, ..., n_iter = 1, profiling = FALSE, global_params = list())
+run_bm(
+  bm,
+  ...,
+  n_iter = 1,
+  batch_id = NULL,
+  profiling = FALSE,
+  global_params = list()
+)
 }
 \arguments{
 \item{bm}{\code{\link[=Benchmark]{Benchmark()}} object}
@@ -12,6 +19,8 @@ run_bm(bm, ..., n_iter = 1, profiling = FALSE, global_params = list())
 \item{...}{parameters passed to \code{bm$setup()}.}
 
 \item{n_iter}{integer number of iterations to replicate each benchmark}
+
+\item{batch_id}{a length 1 character vector to identify the batch}
 
 \item{profiling}{Logical: collect prof info? If \code{TRUE}, the result data will
 contain a \code{prof_file} field, which you can read in with
