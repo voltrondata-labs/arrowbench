@@ -140,7 +140,11 @@ tpc_h <- Benchmark("tpch",
     paste0(batch_id, "-", params$scale_factor, substr(params$format, 1, 1))
   },
   tags_fun = function(params) {
+    # for consistency with runs through voltrondata-labs/benchmarks
     params$query_id <- sprintf("TPCH-%02d", params$query_id)
+    if (params$output == "data_frame") {
+      params$output <- NULL
+    }
     params
   },
   # packages used when specific formats are used
