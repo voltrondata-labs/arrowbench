@@ -1,10 +1,11 @@
 Package: arrowbench
 Type: Package
 Title: Tools for Continuous and Interactive Benchmarking
-Version: 0.1.1
+Version: 0.2.0
 Authors@R: c(
     person("Neal", "Richardson", email = "neal.p.richardson@gmail.com", role = "aut"),
-    person("Jonathan", "Keane", email = "jkeane@gmail.com", role = c("aut", "cre"))
+    person("Jonathan", "Keane", email = "jkeane@gmail.com", role = c("aut", "cre")),
+    person("Edward", "Visel", email = "edward.visel@gmail.com", role = "aut", comment = c(ORCID = "0000-0002-2811-6254"))
   )
 Description: Tools for defining benchmarks, running them across a 
     range of parameters, and reporting their results in a standardized form.
@@ -44,7 +45,7 @@ Suggests:
     RcppSimdJson,
     readr,
     vroom
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.2
 Roxygen: list(markdown = TRUE, load = "source")
 Collate: 
     'benchmark.R'
