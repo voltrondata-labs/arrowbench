@@ -9,10 +9,11 @@ test_that("dataset_taxi_2013 exists", {
 })
 
 test_that("dataset_taxi_2013 runs on sample data", {
-  res <- run_benchmark(dataset_taxi_2013, dataset = "taxi_2013_sample", cpu_count = 1L)
+  expect_benchmark_run(
+    res <- run_benchmark(dataset_taxi_2013, dataset = "taxi_2013_sample", cpu_count = arrow::cpu_count())
+  )
 
   lapply(res$results, function(result) {
-    expect_s3_class(result, "BenchmarkResult")
     expect_gte(result$result$real, 0)
   })
 })

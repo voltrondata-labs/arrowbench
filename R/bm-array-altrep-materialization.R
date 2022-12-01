@@ -21,7 +21,7 @@ array_altrep_materialization <- Benchmark(
       is.logical(exclude_nulls),
       is.logical(altrep)
     )
-    source <- match.arg(source, names(known_sources))
+    source <- match.arg(source, names(all_sources))
     subset_indices <- subset_indices[[1]]
 
     options(arrow.use_altrep = altrep)
