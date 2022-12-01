@@ -15,3 +15,27 @@ test_that("read_file validation", {
     0L
   )
 })
+
+for (format in c("parquet", "feather")) {
+  if (format == "parquet") {
+    compression <- c("uncompressed", "snappy", "lz4")
+  } else {
+    compression <- "uncompressed"
+  }
+
+  test_that(paste0("read_file benchmark works for ", format), {
+    expect_benchmark_run(
+      run_benchmark(
+        read_file,
+        source = "nyctaxi_sample",
+        format = format,
+        compression = compression,
+        output = c("arrow_table", "data_frame"),
+        cpu_count = arrow::cpu_count()
+      )
+    )
+  })
+}
+
+
+wipe_results()
