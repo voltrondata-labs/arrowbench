@@ -9,7 +9,7 @@ ensure_custom_duckdb <- function(lib = custom_duckdb_lib_dir(), install = TRUE,
     },
     error = function(e) {
       error_is_from_us <- grepl(
-        "(name tpch_answers does not exist)|(there is no package called 'duckdb')",
+        "(name tpch_answers is not on the catalog)|(name tpch_answers does not exist)|(there is no package called 'duckdb')",
         conditionMessage(e)
       )
 
