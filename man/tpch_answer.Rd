@@ -4,7 +4,12 @@
 \alias{tpch_answer}
 \title{Get a TPC-H answer}
 \usage{
-tpch_answer(scale_factor, query_id, source = c("arrowbench", "duckdb"))
+tpch_answer(
+  scale_factor,
+  query_id,
+  source = c("arrowbench", "duckdb"),
+  data_source = c("duckdb", "dbgen")
+)
 }
 \arguments{
 \item{scale_factor}{scale factor (possible values: \code{c(0.01, 0.1, 1, 10)})}
@@ -13,6 +18,10 @@ tpch_answer(scale_factor, query_id, source = c("arrowbench", "duckdb"))
 
 \item{source}{source of the answer (default: "arrowbench"), "duckdb" can
 return answers for scale_factor 1.}
+
+\item{data_source}{which source of data should we construct ansers for? "duckdb"
+(the default) has a slightly different set of data in the *_address columns
+compared to "dbgen"}
 }
 \value{
 the answer, as a data.frame
