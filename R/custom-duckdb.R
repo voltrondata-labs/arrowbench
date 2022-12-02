@@ -9,7 +9,14 @@ ensure_custom_duckdb <- function(lib = custom_duckdb_lib_dir(), install = TRUE,
     },
     error = function(e) {
       error_is_from_us <- grepl(
-        "(name tpch_answers is not on the catalog)|(name tpch_answers does not exist)|(there is no package called 'duckdb')",
+        paste0(c(
+          "(name tpch_answers is not on the catalog)",
+          "(name tpch_answers does not exist)",
+          "(there is no package called 'duckdb')",
+          "(tpch.duckdb_extension\" not found)"
+        ),
+        collapse = "|"
+        ),
         conditionMessage(e)
       )
 
@@ -62,6 +69,7 @@ query_custom_duckdb <- function(sql, dbdir = ":memory:", lib = custom_duckdb_lib
 
     con <- DBI::dbConnect(duckdb::duckdb(dbdir = dbdir))
     on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+    DBI::dbExecute(con, "LOAD tpch;")
     DBI::dbGetQuery(con, sql)
   }
 
@@ -81,6 +89,7 @@ export_custom_duckdb <- function(sql, sink, dbdir = ":memory:", lib = custom_duc
 
     con <- DBI::dbConnect(duckdb::duckdb(dbdir = dbdir))
     on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+    DBI::dbExecute(con, "LOAD tpch;")
     res <- DBI::dbSendQuery(con, sql, arrow = TRUE)
 
     # this could be streamed in the future when the parquet writer
@@ -94,6 +103,9 @@ export_custom_duckdb <- function(sql, sink, dbdir = ":memory:", lib = custom_duc
   callr::r(fun, list(sql, sink, dbdir, lib), libpath = c(lib, .libPaths()))
 }
 
+# This installs into a custom library so that it is isolated from duckdb under test
+# While this was much more important when we needed to (re)build duckdb to enable the tpc-h
+# extension, it's still helpful today to isolate duckdb changes from the ability to get answers
 install_custom_duckdb <- function(lib = custom_duckdb_lib_dir(), force = TRUE, quiet = FALSE) {
   if (!quiet) {
     message(
@@ -111,19 +123,13 @@ install_custom_duckdb <- function(lib = custom_duckdb_lib_dir(), force = TRUE, q
       dir.create(lib, recursive = TRUE)
     }
 
-    remotes::install_cran("DBI", lib = lib, force = force)
-    remotes::install_github(
-      "duckdb/duckdb/tools/rpkg",
-      build = FALSE,
-      force = force,
-      lib = lib
-    )
+    remotes::install_cran("duckdb", lib = lib, force = force)
+    con <- DBI::dbConnect(duckdb::duckdb())
+    DBI::dbExecute(con, "INSTALL tpch; LOAD tpch;")
+    DBI::dbDisconnect(con)
   }
 
-  withr::with_envvar(
-    list(DUCKDB_R_EXTENSIONS = "tpch"),
-    callr::r(fun, list(lib), libpath = c(lib, .libPaths()), show = !quiet)
-  )
+  callr::r(fun, list(lib), libpath = c(lib, .libPaths()), show = !quiet)
 }
 
 custom_duckdb_lib_dir <- function() {
