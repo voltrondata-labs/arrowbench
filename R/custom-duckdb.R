@@ -48,8 +48,8 @@ ensure_custom_duckdb <- function(lib = custom_duckdb_lib_dir(), install = TRUE,
     }
   }
 
+  warning(str(result))
   stop(
-    warning(str(result))
     paste(
       "Custom duckdb build with TPC-H extension could not be loaded",
       if (install) "and could not be installed." else "and `install = FALSE`"
