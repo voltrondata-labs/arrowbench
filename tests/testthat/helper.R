@@ -1,5 +1,3 @@
-library(jsonlite)
-
 wipe_results <- function() unlink(test_path("results/"), recursive = TRUE)
 
 expect_benchmark_run <- function(..., success = TRUE) {
@@ -16,17 +14,15 @@ expect_benchmark_run <- function(..., success = TRUE) {
 
   expect_s3_class(result, "BenchmarkResults")
 
-  # If we require success, then we should confirm that we have BenchmarkResult
-  # classes in the results slot. If there are failures they would be of class
-  # benchmarkFailure
+  # If we require success, then we should confirm that the `error` attribute of
+  # each result is empty
   if (success) {
     # the calling handler, etc is all so that we can send _one_ instance of the
     # message output and not a bunch
     messaged <- FALSE
     withCallingHandlers(
       for (res in result$results) {
-        # TODO: print output once if this fails?
-        expect_s3_class(res, "BenchmarkResult")
+        expect_null(res$error)
       },
       error = function(e) {
         if (!messaged) {

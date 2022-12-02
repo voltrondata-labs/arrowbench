@@ -29,7 +29,7 @@ run_benchmark <- function(bm,
                           profiling = FALSE,
                           read_only = FALSE) {
   start <- Sys.time()
-  stopifnot(is.data.frame(params))
+  stopifnot(is.data.frame(params), nrow(params) > 0)
   message("Running ", nrow(params), " benchmarks with ", n_iter, " iterations:")
   print(params)
 

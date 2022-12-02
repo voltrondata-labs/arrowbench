@@ -230,7 +230,7 @@ test_that("an rscript is added to the results object", {
   res_path <- test_path("results/placebo/10-0.1-TRUE.json")
   expect_true(file.exists(res_path))
 
-  res <- read_json(res_path)
+  res <- jsonlite::read_json(res_path)
   expect_true("rscript" %in% names(res$optional_benchmark_info))
 })
 
