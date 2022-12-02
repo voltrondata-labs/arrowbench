@@ -136,6 +136,19 @@ Benchmark <- function(name,
 #' @export
 BenchEnvironment <- function(...) list2env(list(...))
 
+#' Generate a dataframe of default parameters for a benchmark
+#'
+#' Generates a dataframe of parameter combinations for a benchmark to try based
+#' on the parameter defaults of its `setup` function and supplied parameters.
+#'
+#' @param bm An object of class `Benchmark` for which to generate parameters
+#' @param ... Named arguments corresponding to the parameters of `bm`'s `setup`
+#' function. May also contain `cpu_count`, `lib_path`, and `mem_alloc`.
+#'
+#' @return A dataframe of parameter combinations to try with a column for each
+#' parameter and a row for each combination.
+#'
+#' @export
 default_params <- function(bm, ...) {
   # This takes the expansion of the default parameters in the function signature
   # perhaps restricted by the ... params

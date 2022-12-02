@@ -29,6 +29,7 @@ Imports:
     rlang,
     R.utils,
     sessioninfo,
+    tibble,
     utils,
     uuid,
     waldo,
@@ -49,6 +50,7 @@ Suggests:
 RoxygenNote: 7.2.2
 Roxygen: list(markdown = TRUE, load = "source")
 Collate: 
+    'benchmark-dataframe.R'
     'benchmark.R'
     'bm-array-altrep-materialization.R'
     'bm-array-to-vector.R'
