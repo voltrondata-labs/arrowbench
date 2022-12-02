@@ -366,7 +366,7 @@ tpch_answer <- function(scale_factor, query_id, source = c("arrowbench", "duckdb
     }
   }
 
-  tibble::as_tibble(answer)
+  answer
 }
 
 #' Get a SQL query
