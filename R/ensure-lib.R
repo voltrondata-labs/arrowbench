@@ -56,11 +56,6 @@ ensure_lib <- function(lib = NULL, test_packages = unlist(strsplit(packageDescri
         test_packages <- setdiff(test_packages, "data.table")
       }
 
-      if ("duckdb" %in% test_packages) {
-        install_custom_duckdb()
-        test_packages <- setdiff(test_packages, "duckdb")
-      }
-
       # make it install everything from this repo, install data.table separately (above) tho
       install.packages(test_packages, repos = repo_url)
     } else if (lib == "devel") {
@@ -73,11 +68,6 @@ ensure_lib <- function(lib = NULL, test_packages = unlist(strsplit(packageDescri
       if (is_macos() && "data.table" %in% test_packages) {
         special_data_table_install(dev = TRUE, cran_url = cran_url)
         test_packages <- setdiff(test_packages, "data.table")
-      }
-
-      if ("duckdb" %in% test_packages) {
-        install_custom_duckdb()
-        test_packages <- setdiff(test_packages, "duckdb")
       }
 
       # make it install everything from this repo, install data.table separately (above) tho
@@ -99,11 +89,6 @@ ensure_lib <- function(lib = NULL, test_packages = unlist(strsplit(packageDescri
       if (is_macos() && "data.table" %in% test_packages) {
         special_data_table_install(dev = TRUE, cran_url = cran_url)
         test_packages <- setdiff(test_packages, "data.table")
-      }
-
-      if ("duckdb" %in% test_packages) {
-        install_custom_duckdb()
-        test_packages <- setdiff(test_packages, "duckdb")
       }
 
       install.packages(c("remotes", setdiff(test_packages, "arrow")))
