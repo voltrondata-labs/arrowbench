@@ -12,16 +12,20 @@ test_that("find_r()", {
   expect_match(error_out[[1]], "this is an error")
 })
 
+
 test_that("get_default_args", {
   func <- function(
     one = 1,
     a_few = c(1, 2, 3),
     null = NULL,
+    # we need to use something in the package here for environment scoping +
+    # testthat reasons
+    a_vector = known_sources,
     none
   ) NULL
 
   expect_identical(
     get_default_args(func),
-    list(one = 1, a_few = c(1, 2, 3))
+    list(one = 1, a_few = c(1, 2, 3), a_vector = known_sources)
   )
 })

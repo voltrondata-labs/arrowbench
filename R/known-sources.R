@@ -133,6 +133,8 @@ test_sources <- list(
   )
 )
 
+#' Known data files
+#' @export
 all_sources <- c(known_sources, test_sources)
 
 taxi_schema <- function() {

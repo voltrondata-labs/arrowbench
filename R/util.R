@@ -1,3 +1,6 @@
+#' @importFrom glue glue
+NULL
+
 # Equivalent to Python:
 # `datetime.datetime.now(datetime.timezone.utc).isoformat()`
 utc_now_iso_format <- function() {
@@ -15,16 +18,16 @@ uuid <- function() {
   paste(uuid::UUIDgenerate(output = "raw"), collapse = "")
 }
 
-
 #' @importFrom purrr map_int
 #' @importFrom stats setNames
+#' @importFrom rlang is_missing
 get_default_args <- function(FUN) {
   forms <- formals(FUN)
   # Don't keep any of the formals that are length 0 (e.g. NULL)
   non_zero <- map_int(forms, length) > 0
-  # Don't keep any of the formals that are symbols (which happens if there is no default)
-  not_symbol <- map_lgl(forms, Negate(is.symbol))
-  keep <- names(forms)[non_zero & not_symbol]
+  # Don't keep any of the formals that are missing (which happens if there is no default)
+  missing <- map_lgl(forms, Negate(is_missing))
+  keep <- names(forms)[non_zero & missing]
   setNames(lapply(keep, function(x) eval(forms[[x]])), keep)
 }
 

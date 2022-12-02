@@ -19,6 +19,7 @@ Imports:
     dbplyr,
     dplyr,
     distro,
+    glue, 
     jsonlite,
     progress,
     purrr,
