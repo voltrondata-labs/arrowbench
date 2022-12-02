@@ -226,7 +226,8 @@ run_bm <- function(bm, ..., n_iter = 1, batch_id = NULL, profiling = FALSE, glob
     run_id = NULL,
     batch_id = batch_id,
     run_reason = NULL,
-    # timestamp = utc_now_iso_format(),  # let default populate
+    # let default populate
+    # timestamp = utc_now_iso_format(),
     stats = list(
       data = as.list(result_df$real),
       unit = "s",

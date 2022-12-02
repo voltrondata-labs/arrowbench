@@ -7,12 +7,16 @@
 #'
 #' @export
 df_to_table <- Benchmark("dataframe-to-table",
-  setup = function(source = c("chi_traffic_2020_Q1",
-                              "type_strings",
-                              "type_dict",
-                              "type_integers",
-                              "type_floats",
-                              "type_nested")) {
+  setup = function(
+    source = c(
+      "chi_traffic_2020_Q1",
+      "type_strings",
+      "type_dict",
+      "type_integers",
+      "type_floats",
+      "type_nested"
+    )
+  ) {
     source <- ensure_source(source)
     result_dim <- get_source_attr(source, "dim")
     # Make sure that we're not (accidentally) creating altrep vectors which will
