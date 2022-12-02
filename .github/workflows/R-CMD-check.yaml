@@ -20,7 +20,7 @@ jobs:
           - {os: ubuntu-20.04,   r: 'devel',   force_suggests: true }
           - {os: ubuntu-20.04,   r: 'release', force_suggests: true }
           - {os: ubuntu-20.04,   r: 'oldrel',  force_suggests: true }
-          - {os: ubuntu-20.04,   r: '3.6',     force_suggests: true }
+          - {os: ubuntu-20.04,   r: '4.0',     force_suggests: true }
 
     env:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
