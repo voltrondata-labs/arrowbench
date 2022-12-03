@@ -91,7 +91,6 @@ tpc_h <- Benchmark("tpc_h",
   after_each = {
     # If the scale_factor is < 1, duckdb has the answer
     if (scale_factor %in% c(0.01, 0.1, 1, 10)) {
-      # change the source to be arrow
       answer <- tpch_answer(scale_factor, query_id)
 
       # the result is sometimes a data.frame, turn into a tibble for printing
