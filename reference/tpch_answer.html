@@ -44,7 +44,12 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">tpch_answer</span><span class="op">(</span><span class="va">scale_factor</span>, <span class="va">query_id</span>, source <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"arrowbench"</span>, <span class="st">"duckdb"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">tpch_answer</span><span class="op">(</span></span>
+<span>  <span class="va">scale_factor</span>,</span>
+<span>  <span class="va">query_id</span>,</span>
+<span>  source <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"arrowbench"</span>, <span class="st">"duckdb"</span><span class="op">)</span>,</span>
+<span>  data_source <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"duckdb"</span>, <span class="st">"dbgen"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -60,6 +65,12 @@
 <dt>source</dt>
 <dd><p>source of the answer (default: "arrowbench"), "duckdb" can
 return answers for scale_factor 1.</p></dd>
+
+
+<dt>data_source</dt>
+<dd><p>which source of data should we construct ansers for? "duckdb"
+(the default) has a slightly different set of data in the *_address columns
+compared to "dbgen"</p></dd>
 
 </dl></div>
     <div id="value">
