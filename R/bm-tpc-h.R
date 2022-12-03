@@ -296,17 +296,28 @@ get_query_func <- function(query_id, engine = NULL) {
 #' @param query_id Id of the query (possible values: 1-22)
 #' @param source source of the answer (default: "arrowbench"), "duckdb" can
 #' return answers for scale_factor 1.
+#' @param data_source which source of data should we construct ansers for? "duckdb"
+#' (the default) has a slightly different set of data in the *_address columns
+#' compared to "dbgen"
 #'
 #' @return the answer, as a data.frame
 #' @export
-tpch_answer <- function(scale_factor, query_id, source = c("arrowbench", "duckdb")) {
+tpch_answer <- function(scale_factor, query_id, source = c("arrowbench", "duckdb"), data_source = c("duckdb", "dbgen")) {
   source <- match.arg(source)
 
   if (source == "arrowbench") {
     scale_factor_string <- format(scale_factor, scientific = FALSE)
+
+    # data generated from duckdb have sliiiightly different *_addresses
+    if (match.arg(data_source) == "duckdb") {
+      data_source_dir <- "answers_duckdb_data"
+    } else {
+      data_source_dir <- "answers"
+    }
+
     answer_file <- system.file(
       "tpch",
-      "answers",
+      data_source_dir,
       paste0("scale-factor-", scale_factor_string),
       paste0("tpch-q", sprintf("%02i", query_id), "-sf", scale_factor_string, ".parquet"),
       package = "arrowbench"
