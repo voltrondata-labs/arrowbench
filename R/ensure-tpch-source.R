@@ -20,9 +20,6 @@ tpch_tables <- c("customer", "lineitem", "nation", "orders", "part", "partsupp",
 #'
 #' @export
 generate_tpch <- function(scale_factor = 1) {
-  # Ensure that we have our custom duckdb that has the TPC-H extension built.
-  ensure_custom_duckdb()
-
   duckdb_file <- tempfile()
   on.exit(unlink(duckdb_file, recursive = TRUE))
 
