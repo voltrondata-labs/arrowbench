@@ -137,6 +137,8 @@ tpc_h <- Benchmark("tpch",
   },
   batch_id_fun = function(params) {
     batch_id <- uuid()
+    # TODO: This is backwards-consistent, but provided nothing depends on this
+    # format we should change it to be more readable
     paste0(batch_id, "-", params$scale_factor, substr(params$format, 1, 1))
   },
   tags_fun = function(params) {
