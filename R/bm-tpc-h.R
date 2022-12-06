@@ -14,7 +14,7 @@
 #'
 #' @importFrom waldo compare
 #' @export
-tpc_h <- Benchmark("tpc_h",
+tpc_h <- Benchmark("tpch",
   setup = function(engine = "arrow",
                    query_id = 1:22,
                    format = c("native", "parquet"),
@@ -134,6 +134,20 @@ tpc_h <- Benchmark("tpc_h",
       # TODO: do this?
       ( params$engine == "dplyr" & params$format == "native" )
     params[!drop,]
+  },
+  batch_id_fun = function(params) {
+    batch_id <- uuid()
+    # TODO: This is backwards-consistent, but provided nothing depends on this
+    # format we should change it to be more readable
+    paste0(batch_id, "-", params$scale_factor, substr(params$format, 1, 1))
+  },
+  tags_fun = function(params) {
+    # for consistency with runs through voltrondata-labs/benchmarks
+    params$query_id <- sprintf("TPCH-%02d", params$query_id)
+    if (params$output == "data_frame") {
+      params$output <- NULL
+    }
+    params
   },
   # packages used when specific formats are used
   packages_used = function(params) {

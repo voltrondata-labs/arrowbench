@@ -2,31 +2,45 @@
 #'
 #' @section Parameters:
 #' * `source` A known-file id, or a CSV(?) file path to read in
-#' * `format` One of `c("parquet", "feather", "fst")`
+#' * `file_type` One of `c("parquet", "feather", "fst")`
 #' * `compression` One of the values: `r paste(known_compressions, collapse = ", ")`
-#' * `input` One of `c("arrow_table", "data_frame")`
+#' * `input_type` One of `c("arrow_table", "data_frame")`
 #'
 #' @export
-write_file <- Benchmark("write_file",
-  setup = function(source = names(known_sources),
-                   format = c("parquet", "feather"),
+write_file <- Benchmark("file-write",
+  setup = function(source = c("fanniemae_2016Q4", "nyctaxi_2010-01"),
+                   file_type = c("parquet", "feather"),
                    compression = c("uncompressed", "snappy", "lz4"),
-                   input = c("arrow_table", "data_frame")) {
+                   input_type = c("arrow_table", "data_frame")) {
     # source defaults are retrieved from the function definition (all available
     # known_sources) and then read the source in as a data.frame
     source <- ensure_source(source)
-    df <- read_source(source, as_data_frame = match.arg(input) == "data_frame")
-    # format defaults to parquet or feather, but can accept fst as well
-    format <- match.arg(format, c("parquet", "feather", "fst"))
+    df <- read_source(source, as_data_frame = match.arg(input_type) == "data_frame")
+    # file_type defaults to parquet or feather, but can accept fst as well
+    file_type <- match.arg(file_type, c("parquet", "feather", "fst"))
 
     # Map string param name to functions
-    write_func <- get_write_function(format, compression)
+    get_write_func <- function(file_type, compression) {
+      force(compression)
+      if (file_type == "feather") {
+        return(function(...) arrow::write_feather(..., compression = compression))
+      } else if (file_type == "parquet") {
+        return(function(...) arrow::write_parquet(..., compression = compression))
+      } else if (file_type == "fst") {
+        # fst is always zstd, just a question of what level of compression
+        level <- ifelse(compression == "uncompressed", 0, 50)
+        return(function(...) fst::write_fst(..., compress = level))
+      } else {
+        stop("Unsupported file_type: ", file_type, call. = FALSE)
+      }
+    }
+    write_func <- get_write_func(file_type, compression)
 
     # put the necessary variables into a BenchmarkEnvironment to be used when
     # the benchmark is running.
     BenchEnvironment(
       write_func = write_func,
-      format = format,
+      file_type = file_type,
       source = source,
       df = df
     )
@@ -46,41 +60,19 @@ write_file <- Benchmark("write_file",
   },
   # validate that the parameters given are compatible
   valid_params = function(params) {
-    # make sure that the format and the compression is compatible
-    # and fst doesn't have arrow_table input
-    drop <- !validate_format(params$format, params$compression) |
-      params$format == "fst" & params$input == "arrow_table"
+    # make sure that the file_type and the compression is compatible
+    # and fst doesn't have arrow_table input_type
+    drop <- !validate_format(params$file_type, params$compression) |
+      params$file_type == "fst" & params$input_type == "arrow_table"
     params[!drop,]
   },
-  # packages used when specific formats are used
+  # packages used when specific file_types are used
   packages_used = function(params) {
     pkg_map <- c(
       "feather" = "arrow",
       "parquet" = "arrow",
       "fst" = "fst"
     )
-    pkg_map[params$format]
+    pkg_map[params$file_type]
   }
 )
-
-#' Get a writer
-#'
-#' @param format format to write
-#' @param compression compression to use
-#'
-#' @return the write function to use
-#' @export
-get_write_function <- function(format, compression) {
-  force(compression)
-  if (format == "feather") {
-    return(function(...) arrow::write_feather(..., compression = compression))
-  } else if (format == "parquet") {
-    return(function(...) arrow::write_parquet(..., compression = compression))
-  } else if (format == "fst") {
-    # fst is always zstd, just a question of what level of compression
-    level <- ifelse(compression == "uncompressed", 0, 50)
-    return(function(...) fst::write_fst(..., compress = level))
-  } else {
-    stop("Unsupported format: ", format, call. = FALSE)
-  }
-}

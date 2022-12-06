@@ -26,7 +26,9 @@ Functions are evaluated in the environment of \code{Class}, so you can refer to 
 Sometimes we want static/class methods/attributes that can be accessed from
 the class (e.g. \code{MyR6Class$my_static_method()}) instead of an instance of
 that class (e.g. \code{MyR6Class$new(...)$my_normal_method()}). As individual
-classes are environments, these can be added after the fact like so:\if{html}{\out{<div class="sourceCode r">}}\preformatted{MyR6Class <- R6Class(...)
+classes are environments, these can be added after the fact like so:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{MyR6Class <- R6Class(...)
 MyR6Class$my_static_method <- function(x) ...
 }\if{html}{\out{</div>}}
 

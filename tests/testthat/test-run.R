@@ -20,7 +20,7 @@ test_that("run_bm", {
   out <- run_bm(b, n_iter = 3)
 
   expect_s3_class(out, "BenchmarkResult")
-  expect_identical(nrow(out$result), 3L)
+  expect_identical(nrow(out$optional_benchmark_info$result), 3L)
 
   expect_error(run_bm(b, param1 = "b"), "isTRUE(result) is not TRUE", fixed = TRUE)
 })
@@ -54,7 +54,7 @@ test_that("cases can be versioned", {
   lapply(res_versioned$results, function(result) {
     expect_true("case_version" %in% names(result$tags))
 
-    expected_version = c(foo = 1L, bar = 2L)[[result$params$x]]
+    expected_version = c(foo = 1L, bar = 2L)[[result$optional_benchmark_info$params$x]]
     expect_equal(result$tags$case_version, expected_version)
   })
 
@@ -178,8 +178,8 @@ test_that("form of the results, including output", {
   ))
 
   json_keys <- c(
-    "name", "tags", "info", "context", "github", "options", "result", "params",
-    "output", "rscript"
+    "batch_id", "timestamp", "stats", "tags", "info", "optional_benchmark_info",
+    "context", "github"
   )
   expect_named(res$results[[1]]$list, json_keys, ignore.order = TRUE)
 
@@ -230,8 +230,8 @@ test_that("an rscript is added to the results object", {
   res_path <- test_path("results/placebo/10-0.1-TRUE.json")
   expect_true(file.exists(res_path))
 
-  res <- read_json(res_path)
-  expect_true("rscript" %in% names(res))
+  res <- jsonlite::read_json(res_path)
+  expect_true("rscript" %in% names(res$optional_benchmark_info))
 })
 
 wipe_results()

@@ -23,15 +23,18 @@ test_that("R6.1 classes inherit properly", {
 
 test_that("inherited serialization/deserialization methods work", {
   res <- BenchmarkResult$new(
-    name = "fake",
-    result = data.frame(time = 0, status = "superfast", stringsAsFactors = FALSE),
-    params = list(speed = "lightning"),
-    tags = c(is_real = FALSE)
+    run_name = "fake_run",
+    tags = c(is_real = FALSE),
+    optional_benchmark_info = list(
+      name = "fake",
+      result = data.frame(time = 0, status = "superfast", stringsAsFactors = FALSE),
+      params = list(speed = "lightning")
+    )
   )
 
   # sanity
   expect_s3_class(res, "BenchmarkResult")
-  expect_equal(res$name, "fake")
+  expect_equal(res$run_name, "fake_run")
 
   # roundtrips
   expect_equal(res$json, BenchmarkResult$from_json(res$json)$json)
@@ -45,10 +48,13 @@ test_that("inherited serialization/deserialization methods work", {
 
 test_that("S3 methods work", {
   res <- BenchmarkResult$new(
-    name = "fake",
-    result = data.frame(time = 0, status = "superfast", stringsAsFactors = FALSE),
-    params = list(speed = "lightning"),
-    tags = c(is_real = FALSE)
+    run_name = "fake_run",
+    tags = c(is_real = FALSE),
+    optional_benchmark_info = list(
+      name = "fake",
+      result = data.frame(time = 0, status = "superfast", stringsAsFactors = FALSE),
+      params = list(speed = "lightning")
+    )
   )
 
   expect_equal(as.character(res), res$json)
@@ -59,8 +65,11 @@ test_that("S3 methods work", {
     as.data.frame(res),
     structure(
       list(iteration = 1L, time = 0, status = "superfast", speed = "lightning"),
-      row.names = c(NA, -1L), class = c("tbl_df", "tbl", "data.frame"),
-      name = "fake", tags = c(is_real = FALSE)
+      row.names = c(NA, -1L),
+      class = c("tbl_df", "tbl", "data.frame"),
+      run_name = "fake_run",
+      timestamp = res$timestamp,
+      tags = c(is_real = FALSE)
     )
   )
 

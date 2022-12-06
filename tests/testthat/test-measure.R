@@ -7,14 +7,14 @@ test_that("with_gc_info + errors", {
       base_error <- run_one(placebo, error_type = "base"), type = "message"
     )
   )
-  expect_true("error" %in% names(base_error))
-  expect_match(base_error$error[[1]], "Error.*something went wrong \\(but I knew that\\)")
+  expect_false(is.null(base_error$error))
+  expect_match(base_error$error$log[[1]], "Error.*something went wrong \\(but I knew that\\)")
 
   suppress_deparse_warning(
     capture.output(
       rlang_error <- run_one(placebo, error_type = "rlang::abort"), type = "message"
     )
   )
-  expect_true("error" %in% names(rlang_error))
-  expect_match(paste0(rlang_error$error, collapse = "\n"), "Error.*something went wrong \\(but I knew that\\)")
+  expect_false(is.null(base_error$error))
+  expect_match(paste0(rlang_error$error$log, collapse = "\n"), "Error.*something went wrong \\(but I knew that\\)")
 })

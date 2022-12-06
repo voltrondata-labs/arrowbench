@@ -5,7 +5,7 @@
 \alias{write_csv}
 \title{Benchmark CSV writing}
 \format{
-An object of class \code{Benchmark} of length 9.
+An object of class \code{Benchmark} of length 11.
 }
 \usage{
 write_csv

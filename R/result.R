@@ -102,6 +102,10 @@ Serializable <- R6Point1Class(
         if (inherits(element, "Serializable")) {
           element <- element$list
         }
+        # iterate through lists of serializables and recurse
+        if (is.list(element) && all(vapply(element, function(el) inherits(el, "Serializable"), logical(1)))) {
+          element <- lapply(element, function(el) el$list)
+        }
         element
       })
     },
@@ -133,7 +137,12 @@ Serializable <- R6Point1Class(
       do.call(self$new, list)
     },
     from_json = function(json) {
-      self$from_list(jsonlite::fromJSON(paste(json, collapse = "\n"), simplifyMatrix = FALSE))
+      self$from_list(jsonlite::fromJSON(
+        paste(json, collapse = "\n"),
+        # Cursed, but necessary; we need to maintain singleton arrays, but
+        # roundtrip dataframes
+        simplifyVector = FALSE, simplifyMatrix = FALSE, simplifyDataFrame = TRUE
+      ))
     },
     read_json = function(path) {
       self$from_json(paste(readLines(path), collapse = "\n"))
@@ -147,7 +156,7 @@ as.list.Serializable <- function(x, ...) x$list
 as.character.Serializable <- function(x, ...) x$json
 
 
-# A class for the results of succesfully running a benchmark
+# A class for the results of running a benchmark
 #
 # Because this class inherits from `Serializable`, it can be written to and
 # instantiated from JSON forms.
@@ -163,53 +172,64 @@ BenchmarkResult <- R6Point1Class(
   inherit = Serializable,
 
   public = list(
-    initialize = function(name,
-                          result,
-                          params,
+    initialize = function(run_name = NULL,
+                          run_id = NULL,
+                          batch_id = NULL,
+                          run_reason = NULL,
+                          timestamp = utc_now_iso_format(),
+                          stats = NULL,
+                          error = NULL,
+                          validation = NULL,
                           tags = NULL,
                           info = NULL,
+                          optional_benchmark_info = NULL,
+                          machine_info = NULL,
+                          cluster_info = NULL,
                           context = NULL,
-                          github = NULL,
-                          options = NULL,
-                          output = NULL,
-                          rscript = NULL) {
-      self$name <- name
-      self$result <- result
-      self$params <- params
+                          github = NULL) {
+      self$run_name <- run_name
+      self$run_id <- run_id
+      self$batch_id <- batch_id
+      self$run_reason <- run_reason
+      self$timestamp <- timestamp
+      self$stats <- stats
+      self$error <- error
+      self$validation <- validation
       self$tags <- tags
       self$info <- info
+      self$optional_benchmark_info <- optional_benchmark_info
+      self$machine_info <- machine_info
+      self$cluster_info <- cluster_info
       self$context <- context
       self$github <- github
-      self$options <- options
-      self$output <- output
-      self$rscript <- rscript
     },
 
     to_dataframe = function(row.names = NULL, optional = FALSE, packages = "arrow", ...) {
       x <- self$list
 
-      pkgs <- x$params$packages
-      x$params$packages <- NULL
+      stopifnot(c("params", "result") %in% names(x$optional_benchmark_info))
+
+      pkgs <- x$optional_benchmark_info$params$packages
+      x$optional_benchmark_info$params$packages <- NULL
       for (p in packages) {
-        x$params[[paste0("version_", p)]] <- pkgs[p, "version"]
+        x$optional_benchmark_info$params[[paste0("version_", p)]] <- pkgs[p, "version"]
       }
 
-      to_list_col <- lengths(x$params) != 1L
-      x$params[to_list_col] <- lapply(x$params[to_list_col], list)
+      to_list_col <- lengths(x$optional_benchmark_info$params) != 1L
+      x$optional_benchmark_info$params[to_list_col] <- lapply(x$optional_benchmark_info$params[to_list_col], list)
 
+      result_df <- x$optional_benchmark_info$result
       out <- dplyr::bind_cols(
-        iteration = seq_len(nrow(x$result)),
-        x$result,
-        dplyr::as_tibble(x$params)
+        iteration = seq_len(nrow(result_df)),
+        result_df,
+        dplyr::as_tibble(x$optional_benchmark_info$params)
       )
-      out$output <- x$output
+      out$output <- x$optional_benchmark_info$output
 
-      # append metadata fields to dataframe as attributes
-      metadata_elements <- c("name", "tags", "info", "context", "github", "options")
+      # append other fields to dataframe as attributes
+      metadata_elements <- setdiff(names(x), "optional_benchmark_info")
       for (element in metadata_elements) {
-        if (element %in% names(x)) {
-          attr(out, element) <- x[[element]]
-        }
+        attr(out, element) <- x[[element]]
       }
 
       out
@@ -217,19 +237,24 @@ BenchmarkResult <- R6Point1Class(
   ),
 
   active = list(
-    name = function(name) private$get_or_set_serializable(variable = "name", value = name),
-    result = function(result) private$get_or_set_serializable(variable = "result", value = result),
-    params = function(params) private$get_or_set_serializable(variable = "params", value = params),
+    run_name = function(run_name) private$get_or_set_serializable(variable = "run_name", value = run_name),
+    run_id = function(run_id) private$get_or_set_serializable(variable = "run_id", value = run_id),
+    batch_id = function(batch_id) private$get_or_set_serializable(variable = "batch_id", value = batch_id),
+    run_reason = function(run_reason) private$get_or_set_serializable(variable = "run_reason", value = run_reason),
+    timestamp = function(timestamp) private$get_or_set_serializable(variable = "timestamp", value = timestamp),
+    stats = function(stats) private$get_or_set_serializable(variable = "stats", value = stats),
+    error = function(error) private$get_or_set_serializable(variable = "error", value = error),
+    validation = function(validation) private$get_or_set_serializable(variable = "validation", value = validation),
     tags = function(tags) private$get_or_set_serializable(variable = "tags", value = tags),
     info = function(info) private$get_or_set_serializable(variable = "info", value = info),
+    optional_benchmark_info = function(optional_benchmark_info) private$get_or_set_serializable(variable = "optional_benchmark_info", value = optional_benchmark_info),
+    machine_info = function(machine_info) private$get_or_set_serializable(variable = "machine_info", value = machine_info),
+    cluster_info = function(cluster_info) private$get_or_set_serializable(variable = "cluster_info", value = cluster_info),
     context = function(context) private$get_or_set_serializable(variable = "context", value = context),
     github = function(github) private$get_or_set_serializable(variable = "github", value = github),
-    options = function(options) private$get_or_set_serializable(variable = "options", value = options),
-    output = function(output) private$get_or_set_serializable(variable = "output", value = output),
-    rscript = function(rscript) private$get_or_set_serializable(variable = "rscript", value = rscript),
 
     params_summary = function() {
-      d <- self$params
+      d <- self$optional_benchmark_info$params
 
       d$packages <- NULL
 
@@ -237,50 +262,19 @@ BenchmarkResult <- R6Point1Class(
       d[to_list_col] <- lapply(d[to_list_col], list)
 
       d <- dplyr::as_tibble(d)
-      d$did_error <- FALSE
+      d$did_error <- !is.null(self$error)
       d
     }
   )
 )
 
 
-# A class for representing an unsuccessful benchmark run
-#
-# Can be serialized to JSON, though as of writing is not anywhere programmatically.
-BenchmarkFailure <- R6Point1Class(
-  classname = "BenchmarkFailure",
-  inherit = Serializable,
-
-  public = list(
-    initialize = function(error,
-                          params) {
-      self$error <- error
-      self$params <- params
-    }
-  ),
-  active = list(
-    error = function(error) private$get_or_set_serializable(variable = "error", value = error),
-    params = function(params) private$get_or_set_serializable(variable = "params", value = params),
-
-    params_summary = function() {
-      d <- self$params
-
-      d$packages <- NULL
-      to_list_col <- lengths(d) != 1
-      d[to_list_col] <- lapply(d[to_list_col], list)
-
-      d <- dplyr::as_tibble(d)
-      d$did_error <- TRUE
-      d
-    }
-  )
-)
 
 
 # A class for holding a set of benchmark results
 #
 # This class is primarily a list of `BenchmarkResult` instances, one for each
-# combination of arguments for the benchmark's parameters. The list is acessible
+# combination of arguments for the benchmark's parameters. The list is accessible
 # via the `$results` active binding.
 #
 # An instance can be passed to `as.data.frame()` and `get_params_summary()`, the
@@ -298,10 +292,10 @@ BenchmarkResults <- R6Point1Class(
       self$results <- results
     },
     to_dataframe = function(row.names = NULL, optional = FALSE, ...) {
-      x <- self$results
-      valid <- purrr::map_lgl(x, ~inherits(.x, "BenchmarkResult"))  # failures will be BenchmarkFailure
-
-      dplyr::bind_rows(lapply(x[valid], function(res) res$to_dataframe(...)))
+      purrr::map_dfr(
+        self$results,
+        purrr::possibly(~.x$to_dataframe(...), otherwise = list())
+      )
     }
   ),
 

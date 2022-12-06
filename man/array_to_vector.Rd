@@ -5,7 +5,7 @@
 \alias{array_to_vector}
 \title{Benchmark for reading an Arrow array to a vector}
 \format{
-An object of class \code{Benchmark} of length 9.
+An object of class \code{Benchmark} of length 11.
 }
 \usage{
 array_to_vector

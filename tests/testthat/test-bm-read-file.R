@@ -11,26 +11,26 @@ test_that("read_file validation", {
 
   # specifically feather+snappy is not a possibility
   expect_identical(
-    nrow(params[params$format == "feather" & params$compression == "snappy", ]),
+    nrow(params[params$file_type == "feather" & params$compression == "snappy", ]),
     0L
   )
 })
 
-for (format in c("parquet", "feather")) {
-  if (format == "parquet") {
+for (file_type in c("parquet", "feather")) {
+  if (file_type == "parquet") {
     compression <- c("uncompressed", "snappy", "lz4")
   } else {
     compression <- "uncompressed"
   }
 
-  test_that(paste0("read_file benchmark works for ", format), {
+  test_that(paste0("read_file benchmark works for ", file_type), {
     expect_benchmark_run(
       run_benchmark(
         read_file,
         source = "nyctaxi_sample",
-        format = format,
+        file_type = file_type,
         compression = compression,
-        output = c("arrow_table", "data_frame"),
+        output_type = c("arrow_table", "data_frame"),
         cpu_count = arrow::cpu_count()
       )
     )

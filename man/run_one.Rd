@@ -8,6 +8,7 @@ run_one(
   bm,
   ...,
   n_iter = 1,
+  batch_id = NULL,
   dry_run = FALSE,
   profiling = FALSE,
   progress_bar = NULL,
@@ -21,6 +22,8 @@ run_one(
 \item{...}{parameters passed to \code{bm$setup()}.}
 
 \item{n_iter}{integer number of iterations to replicate each benchmark}
+
+\item{batch_id}{a length 1 character vector to identify the batch}
 
 \item{dry_run}{logical: just return the R source code that would be run in
 a subprocess? Default is \code{FALSE}, meaning that the benchmarks will be run.}
@@ -38,7 +41,7 @@ run any that it cannot find.}
 }
 \value{
 An instance of \code{BenchmarkResult}: an R6 object containing either
-"result" or "error".
+"stats" or "error".
 }
 \description{
 Run a Benchmark with a single set of parameters

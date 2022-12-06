@@ -7,6 +7,7 @@ test_that("read_json benchmark works", {
   expect_benchmark_run(
     run_benchmark(
       read_json,
+      reader = "arrow",
       source = "fanniemae_sample",
       compression = "uncompressed",
       cpu_count = arrow::cpu_count()

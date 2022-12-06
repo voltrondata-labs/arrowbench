@@ -5,7 +5,7 @@
 \alias{write_file}
 \title{Benchmark file writing}
 \format{
-An object of class \code{Benchmark} of length 9.
+An object of class \code{Benchmark} of length 11.
 }
 \usage{
 write_file
@@ -17,9 +17,9 @@ Benchmark file writing
 
 \itemize{
 \item \code{source} A known-file id, or a CSV(?) file path to read in
-\item \code{format} One of \code{c("parquet", "feather", "fst")}
+\item \code{file_type} One of \code{c("parquet", "feather", "fst")}
 \item \code{compression} One of the values: uncompressed, snappy, zstd, gzip, lz4, brotli, lzo, bz2
-\item \code{input} One of \code{c("arrow_table", "data_frame")}
+\item \code{input_type} One of \code{c("arrow_table", "data_frame")}
 }
 }
 

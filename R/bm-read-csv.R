@@ -57,12 +57,15 @@ read_csv <- Benchmark(
     result <- NULL
   },
   valid_params = function(params) {
+    # compression was only supported from arrow 1.0.0 and onward, but `lib_path`
+    # may not be set here
+    version_check <- (!is.null(params$lib_path) && params$lib_path < "1.0")
+
     # on macOS data.table doesn't (typically) have multi core support
     # TODO: check if this is actually enabled before running?
     drop <- ( params$output_format == "arrow_table" & params$reader != "arrow" ) |
       ( params$reader == "readr" & params$cpu_count > 1 ) |
-      # compression was only supported from arrow 1.0.0 and onward
-      ( params$compression != "uncompressed" & params$reader == "arrow" & params$lib_path < "1.0" )
+      ( params$compression != "uncompressed" & params$reader == "arrow" & version_check )
     params[!drop,]
   },
   packages_used = function(params) {

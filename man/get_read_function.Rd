@@ -4,10 +4,10 @@
 \alias{get_read_function}
 \title{Get a reader}
 \usage{
-get_read_function(format)
+get_read_function(file_type)
 }
 \arguments{
-\item{format}{what format to read}
+\item{file_type}{what file_type to read}
 }
 \value{
 the read function to use

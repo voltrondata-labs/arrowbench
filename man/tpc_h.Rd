@@ -5,7 +5,7 @@
 \alias{tpc_h}
 \title{Benchmark TPC-H queries}
 \format{
-An object of class \code{Benchmark} of length 9.
+An object of class \code{Benchmark} of length 11.
 }
 \usage{
 tpc_h

@@ -1,6 +1,23 @@
 #' @importFrom glue glue
 NULL
 
+# Equivalent to Python:
+# `datetime.datetime.now(datetime.timezone.utc).isoformat()`
+utc_now_iso_format <- function() {
+  withr::with_envvar(list(TZ = "UTC"), {
+    utc_now = Sys.time()
+  })
+
+  withr::with_options(list(digits.secs = 6L), {
+    format(utc_now, format = "%FT%H:%M:%OS%z")
+  })
+}
+
+# returns a single hex UUID
+uuid <- function() {
+  paste(uuid::UUIDgenerate(output = "raw"), collapse = "")
+}
+
 #' @importFrom purrr map_int
 #' @importFrom stats setNames
 #' @importFrom rlang is_missing
