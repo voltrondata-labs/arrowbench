@@ -19,7 +19,7 @@ in a fresh R process that run_one() provides."><!-- mathjax --><script src="http
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">arrowbench</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
       </span>
     </div>
 
@@ -48,7 +48,14 @@ in a fresh R process that <code><a href="run_one.html">run_one()</a></code> prov
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">run_bm</span><span class="op">(</span><span class="va">bm</span>, <span class="va">...</span>, n_iter <span class="op">=</span> <span class="fl">1</span>, profiling <span class="op">=</span> <span class="cn">FALSE</span>, global_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">run_bm</span><span class="op">(</span></span>
+<span>  <span class="va">bm</span>,</span>
+<span>  <span class="va">...</span>,</span>
+<span>  n_iter <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  batch_id <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  profiling <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  global_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -63,6 +70,10 @@ in a fresh R process that <code><a href="run_one.html">run_one()</a></code> prov
 
 <dt>n_iter</dt>
 <dd><p>integer number of iterations to replicate each benchmark</p></dd>
+
+
+<dt>batch_id</dt>
+<dd><p>a length 1 character vector to identify the batch</p></dd>
 
 
 <dt>profiling</dt>
@@ -84,7 +95,7 @@ contain a <code>prof_file</code> field, which you can read in with
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Neal Richardson, Jonathan Keane.</p>
+  <p></p><p>Developed by Neal Richardson, Jonathan Keane, Edward Visel.</p>
 </div>
 
 <div class="pkgdown">

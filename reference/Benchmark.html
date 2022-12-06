@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">arrowbench</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
       </span>
     </div>
 
@@ -53,6 +53,8 @@
 <span>  teardown <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  valid_params <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">params</span><span class="op">)</span> <span class="va">params</span>,</span>
 <span>  case_version <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">params</span><span class="op">)</span> <span class="cn">NULL</span>,</span>
+<span>  batch_id_fun <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">params</span><span class="op">)</span> <span class="fu">uuid</span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  tags_fun <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">params</span><span class="op">)</span> <span class="va">params</span>,</span>
 <span>  packages_used <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">params</span><span class="op">)</span> <span class="st">"arrow"</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -108,6 +110,18 @@ append a version; <code>NA</code> will raise an error. Changes to version will b
 conbench history for a case.</p></dd>
 
 
+<dt>batch_id_fun</dt>
+<dd><p>A unary function which takes a dataframe of parameters and
+returns a character vector to use as <code>batch_id</code> of length 1 or <code>nrow(params)</code></p></dd>
+
+
+<dt>tags_fun</dt>
+<dd><p>A unary function which takes a named list of setup parameters
+for a single case and returns a named list of tags to send to Conbench for that
+case. Can be overwritten to add static tags or postprocess parameters into more
+readable forms.</p></dd>
+
+
 <dt>packages_used</dt>
 <dd><p>function taking a <code>data.frame</code> of setup parameters and
 returning a vector of R package names required</p></dd>
@@ -127,14 +141,14 @@ returning a vector of R package names required</p></dd>
     <h2>Evaluation</h2>
     
 
-<p>A <code>Benchmark</code> is evaluated something like:</p><div class="sourceCode"><pre><code><span><span class="va">env</span> <span class="op">&lt;-</span> <span class="va">bm</span><span class="op">$</span><span class="fu">setup</span><span class="op">(</span>param1 <span class="op">=</span> <span class="st">"value"</span>, param2 <span class="op">=</span> <span class="st">"value"</span><span class="op">)</span></span>
-<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n_iter</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/eval.html" class="external-link">eval</a></span><span class="op">(</span><span class="va">bm</span><span class="op">$</span><span class="va">before_each</span>, envir <span class="op">=</span> <span class="va">env</span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="../reference/measure.html">measure</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/eval.html" class="external-link">eval</a></span><span class="op">(</span><span class="va">bm</span><span class="op">$</span><span class="va">run</span>, envir <span class="op">=</span> <span class="va">env</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/eval.html" class="external-link">eval</a></span><span class="op">(</span><span class="va">bm</span><span class="op">$</span><span class="va">after_each</span>, envir <span class="op">=</span> <span class="va">env</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/eval.html" class="external-link">eval</a></span><span class="op">(</span><span class="va">bm</span><span class="op">$</span><span class="va">teardown</span>, envir <span class="op">=</span> <span class="va">env</span><span class="op">)</span></span></code></pre></div>
-
+<p>A <code>Benchmark</code> is evaluated something like:</p>
+<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>env <span class="ot">&lt;-</span> bm<span class="sc">$</span><span class="fu">setup</span>(<span class="at">param1 =</span> <span class="st">"value"</span>, <span class="at">param2 =</span> <span class="st">"value"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(n_iter)) {</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">eval</span>(bm<span class="sc">$</span>before_each, <span class="at">envir =</span> env)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">measure</span>(<span class="fu">eval</span>(bm<span class="sc">$</span>run, <span class="at">envir =</span> env))</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">eval</span>(bm<span class="sc">$</span>after_each, <span class="at">envir =</span> env)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">eval</span>(bm<span class="sc">$</span>teardown, <span class="at">envir =</span> env)</span></code></pre><p></p></div>
 <p>Benchmarks should run a single combination of parameters. Running across
 a range of parameter combinations is handled by the runner, not the functions
 in the benchmark object.</p>
@@ -189,7 +203,7 @@ the <code>teardown()</code> function.</p>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Neal Richardson, Jonathan Keane.</p>
+  <p></p><p>Developed by Neal Richardson, Jonathan Keane, Edward Visel.</p>
 </div>
 
 <div class="pkgdown">

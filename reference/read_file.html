@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">arrowbench</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
       </span>
     </div>
 
@@ -49,16 +49,16 @@
 
     <div id="format">
     <h2>Format</h2>
-    <p>An object of class <code>Benchmark</code> of length 9.</p>
+    <p>An object of class <code>Benchmark</code> of length 11.</p>
     </div>
     <div id="parameters">
     <h2>Parameters</h2>
     
 
 <ul><li><p><code>source</code> A known-file id, or a CSV(?) file path to read in</p></li>
-<li><p><code>format</code> One of <code>c("parquet", "feather", "fst")</code></p></li>
+<li><p><code>file_type</code> One of <code>c("parquet", "feather", "fst")</code></p></li>
 <li><p><code>compression</code> One of the values: uncompressed, snappy, zstd, gzip, lz4, brotli, lzo, bz2</p></li>
-<li><p><code>output</code> One of <code>c("arrow_table", "data_frame")</code></p></li>
+<li><p><code>output_type</code> One of <code>c("arrow_table", "data_frame")</code></p></li>
 </ul></div>
 
   </div>
@@ -69,7 +69,7 @@
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Neal Richardson, Jonathan Keane.</p>
+  <p></p><p>Developed by Neal Richardson, Jonathan Keane, Edward Visel.</p>
 </div>
 
 <div class="pkgdown">

@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">arrowbench</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
       </span>
     </div>
 
@@ -48,6 +48,7 @@
 <span>  <span class="va">bm</span>,</span>
 <span>  <span class="va">...</span>,</span>
 <span>  n_iter <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  batch_id <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  dry_run <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  profiling <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  progress_bar <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -68,6 +69,10 @@
 
 <dt>n_iter</dt>
 <dd><p>integer number of iterations to replicate each benchmark</p></dd>
+
+
+<dt>batch_id</dt>
+<dd><p>a length 1 character vector to identify the batch</p></dd>
 
 
 <dt>dry_run</dt>
@@ -99,7 +104,7 @@ run any that it cannot find.</p></dd>
     
 
 <p>An instance of <code>BenchmarkResult</code>: an R6 object containing either
-"result" or "error".</p>
+"stats" or "error".</p>
     </div>
 
   </div>
@@ -110,7 +115,7 @@ run any that it cannot find.</p></dd>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Neal Richardson, Jonathan Keane.</p>
+  <p></p><p>Developed by Neal Richardson, Jonathan Keane, Edward Visel.</p>
 </div>
 
 <div class="pkgdown">
