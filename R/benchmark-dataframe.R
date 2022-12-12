@@ -1,15 +1,3 @@
-#' A vector of benchmark attribute names run on `ursa-i9-9960x`
-#'
-#' @export
-URSA_I9_9960X_R_BENCHMARK_NAMES <- c(
-  "dataframe-to-table",  # `df_to_table`
-  "file-read",
-  "file-write",
-  "partitioned-dataset-filter",  # `dataset_taxi_parquet`
-  "wide-dataframe",  # not actually an R benchmark
-  "tpch"  # `tpc_h`
-)
-
 #' A classed dataframe of benchmarks for running
 #'
 #' @param benchmarks A list with elements of class `Benchmark`
@@ -61,53 +49,4 @@ get_package_benchmarks <- function(package = "arrowbench") {
   objs <- mget(nms, envir = getNamespace(package))
   bms <- Filter(function(x) inherits(x, "Benchmark"), objs)
   BenchmarkDataFrame(benchmarks = bms)
-}
-
-
-#' @export
-default_params.BenchmarkDataFrame <- function(x, ...) {
-  x$parameters <- purrr::map2(x$benchmark, x$parameters, function(bm, params) {
-    if (is.null(params)) {
-      params <- default_params(bm, ...)
-    }
-    params
-  })
-
-  x
-}
-
-
-#' Run an object
-#'
-#' @param x An S3 classed object to run
-#' @param ... Additional arguments passed through to methods. For
-#' `run.BenchmarkDataFrame`, passed through to [default_params()] (when
-#' parameters are not specified) and [run_benchmark()].
-#'
-#' @return A modified object containing run results. For `run.BenchmarkDataFrame`,
-#' a `results` list column is appended.
-#'
-#' @export
-run <- function(x, ...) {
-  UseMethod("run")
-}
-
-
-#' @export
-run.default <- function(x, ...) {
-  stop("No method found for class `", toString(class(x)), '`')
-}
-
-
-#' @rdname run
-#' @export
-run.BenchmarkDataFrame <- function(x, ...) {
-  # if already run (so no elements of `parameters` are NULL), is no-op
-  x <- default_params(x, ...)
-
-  x$results <- purrr::map2(x$benchmark, x$parameters, function(bm, params) {
-    run_benchmark(bm = bm, params = params, ...)
-  })
-
-  x
 }

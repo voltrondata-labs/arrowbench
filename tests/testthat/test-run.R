@@ -234,4 +234,60 @@ test_that("an rscript is added to the results object", {
   expect_true("rscript" %in% names(res$optional_benchmark_info))
 })
 
+
+test_that("run() dispatches and run.default() errors", {
+  expect_error(
+    run(1),
+    "No method found for class `numeric`"
+  )
+})
+
+test_that("run.BenchmarkDataFrame() works", {
+  bm_list <- list(placebo, placebo)
+  param_list <- list(
+    default_params(
+      placebo,
+      error = list(NULL, "rlang::abort", "base::stop"),
+      cpu_count = arrow::cpu_count()
+    ),
+    NULL
+  )
+  bm_df <- BenchmarkDataFrame(benchmarks = bm_list, parameters = param_list)
+
+  bm_df_res <- run(bm_df)
+
+  assert_benchmark_dataframe(
+    bm_df_res,
+    benchmarks = bm_list,
+    parameters = list(param_list[[1]], default_params(placebo))
+  )
+  expect_true("results" %in% names(bm_df_res))
+  purrr::walk2(bm_df_res$parameters, bm_df_res$results, function(parameters, results) {
+    expect_s3_class(results, c("BenchmarkResults", "Serializable", "R6"))
+    expect_equal(nrow(parameters), length(results$results))
+    if ("error" %in% names(parameters)) {
+      # param set with some cases that will error
+      purrr::walk2(parameters$error, results$results, function(err, res) {
+        expect_s3_class(res, c("BenchmarkResult", "Serializable", "R6"))
+        if (is.null(err)) {
+          # passing case
+          expect_null(res$error)
+          expect_gt(res$stats$data[[1]], 0)
+        } else {
+          # erroring case
+          expect_false(is.null(res$error))
+        }
+      })
+    } else {
+      # param set with no cases that will error (includes defaults)
+      purrr::walk(results$results, function(res) {
+        expect_s3_class(res, c("BenchmarkResult", "Serializable", "R6"))
+        expect_null(res$error)
+        expect_gt(res$stats$data[[1]], 0)
+      })
+    }
+  })
+})
+
+
 wipe_results()

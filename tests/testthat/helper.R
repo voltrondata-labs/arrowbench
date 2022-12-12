@@ -46,3 +46,18 @@ suppress_deparse_warning <- function(...) {
         invokeRestart("muffleWarning")
     })
 }
+
+
+assert_benchmark_dataframe <- function(bm_df, benchmarks, parameters) {
+  if (missing(parameters)) {
+    parameters <- rep(list(NULL), length(benchmarks))
+  }
+
+  expect_s3_class(bm_df, c("BenchmarkDataFrame", "tbl", "tbl_df", "data.frame"))
+  expect_true(all(c("name", "benchmark", "parameters") %in% names(bm_df)))
+  expect_equal(nrow(bm_df), length(benchmarks))
+  expect_equal(bm_df$name, vapply(benchmarks, function(x) x$name, character(1)))
+  expect_equal(bm_df$benchmark, benchmarks)
+  expect_equal(bm_df$parameters, parameters)
+}
+

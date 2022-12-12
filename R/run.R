@@ -1,3 +1,38 @@
+#' Run an object
+#'
+#' @param x An S3 classed object to run
+#' @param ... Additional arguments passed through to methods. For
+#' `run.BenchmarkDataFrame`, passed through to [default_params()] (when
+#' parameters are not specified) and [run_benchmark()].
+#'
+#' @return A modified object containing run results. For `run.BenchmarkDataFrame`,
+#' a `results` list column is appended.
+#'
+#' @export
+run <- function(x, ...) {
+  UseMethod("run")
+}
+
+
+#' @export
+run.default <- function(x, ...) {
+  stop("No method found for class `", toString(class(x)), '`')
+}
+
+
+#' @rdname run
+#' @export
+run.BenchmarkDataFrame <- function(x, ...) {
+  # if already run (so no elements of `parameters` are NULL), is no-op
+  x <- default_params(x, ...)
+
+  x$results <- purrr::map2(x$benchmark, x$parameters, function(bm, params) {
+    run_benchmark(bm = bm, params = params, ...)
+  })
+
+  x
+}
+
 #' Run a Benchmark across a range of parameters
 #'
 #' @param bm [Benchmark()] object
