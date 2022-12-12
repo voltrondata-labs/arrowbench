@@ -141,18 +141,28 @@ BenchEnvironment <- function(...) list2env(list(...))
 #' Generates a dataframe of parameter combinations for a benchmark to try based
 #' on the parameter defaults of its `setup` function and supplied parameters.
 #'
-#' @param bm An object of class `Benchmark` for which to generate parameters
+#' @param x An object for which to generate parameters
 #' @param ... Named arguments corresponding to the parameters of `bm`'s `setup`
 #' function. May also contain `cpu_count`, `lib_path`, and `mem_alloc`.
 #'
-#' @return A dataframe of parameter combinations to try with a column for each
-#' parameter and a row for each combination.
+#' @return For `default_params.Benchmark`, a dataframe of parameter combinations
+#' to try with a column for each parameter and a row for each combination.
 #'
 #' @export
-default_params <- function(bm, ...) {
+default_params <- function(x, ...) {
+  UseMethod("default_params")
+}
+
+#' @export
+default_params.default <- function(x, ...) {
+  stop("No method found for class `", toString(class(x)), '`')
+}
+
+#' @export
+default_params.Benchmark <- function(x, ...) {
   # This takes the expansion of the default parameters in the function signature
   # perhaps restricted by the ... params
-  params <- modifyList(get_default_args(bm$setup), list(...))
+  params <- modifyList(get_default_args(x$setup), list(...))
   if (identical(params$lib_path, "all")) {
     # Default for lib_path is just "latest", if omitted
     # "all" means all old versions
@@ -171,12 +181,12 @@ default_params <- function(bm, ...) {
   if (!is.null(params$mem_alloc)) {
     # a bit of a hack, we can test memory allocators on devel or latest, but
     # "4.0" <= "devel" and "4.0" <= "latest" are both true.
-    out[!is_arrow_package(out, "4.0", bm$packages_used), "mem_alloc"] <- NA
+    out[!is_arrow_package(out, "4.0", x$packages_used), "mem_alloc"] <- NA
     out <- unique(out)
   }
 
-  if (!is.null(bm$valid_params)) {
-    out <- bm$valid_params(out)
+  if (!is.null(x$valid_params)) {
+    out <- x$valid_params(out)
   }
   out
 }

@@ -1,3 +1,15 @@
+#' A vector of benchmark attribute names run on `ursa-i9-9960x`
+#'
+#' @export
+URSA_I9_9960X_R_BENCHMARK_NAMES <- c(
+  "dataframe-to-table",  # `df_to_table`
+  "file-read",
+  "file-write",
+  "partitioned-dataset-filter",  # `dataset_taxi_parquet`
+  "wide-dataframe",  # not actually an R benchmark
+  "tpch"  # `tpc_h`
+)
+
 #' A classed dataframe of benchmarks for running
 #'
 #' @param benchmarks A list with elements of class `Benchmark`
@@ -30,6 +42,12 @@ BenchmarkDataFrame <- function(benchmarks, parameters) {
 }
 
 
+#' @export
+format.BenchmarkDataFrame <- function(x, ...) {
+  c("# <BenchmarkDataFrame>", NextMethod())
+}
+
+
 #' Get a list of benchmarks in a package
 #'
 #' @param package String of package name in which to find benchmarks
@@ -43,6 +61,19 @@ get_package_benchmarks <- function(package = "arrowbench") {
   objs <- mget(nms, envir = getNamespace(package))
   bms <- Filter(function(x) inherits(x, "Benchmark"), objs)
   BenchmarkDataFrame(benchmarks = bms)
+}
+
+
+#' @export
+default_params.BenchmarkDataFrame <- function(x, ...) {
+  x$parameters <- purrr::map2(x$benchmark, x$parameters, function(bm, params) {
+    if (is.null(params)) {
+      params <- default_params(bm, ...)
+    }
+    params
+  })
+
+  x
 }
 
 
@@ -71,22 +102,12 @@ run.default <- function(x, ...) {
 #' @rdname run
 #' @export
 run.BenchmarkDataFrame <- function(x, ...) {
-  x$params <- lapply(x$parameters, function(params) {
-    if (is.null(params)) {
-      params <- default_params(x, ...)
-    }
-    params
-  })
+  # if already run (so no elements of `parameters` are NULL), is no-op
+  x <- default_params(x, ...)
 
   x$results <- purrr::map2(x$benchmark, x$parameters, function(bm, params) {
-    run_benchmark(bm = x, params = params, ...)
+    run_benchmark(bm = bm, params = params, ...)
   })
 
   x
-}
-
-
-#' @export
-format.BenchmarkDataFrame <- function(x, ...) {
-  c("# <BenchmarkDataFrame>", NextMethod())
 }

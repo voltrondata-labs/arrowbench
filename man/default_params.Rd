@@ -4,17 +4,17 @@
 \alias{default_params}
 \title{Generate a dataframe of default parameters for a benchmark}
 \usage{
-default_params(bm, ...)
+default_params(x, ...)
 }
 \arguments{
-\item{bm}{An object of class \code{Benchmark} for which to generate parameters}
+\item{x}{An object for which to generate parameters}
 
 \item{...}{Named arguments corresponding to the parameters of \code{bm}'s \code{setup}
 function. May also contain \code{cpu_count}, \code{lib_path}, and \code{mem_alloc}.}
 }
 \value{
-A dataframe of parameter combinations to try with a column for each
-parameter and a row for each combination.
+For \code{default_params.Benchmark}, a dataframe of parameter combinations
+to try with a column for each parameter and a row for each combination.
 }
 \description{
 Generates a dataframe of parameter combinations for a benchmark to try based
