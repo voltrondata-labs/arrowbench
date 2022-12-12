@@ -2,7 +2,7 @@
 #'
 #' @param x An S3 classed object to run
 #' @param ... Additional arguments passed through to methods. For
-#' `run.BenchmarkDataFrame`, passed through to [default_params()] (when
+#' `run.BenchmarkDataFrame`, passed through to [get_default_parameters()] (when
 #' parameters are not specified) and [run_benchmark()].
 #'
 #' @return A modified object containing run results. For `run.BenchmarkDataFrame`,
@@ -24,7 +24,7 @@ run.default <- function(x, ...) {
 #' @export
 run.BenchmarkDataFrame <- function(x, ...) {
   # if already run (so no elements of `parameters` are NULL), is no-op
-  x <- default_params(x, ...)
+  x <- get_default_parameters(x, ...)
 
   x$results <- purrr::map2(x$benchmark, x$parameters, function(bm, params) {
     run_benchmark(bm = bm, params = params, ...)
@@ -58,7 +58,7 @@ run.BenchmarkDataFrame <- function(x, ...) {
 #' @importFrom progress progress_bar
 run_benchmark <- function(bm,
                           ...,
-                          params = default_params(bm, ...),
+                          params = get_default_parameters(bm, ...),
                           n_iter = 1,
                           dry_run = FALSE,
                           profiling = FALSE,

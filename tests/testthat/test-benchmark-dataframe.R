@@ -9,7 +9,7 @@ test_that("BenchmarkDataFrame can be instantiated", {
   }
 
   bm_list <- list(placebo, placebo)
-  param_list <- list(default_params(placebo), NULL)
+  param_list <- list(get_default_parameters(placebo), NULL)
   bm_df <- BenchmarkDataFrame(benchmarks = bm_list, parameters = param_list)
   assert_benchmark_dataframe(bm_df, benchmarks = bm_list, parameters = param_list)
 

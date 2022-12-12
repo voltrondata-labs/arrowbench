@@ -1,5 +1,3 @@
-
-
 #' Generate a dataframe of default parameters for a benchmark
 #'
 #' Generates a dataframe of parameter combinations for a benchmark to try based
@@ -9,21 +7,21 @@
 #' @param ... Named arguments corresponding to the parameters of `bm`'s `setup`
 #' function. May also contain `cpu_count`, `lib_path`, and `mem_alloc`.
 #'
-#' @return For `default_params.Benchmark`, a dataframe of parameter combinations
+#' @return For `get_default_parameters.Benchmark`, a dataframe of parameter combinations
 #' to try with a column for each parameter and a row for each combination.
 #'
 #' @export
-default_params <- function(x, ...) {
-  UseMethod("default_params")
+get_default_parameters <- function(x, ...) {
+  UseMethod("get_default_parameters")
 }
 
 #' @export
-default_params.default <- function(x, ...) {
+get_default_parameters.default <- function(x, ...) {
   stop("No method found for class `", toString(class(x)), '`')
 }
 
 #' @export
-default_params.Benchmark <- function(x, ...) {
+get_default_parameters.Benchmark <- function(x, ...) {
   # This takes the expansion of the default parameters in the function signature
   # perhaps restricted by the ... params
   params <- modifyList(get_default_args(x$setup), list(...))
@@ -56,10 +54,10 @@ default_params.Benchmark <- function(x, ...) {
 }
 
 #' @export
-default_params.BenchmarkDataFrame <- function(x, ...) {
+get_default_parameters.BenchmarkDataFrame <- function(x, ...) {
   x$parameters <- purrr::map2(x$benchmark, x$parameters, function(bm, params) {
     if (is.null(params)) {
-      params <- default_params(bm, ...)
+      params <- get_default_parameters(bm, ...)
     }
     params
   })

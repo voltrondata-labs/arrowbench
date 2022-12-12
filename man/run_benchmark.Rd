@@ -7,7 +7,7 @@
 run_benchmark(
   bm,
   ...,
-  params = default_params(bm, ...),
+  params = get_default_parameters(bm, ...),
   n_iter = 1,
   dry_run = FALSE,
   profiling = FALSE,

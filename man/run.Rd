@@ -13,7 +13,7 @@ run(x, ...)
 \item{x}{An S3 classed object to run}
 
 \item{...}{Additional arguments passed through to methods. For
-\code{run.BenchmarkDataFrame}, passed through to \code{\link[=default_params]{default_params()}} (when
+\code{run.BenchmarkDataFrame}, passed through to \code{\link[=get_default_parameters]{get_default_parameters()}} (when
 parameters are not specified) and \code{\link[=run_benchmark]{run_benchmark()}}.}
 }
 \value{

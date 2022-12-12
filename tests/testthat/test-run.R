@@ -245,7 +245,7 @@ test_that("run() dispatches and run.default() errors", {
 test_that("run.BenchmarkDataFrame() works", {
   bm_list <- list(placebo, placebo)
   param_list <- list(
-    default_params(
+    get_default_parameters(
       placebo,
       error = list(NULL, "rlang::abort", "base::stop"),
       cpu_count = arrow::cpu_count()
@@ -259,7 +259,7 @@ test_that("run.BenchmarkDataFrame() works", {
   assert_benchmark_dataframe(
     bm_df_res,
     benchmarks = bm_list,
-    parameters = list(param_list[[1]], default_params(placebo))
+    parameters = list(param_list[[1]], get_default_parameters(placebo))
   )
   expect_true("results" %in% names(bm_df_res))
   purrr::walk2(bm_df_res$parameters, bm_df_res$results, function(parameters, results) {
