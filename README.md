@@ -139,7 +139,7 @@ new_csv_benchmark <- Benchmark(
   # to setup case- or source-specific properties (see `result_dim` below).
   setup = function(source = names(known_sources),
                    as_data_frame = c(TRUE, FALSE),
-                   skip_empty_rows = TRUE)) {
+                   skip_empty_rows = TRUE) {
     # Validate the parameters
     # For our benchmark: as_data_frame defaults to TRUE and FALSE (so if it is 
     # unspecified you will get both TRUE and FALSE in the benchmark matrix)
