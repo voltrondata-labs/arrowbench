@@ -7,7 +7,7 @@
 confirm_mem_alloc(mem_alloc)
 }
 \arguments{
-\item{mem_alloc}{the memory allocator to be tested (one of: "jemalloc", "mimalloc", "system)}
+\item{mem_alloc}{the memory allocator to be tested (one of: "jemalloc", "mimalloc", "system")}
 }
 \value{
 nothing

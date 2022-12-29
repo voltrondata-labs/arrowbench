@@ -72,7 +72,7 @@ bm_run_cache_key <- function(name, ...) {
 
 #' Confirm that the memory allocator enabled
 #'
-#' @param mem_alloc the memory allocator to be tested (one of: "jemalloc", "mimalloc", "system)
+#' @param mem_alloc the memory allocator to be tested (one of: "jemalloc", "mimalloc", "system")
 #'
 #' @return nothing
 #' @export
