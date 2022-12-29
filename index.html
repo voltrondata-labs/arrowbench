@@ -128,78 +128,78 @@
 <h3 id="a-contrived-example">A (contrived) example<a class="anchor" aria-label="anchor" href="#a-contrived-example"></a>
 </h3>
 <p>Here we create a new kind of csv benchmark that uses <code><a href="https://arrow.apache.org/docs/r/reference/read_delim_arrow.html" class="external-link">arrow::read_csv_arrow()</a></code> and varies the arguments <code>as_data_frame</code> and <code>skip_empty_rows</code>. This is a bit of a contrived example, see <code>read_csv</code> for how we actually test csv reading. There are comments in the code block explaining what each section does.</p>
-<pre><code>new_csv_benchmark &lt;- Benchmark(
-  "new_csv_benchmark",
-  # This setup block will be run before the benchmark is started. This is run
-  # before each case / single item in the benchmark matrix, so is a good time
-  # to setup case- or source-specific properties (see `result_dim` below).
-  setup = function(source = names(known_sources),
-                   as_data_frame = c(TRUE, FALSE),
-                   skip_empty_rows = TRUE)) {
-    # Validate the parameters
-    # For our benchmark: as_data_frame defaults to TRUE and FALSE (so if it is 
-    # unspecified you will get both TRUE and FALSE in the benchmark matrix)
-    as_data_frame &lt;- match.arg(as_data_frame)
-
-    # For our benchmark: skip_empty_rows defaults to TRUE (so if it is 
-    # unspecified you will only get TRUE in the benchmark matrix), but it can 
-    # accept TRUE or FALSE, so we validate that it is one of those.
-    skip_empty_rows &lt;- match.arg(skip_empty_rows, c(TRUE, FALSE))
-
-    # Ensure the file exists as an uncompressed csv
-    input_file &lt;- ensure_format(source, "csv", "uncompressed")
-
-    # Extract the dim attribute from a data source for validation later
-    result_dim &lt;- get_source_attr(source, "dim")
-
-    # Finally we return a `BenchEnvironment` with the parameters we defined 
-    # above that are needed
-    BenchEnvironment(
-      input_file = input_file,
-      result_dim = result_dim,
-      as_data_frame = as_data_frame,
-      skip_empty_rows = skip_empty_rows
-    )
-  },
-  # This is run before each iteration. 
-  before_each = {
-    # Make sure the result is cleared
-    result &lt;- NULL
-  },
-  # This is the only part of the code that is actually measured when the benchmark 
-  # is run. It should include all and only the code you are interested in benchmarking.
-  run = {
-    result &lt;- read_csv_arrow(
-      input_file, 
-      as_data_frame = as_data_frame, 
-      skip_empty_rows = skip_empty_rows
-    )
-  },
-  # This is run after each iteration. This is a good time to validate that the
-  # benchmark ran correctly.
-  after_each = {
-    stopifnot(
-      "The dimensions do not match" = all.equal(dim(result), result_dim)
-    )
-    result &lt;- NULL
-  },
-  # This defines if the parameters are valid. If there are certain combinations
-  # that are not valid, add them to drop and they will be excluded from the 
-  # benchmark matrix
-  valid_params = function(params) {
-  
-    # Do not allow both skip_empty_rows == FALSE and as_data_frame == TRUE at 
-    # the same time
-    drop &lt;- ( params$skip_empty_rows == FALSE &amp; params$as_data_frame == TRUE ) 
-    
-    params[!drop,]
-  },
-  # This lists any packages that are used by this benchmark so that they can 
-  # be installed prior to starting the run. Typically this will be simply "arrow"
-  packages_used = function(params) {
-    "arrow"
-  }
-)</code></pre>
+<pre><code><span><span class="va">new_csv_benchmark</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/Benchmark.html">Benchmark</a></span><span class="op">(</span></span>
+<span>  <span class="st">"new_csv_benchmark"</span>,</span>
+<span>  <span class="co"># This setup block will be run before the benchmark is started. This is run</span></span>
+<span>  <span class="co"># before each case / single item in the benchmark matrix, so is a good time</span></span>
+<span>  <span class="co"># to setup case- or source-specific properties (see `result_dim` below).</span></span>
+<span>  setup <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">source</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">known_sources</span><span class="op">)</span>,</span>
+<span>                   <span class="va">as_data_frame</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>                   <span class="va">skip_empty_rows</span> <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="co"># Validate the parameters</span></span>
+<span>    <span class="co"># For our benchmark: as_data_frame defaults to TRUE and FALSE (so if it is </span></span>
+<span>    <span class="co"># unspecified you will get both TRUE and FALSE in the benchmark matrix)</span></span>
+<span>    <span class="va">as_data_frame</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/match.arg.html" class="external-link">match.arg</a></span><span class="op">(</span><span class="va">as_data_frame</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="co"># For our benchmark: skip_empty_rows defaults to TRUE (so if it is </span></span>
+<span>    <span class="co"># unspecified you will only get TRUE in the benchmark matrix), but it can </span></span>
+<span>    <span class="co"># accept TRUE or FALSE, so we validate that it is one of those.</span></span>
+<span>    <span class="va">skip_empty_rows</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/match.arg.html" class="external-link">match.arg</a></span><span class="op">(</span><span class="va">skip_empty_rows</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="co"># Ensure the file exists as an uncompressed csv</span></span>
+<span>    <span class="va">input_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ensure_format.html">ensure_format</a></span><span class="op">(</span><span class="va">source</span>, <span class="st">"csv"</span>, <span class="st">"uncompressed"</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="co"># Extract the dim attribute from a data source for validation later</span></span>
+<span>    <span class="va">result_dim</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_source_attr.html">get_source_attr</a></span><span class="op">(</span><span class="va">source</span>, <span class="st">"dim"</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="co"># Finally we return a `BenchEnvironment` with the parameters we defined </span></span>
+<span>    <span class="co"># above that are needed</span></span>
+<span>    <span class="fu"><a href="reference/BenchEnvironment.html">BenchEnvironment</a></span><span class="op">(</span></span>
+<span>      input_file <span class="op">=</span> <span class="va">input_file</span>,</span>
+<span>      result_dim <span class="op">=</span> <span class="va">result_dim</span>,</span>
+<span>      as_data_frame <span class="op">=</span> <span class="va">as_data_frame</span>,</span>
+<span>      skip_empty_rows <span class="op">=</span> <span class="va">skip_empty_rows</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">}</span>,</span>
+<span>  <span class="co"># This is run before each iteration. </span></span>
+<span>  before_each <span class="op">=</span> <span class="op">{</span></span>
+<span>    <span class="co"># Make sure the result is cleared</span></span>
+<span>    <span class="va">result</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span>
+<span>  <span class="op">}</span>,</span>
+<span>  <span class="co"># This is the only part of the code that is actually measured when the benchmark </span></span>
+<span>  <span class="co"># is run. It should include all and only the code you are interested in benchmarking.</span></span>
+<span>  run <span class="op">=</span> <span class="op">{</span></span>
+<span>    <span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">read_csv_arrow</span><span class="op">(</span></span>
+<span>      <span class="va">input_file</span>, </span>
+<span>      as_data_frame <span class="op">=</span> <span class="va">as_data_frame</span>, </span>
+<span>      skip_empty_rows <span class="op">=</span> <span class="va">skip_empty_rows</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">}</span>,</span>
+<span>  <span class="co"># This is run after each iteration. This is a good time to validate that the</span></span>
+<span>  <span class="co"># benchmark ran correctly.</span></span>
+<span>  after_each <span class="op">=</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
+<span>      <span class="st">"The dimensions do not match"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span>, <span class="va">result_dim</span><span class="op">)</span></span>
+<span>    <span class="op">)</span></span>
+<span>    <span class="va">result</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span>
+<span>  <span class="op">}</span>,</span>
+<span>  <span class="co"># This defines if the parameters are valid. If there are certain combinations</span></span>
+<span>  <span class="co"># that are not valid, add them to drop and they will be excluded from the </span></span>
+<span>  <span class="co"># benchmark matrix</span></span>
+<span>  valid_params <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">params</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  </span>
+<span>    <span class="co"># Do not allow both skip_empty_rows == FALSE and as_data_frame == TRUE at </span></span>
+<span>    <span class="co"># the same time</span></span>
+<span>    <span class="va">drop</span> <span class="op">&lt;-</span> <span class="op">(</span> <span class="va">params</span><span class="op">$</span><span class="va">skip_empty_rows</span> <span class="op">==</span> <span class="cn">FALSE</span> <span class="op">&amp;</span> <span class="va">params</span><span class="op">$</span><span class="va">as_data_frame</span> <span class="op">==</span> <span class="cn">TRUE</span> <span class="op">)</span> </span>
+<span>    </span>
+<span>    <span class="va">params</span><span class="op">[</span><span class="op">!</span><span class="va">drop</span>,<span class="op">]</span></span>
+<span>  <span class="op">}</span>,</span>
+<span>  <span class="co"># This lists any packages that are used by this benchmark so that they can </span></span>
+<span>  <span class="co"># be installed prior to starting the run. Typically this will be simply "arrow"</span></span>
+<span>  packages_used <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">params</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="st">"arrow"</span></span>
+<span>  <span class="op">}</span></span>
+<span><span class="op">)</span></span></code></pre>
 <p>And now we could run our benchmark with the following for the default matrix, using 4 cpu cores and 5 iterations per case.</p>
 <pre><code><span><span class="fu"><a href="reference/run_benchmark.html">run_benchmark</a></span><span class="op">(</span></span>
 <span>  <span class="va">new_csv_benchmark</span>,</span>
@@ -281,7 +281,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>
