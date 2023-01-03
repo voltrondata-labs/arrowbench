@@ -13,7 +13,7 @@
 array_altrep_materialization <- Benchmark(
   "array_altrep_materialization",
 
-  setup = function(source = names(known_sources),
+  setup = function(source = known_sources,
                    exclude_nulls = FALSE,
                    altrep = TRUE,
                    subset_indices = list(1:10)) {
@@ -21,11 +21,10 @@ array_altrep_materialization <- Benchmark(
       is.logical(exclude_nulls),
       is.logical(altrep)
     )
-    source <- match.arg(source, names(all_sources))
     subset_indices <- subset_indices[[1]]
 
     options(arrow.use_altrep = altrep)
-    path <- ensure_format(source, format = "parquet", compression = "snappy")
+    path <- ensure_source(source, format = "parquet", compression = "snappy")$path
 
     # exclude non-altrep types
     pq <- arrow::ParquetFileReader$create(path)

@@ -7,10 +7,10 @@
 #'
 #' @export
 table_to_df <- Benchmark("table_to_df",
-  setup = function(source = names(known_sources)) {
+  setup = function(source = known_sources) {
     source <- ensure_source(source)
-    result_dim <- get_source_attr(source, "dim")
-    table <- read_source(source, as_data_frame = FALSE)
+    result_dim <- source$dim
+    table <- read_source(source$path, as_data_frame = FALSE)
 
     transfer_func <- function(table) as.data.frame(table)
 

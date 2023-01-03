@@ -10,7 +10,7 @@
 #' @importFrom R.utils gzip
 read_csv <- Benchmark(
   "read_csv",
-  setup = function(source = names(known_sources),
+  setup = function(source = known_sources,
                    reader = "arrow",
                    compression = c("uncompressed", "gzip"),
                    output_format = c("arrow_table", "data_frame")) {
@@ -18,17 +18,17 @@ read_csv <- Benchmark(
     compression <- match.arg(compression)
     output_format <- match.arg(output_format)
     # ensure the the file exists
-    input_file <- ensure_format(source, "csv", compression)
+    source <- ensure_source(source, "csv", compression)
 
     # Map string param name to function
-    delim <- get_source_attr(source, "delim") %||% ","
+    delim <- source$delim %||% ","
     read_func <- get_csv_reader(reader, delim)
-    result_dim <- get_source_attr(source, "dim")
+    result_dim <- source$dim
 
     BenchEnvironment(
       # Map string param name to function
       read_func = get_csv_reader(reader, delim),
-      input_file = input_file,
+      input_file = source$path,
       result_dim = result_dim,
       as_data_frame = output_format == "data_frame",
       delim = delim

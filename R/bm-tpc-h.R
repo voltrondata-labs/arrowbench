@@ -107,8 +107,17 @@ tpc_h <- Benchmark("tpch",
       all_equal_out <- waldo::compare(result, answer, tolerance = 0.01)
 
       if (length(all_equal_out) != 0) {
-        warning(paste0("\n", all_equal_out, "\n"))
-        stop("The answer does not match")
+        # DuckDB's data does not actually fit the spec for _address columns (the
+        # values in the answer(s) for those columns aren't found anywhere in the
+        # validation data or data generated with the official tool) so we try
+        # again with the duckdb specific answers
+        answer <- tpch_answer(scale_factor, query_id, datasource = "duckdb")
+        all_equal_out <- waldo::compare(result, answer, tolerance = 0.01)
+
+        if (length(all_equal_out) != 0) {
+          warning(paste0("\n", all_equal_out, "\n"))
+          stop("The answer does not match")
+        }
       }
     } else {
       warning("There is no validation for scale_factors other than 0.01, 0.1, 1, and 10. Be careful with these results!")
@@ -219,7 +228,7 @@ get_input_func <- function(engine,
 
     tpch_files <- vapply(
       tpch_files[tpch_tables_needed],
-      ensure_format,
+      function(x) ensure_source(x)$path,
       FUN.VALUE = character(1),
       format = format_to_convert,
       compression = compression,
@@ -310,28 +319,32 @@ get_query_func <- function(query_id, engine = NULL) {
 #' @param query_id Id of the query (possible values: 1-22)
 #' @param source source of the answer (default: "arrowbench"), "duckdb" can
 #' return answers for scale_factor 1.
-#' @param data_source which source of data should we construct ansers for? "duckdb"
-#' (the default) has a slightly different set of data in the *_address columns
-#' compared to "dbgen"
+#' @param datasource whcih data source should the answers be from (defualt:
+#'   "datalogistik")? Some data sources have slightly different data in some
+#'   columns (possible other value: "duckdb")
 #'
 #' @return the answer, as a data.frame
 #' @export
-tpch_answer <- function(scale_factor, query_id, source = c("arrowbench", "duckdb"), data_source = c("duckdb", "dbgen")) {
+tpch_answer <- function(scale_factor,
+                        query_id,
+                        source = c("arrowbench", "duckdb"),
+                        datasource = c("datalogistik", "duckdb")
+) {
   source <- match.arg(source)
+  datasource <- match.arg(datasource)
+
+  answer_dir <- "answers"
+  if (datasource == "duckdb") {
+    answer_dir <- paste0(answer_dir, "_duckdb_data")
+  }
+
 
   if (source == "arrowbench") {
     scale_factor_string <- format(scale_factor, scientific = FALSE)
 
-    # data generated from duckdb have sliiiightly different *_addresses
-    if (match.arg(data_source) == "duckdb") {
-      data_source_dir <- "answers_duckdb_data"
-    } else {
-      data_source_dir <- "answers"
-    }
-
     answer_file <- system.file(
       "tpch",
-      data_source_dir,
+      answer_dir,
       paste0("scale-factor-", scale_factor_string),
       paste0("tpch-q", sprintf("%02i", query_id), "-sf", scale_factor_string, ".parquet"),
       package = "arrowbench"
@@ -343,7 +356,7 @@ tpch_answer <- function(scale_factor, query_id, source = c("arrowbench", "duckdb
         file.path(
           "arrowbench",
           "tpch",
-          "answers",
+          answer_dir,
           paste0("scale-factor-", scale_factor_string),
           paste0("tpch-q", sprintf("%02i", query_id), "-sf", scale_factor_string, ".parquet")
         ),

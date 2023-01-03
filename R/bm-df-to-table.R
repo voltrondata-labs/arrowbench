@@ -18,7 +18,7 @@ df_to_table <- Benchmark("dataframe-to-table",
     )
   ) {
     source <- ensure_source(source)
-    result_dim <- get_source_attr(source, "dim")
+    result_dim <- source$dim
     # Make sure that we're not (accidentally) creating altrep vectors which will
     # make the benchmark measure both arrow->R and then also R->arrow when we
     # really want to just measure R->arrow.

@@ -7,7 +7,7 @@
 dataset_taxi_parquet <- Benchmark("partitioned-dataset-filter",
   setup = function(query = names(dataset_taxi_parquet$cases)) {
     library("dplyr", warn.conflicts = FALSE)
-    dataset <- ensure_dataset("taxi_parquet")
+    dataset <- ensure_source("taxi_parquet")
     query <- dataset_taxi_parquet$cases[[match.arg(query)]]
 
     BenchEnvironment(

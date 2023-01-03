@@ -40,19 +40,23 @@ input_functions[["duckdb"]] <- function(name) {
 }
 
 # create directory to save the answers to
-dir.create(glue::glue("./answers/scale-factor-{sf}/"), recursive = TRUE)
+dir.create(glue("./answers/scale-factor-{sf}/"), recursive = TRUE)
 
 for (q in c(1:22)) {
   message("==================================================")
-  message(glue::glue("Query: {q}"))
+  message(glue("Query: {q}"))
   message("==================================================")
 
   query <- q
 
   # grab the sql queries from github (this URL might need to be updated if their location in the repo changes.)
   sql <- paste0(httr::GET(
-    glue::glue("https://raw.githubusercontent.com/duckdb/duckdb/master/extension/tpch/dbgen/queries/q{stringr::str_pad(query, 2, pad = '0')}.sql")
+    glue("https://raw.githubusercontent.com/duckdb/duckdb/master/extension/tpch/dbgen/queries/q{stringr::str_pad(query, 2, pad = '0')}.sql")
   ), collapse = "\n")
+  # Or if you have duckdb locally, you can:
+  # sql <- paste0(readLines(
+  #   glue("~/repos/duckdb/extension/tpch/dbgen/queries/q{stringr::str_pad(query, 2, pad = '0')}.sql")
+  # ), collapse = "\n")
 
   result_dplyr <- tpc_h_queries[[query]](input_functions[["dplyr"]])
   result_arrow <- tpc_h_queries[[query]](input_functions[["arrow"]], collect_func = compute)
@@ -62,7 +66,7 @@ for (q in c(1:22)) {
   print(waldo::compare(as.data.frame(result_arrow), result_dplyr, tolerance = 0.01, x_arg = "arrow", y_arg = "dplyr"))
   print(waldo::compare(as.data.frame(result_arrow), result_duckdb, tolerance = 0.01, x_arg = "arrow", y_arg = "duckdb"))
 
-  write_parquet(result_arrow, glue::glue("./answers/scale-factor-{sf}/tpch-q{stringr::str_pad(query, 2, pad = '0')}-sf{sf}.parquet"))
+  write_parquet(result_arrow, glue("./answers/scale-factor-{sf}/tpch-q{stringr::str_pad(query, 2, pad = '0')}-sf{sf}.parquet"))
 }
 
 # clean up duckdb database file

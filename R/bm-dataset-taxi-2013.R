@@ -11,7 +11,7 @@ dataset_taxi_2013 <- Benchmark(
                    query = names(dataset_taxi_2013$cases)) {
     name <- match.arg(dataset, c("taxi_2013", "taxi_2013_sample"))
     library("dplyr", warn.conflicts = FALSE)
-    dataset <- ensure_dataset(name)
+    dataset <- ensure_source(name)
     query <- dataset_taxi_2013$cases[[match.arg(query)]]
 
     BenchEnvironment(

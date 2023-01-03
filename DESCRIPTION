@@ -20,8 +20,9 @@ Imports:
     dplyr,
     duckdb (>= 0.6.0),
     distro,
-    glue, 
+    glue,
     jsonlite,
+    processx,
     progress,
     purrr,
     R6,
@@ -66,7 +67,7 @@ Collate:
     'bm-write-csv.R'
     'bm-write-file.R'
     'custom-duckdb.R'
-    'ensure-format.R'
+    'datalogistik.R'
     'ensure-lib.R'
     'known-sources.R'
     'ensure-source.R'

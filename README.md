@@ -137,7 +137,7 @@ new_csv_benchmark <- Benchmark(
   # This setup block will be run before the benchmark is started. This is run
   # before each case / single item in the benchmark matrix, so is a good time
   # to setup case- or source-specific properties (see `result_dim` below).
-  setup = function(source = names(known_sources),
+  setup = function(source = known_sources,
                    as_data_frame = c(TRUE, FALSE),
                    skip_empty_rows = TRUE) {
     # Validate the parameters
@@ -150,11 +150,13 @@ new_csv_benchmark <- Benchmark(
     # accept TRUE or FALSE, so we validate that it is one of those.
     skip_empty_rows <- match.arg(skip_empty_rows, c(TRUE, FALSE))
 
-    # Ensure the file exists as an uncompressed csv
-    input_file <- ensure_format(source, "csv", "uncompressed")
-
+    # Ensure the source exists as an uncompressed csv
+    data_source <- ensure_source(source, "csv", "uncompressed")
+    
     # Extract the dim attribute from a data source for validation later
-    result_dim <- get_source_attr(source, "dim")
+    result_dim <- data_source$dim
+    input_file <- data_source$path
+    
 
     # Finally we return a `BenchEnvironment` with the parameters we defined 
     # above that are needed

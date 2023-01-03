@@ -2,19 +2,30 @@
 % Please edit documentation in R/ensure-source.R
 \name{ensure_source}
 \alias{ensure_source}
-\title{Make sure a data file exists}
+\title{Ensure that a source has a specific format}
 \usage{
-ensure_source(name, ...)
+ensure_source(
+  name,
+  format = known_formats,
+  compression = known_compressions,
+  chunk_size = NULL,
+  scale_factor = NULL
+)
 }
 \arguments{
-\item{name}{A known-source id, a file path, or a URL}
+\item{name}{name of the known source}
 
-\item{...}{arguments to pass on to a custom locator}
+\item{format}{format to be ensured}
+
+\item{compression}{compression to be ensured}
+
+\item{chunk_size}{the number of rows to write in each chunk}
+
+\item{scale_factor}{the scale factor to use (for datasources where that is relevant)}
 }
 \value{
-A valid path to a source file. If a known source but not present,
-it will be downloaded and possibly decompressed.
+the file that was ensured to exist
 }
 \description{
-Make sure a data file exists
+Ensure that a source has a specific format
 }

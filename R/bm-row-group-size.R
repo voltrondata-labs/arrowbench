@@ -13,15 +13,17 @@ row_group_size <- Benchmark(
                    queries = c("filters", "everything"),
                    chunk_size = NULL) {
     # ensure that we have the right kind of file available
-    input_file <- ensure_format(
+    input_source <- ensure_source(
       name = source, format = "parquet", compression = "snappy", chunk_size = chunk_size
     )
+    input_file <- input_source$path
+    dims <- input_source$dim
 
     library("dplyr", warn.conflicts = FALSE)
 
     # put the necessary variables into a BenchmarkEnvironment to be used when the
     # benchmark is running.
-    BenchEnvironment(source = source, input_file = input_file, queries = queries)
+    BenchEnvironment(source = source, input_file = input_file, queries = queries, dims = dims)
   },
 
   # delete the results before each iteration
@@ -62,7 +64,7 @@ row_group_size <- Benchmark(
 
     if ("everything" %in% queries) {
       result[["everything"]] <- ds %>% collect()
-      result_dim[["everything"]] <- all_sources[[source]]$dim
+      result_dim[["everything"]] <- dims
     }
   },
   # after each iteration, check the dimensions and delete the results
