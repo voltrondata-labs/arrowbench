@@ -22,7 +22,7 @@ uuid <- function() {
 #' @importFrom stats setNames
 #' @importFrom rlang is_missing
 get_default_args <- function(FUN) {
-  forms <- formals(FUN)
+  forms <- as.list(formals(FUN))
   # Don't keep any of the formals that are length 0 (e.g. NULL)
   non_zero <- map_int(forms, length) > 0
   # Don't keep any of the formals that are missing (which happens if there is no default)
