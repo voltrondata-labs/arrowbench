@@ -2,9 +2,18 @@
 % Please edit documentation in R/params.R
 \name{get_default_parameters}
 \alias{get_default_parameters}
+\alias{get_default_parameters.default}
+\alias{get_default_parameters.Benchmark}
+\alias{get_default_parameters.BenchmarkDataFrame}
 \title{Generate a dataframe of default parameters for a benchmark}
 \usage{
 get_default_parameters(x, ...)
+
+\method{get_default_parameters}{default}(x, ...)
+
+\method{get_default_parameters}{Benchmark}(x, ...)
+
+\method{get_default_parameters}{BenchmarkDataFrame}(x, ...)
 }
 \arguments{
 \item{x}{An object for which to generate parameters}

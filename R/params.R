@@ -15,11 +15,13 @@ get_default_parameters <- function(x, ...) {
   UseMethod("get_default_parameters")
 }
 
+#' @rdname get_default_parameters
 #' @export
 get_default_parameters.default <- function(x, ...) {
   stop("No method found for class `", toString(class(x)), '`')
 }
 
+#' @rdname get_default_parameters
 #' @export
 get_default_parameters.Benchmark <- function(x, ...) {
   # This takes the expansion of the default parameters in the function signature
@@ -53,6 +55,7 @@ get_default_parameters.Benchmark <- function(x, ...) {
   out
 }
 
+#' @rdname get_default_parameters
 #' @export
 get_default_parameters.BenchmarkDataFrame <- function(x, ...) {
   x$parameters <- purrr::map2(x$benchmark, x$parameters, function(bm, params) {
