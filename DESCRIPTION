@@ -20,6 +20,7 @@ Imports:
     distro,
     glue, 
     jsonlite,
+    processx,
     progress,
     purrr,
     R6,
@@ -72,8 +73,10 @@ Collate:
     'known-sources.R'
     'ensure-source.R'
     'ensure-tpch-source.R'
+    'external-dependencies.R'
     'measure.R'
     'params.R'
+    'publish.R'
     'util.R'
     'result.R'
     'run.R'
