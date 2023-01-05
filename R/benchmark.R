@@ -129,6 +129,7 @@ Benchmark <- function(name,
   )
 }
 
+
 #' Create a test environment to run benchmarks in
 #'
 #' @param ... named list of parameters to set in the environment
@@ -136,37 +137,6 @@ Benchmark <- function(name,
 #' @export
 BenchEnvironment <- function(...) list2env(list(...))
 
-default_params <- function(bm, ...) {
-  # This takes the expansion of the default parameters in the function signature
-  # perhaps restricted by the ... params
-  params <- modifyList(get_default_args(bm$setup), list(...))
-  if (identical(params$lib_path, "all")) {
-    # Default for lib_path is just "latest", if omitted
-    # "all" means all old versions
-    # rev() is so we run newest first. This also means we bootstrap data fixtures
-    # with newest first, so that's some assurance that older versions can read
-    # what the newer libs write
-    params$lib_path <- rev(c(names(arrow_version_to_date), "devel", "latest"))
-  }
-  if (is.null(params$cpu_count)) {
-    params$cpu_count <- c(1L, parallel::detectCores())
-  }
-  params$stringsAsFactors <- FALSE
-  out <- do.call(expand.grid, params)
-
-  # we don't change memory allocators on non-arrow packages
-  if (!is.null(params$mem_alloc)) {
-    # a bit of a hack, we can test memory allocators on devel or latest, but
-    # "4.0" <= "devel" and "4.0" <= "latest" are both true.
-    out[!is_arrow_package(out, "4.0", bm$packages_used), "mem_alloc"] <- NA
-    out <- unique(out)
-  }
-
-  if (!is.null(bm$valid_params)) {
-    out <- bm$valid_params(out)
-  }
-  out
-}
 
 #' Extract the parameter summary as a data.frame
 #'

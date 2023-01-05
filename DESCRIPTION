@@ -15,8 +15,6 @@ Depends: R (>= 3.5.0)
 Imports:
     arrow,
     bench,
-    callr,
-    dbplyr,
     dplyr,
     duckdb (>= 0.6.0),
     distro,
@@ -29,6 +27,7 @@ Imports:
     rlang,
     R.utils,
     sessioninfo,
+    tibble,
     utils,
     uuid,
     waldo,
@@ -38,6 +37,7 @@ Suggests:
     archive,
     data.table,
     DBI,
+    dbplyr,
     fst,
     jsonify,
     lubridate,
@@ -49,6 +49,7 @@ Suggests:
 RoxygenNote: 7.2.2
 Roxygen: list(markdown = TRUE, load = "source")
 Collate: 
+    'benchmark-dataframe.R'
     'benchmark.R'
     'bm-array-altrep-materialization.R'
     'bm-array-to-vector.R'
@@ -72,6 +73,7 @@ Collate:
     'ensure-source.R'
     'ensure-tpch-source.R'
     'measure.R'
+    'params.R'
     'util.R'
     'result.R'
     'run.R'

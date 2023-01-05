@@ -3,9 +3,9 @@ test_that("read_file validation", {
   read_file_no_validate <- read_file
   read_file_no_validate$valid_params <- NULL
 
-  params_no_validate <- default_params(read_file_no_validate)
+  params_no_validate <- get_default_parameters(read_file_no_validate)
 
-  params <- default_params(read_file)
+  params <- get_default_parameters(read_file)
 
   expect_lt(nrow(params), nrow(params_no_validate))
 

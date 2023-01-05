@@ -229,6 +229,44 @@ run_benchmark(
 )
 ```
 
+### Running a set of benchmarks together
+
+The `get_package_benchmarks()` function gets all the benchmarks defined in a 
+package—by default this one—and returns them in a classed dataframe with columns 
+for the benchmark name attribute, the benchmark itself (in a list column), and 
+a list column of dataframes of parameters with which to run the benchmark (NULL 
+by default, meaning use `get_default_parameters(benchmark)` for each:
+
+``` r
+> get_package_benchmarks()
+# <BenchmarkDataFrame>
+# A tibble: 14 × 3
+   name                         benchmark    parameters
+ * <chr>                        <named list> <list>    
+ 1 array_to_vector              <Benchmrk>   <NULL>    
+ 2 remote_dataset               <Benchmrk>   <NULL>    
+ 3 row_group_size               <Benchmrk>   <NULL>    
+ 4 file-read                    <Benchmrk>   <NULL>    
+ 5 dataframe-to-table           <Benchmrk>   <NULL>    
+ 6 write_csv                    <Benchmrk>   <NULL>    
+ 7 array_altrep_materialization <Benchmrk>   <NULL>    
+ 8 partitioned-dataset-filter   <Benchmrk>   <NULL>    
+ 9 read_csv                     <Benchmrk>   <NULL>    
+10 read_json                    <Benchmrk>   <NULL>    
+11 tpch                         <Benchmrk>   <NULL>    
+12 dataset_taxi_2013            <Benchmrk>   <NULL>    
+13 file-write                   <Benchmrk>   <NULL>    
+14 table_to_df                  <Benchmrk>   <NULL> 
+```
+
+If certain benchmarks are to be run on certain machines, the dataframe can be 
+subset with normal dataframe operations. If parameters other than defaults 
+should be used, the `parameters` column can be filled in manually. When ready, 
+the dataframe can be passed to `run()`, which will run each benchmark on each of 
+its sets of parameters and append a `results` column to the returned dataset 
+that contains result objects that can be transformed to JSON appropriate for 
+sending to a Conbench server.
+
 ### Enabling benchmarks to be run on conbench
 
 [Conbench](https://conbench.ursa.dev/) is a service that runs benchmarks continuously on a repo. We have a conbench
