@@ -22,6 +22,9 @@
     <loc>/reference/Benchmark.html</loc>
   </url>
   <url>
+    <loc>/reference/BenchmarkDataFrame.html</loc>
+  </url>
+  <url>
     <loc>/reference/R6Point1Class.html</loc>
   </url>
   <url>
@@ -79,10 +82,16 @@
     <loc>/reference/get_dataset_attr.html</loc>
   </url>
   <url>
+    <loc>/reference/get_default_parameters.html</loc>
+  </url>
+  <url>
     <loc>/reference/get_input_func.html</loc>
   </url>
   <url>
     <loc>/reference/get_json_reader.html</loc>
+  </url>
+  <url>
+    <loc>/reference/get_package_benchmarks.html</loc>
   </url>
   <url>
     <loc>/reference/get_params_summary.html</loc>
@@ -137,6 +146,9 @@
   </url>
   <url>
     <loc>/reference/row_group_size.html</loc>
+  </url>
+  <url>
+    <loc>/reference/run.html</loc>
   </url>
   <url>
     <loc>/reference/run_benchmark.html</loc>
