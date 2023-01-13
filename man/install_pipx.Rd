@@ -12,6 +12,3 @@ Python packages in isolated environments where they will always be available
 regardless of which version of Python is presently on \verb{$PATH}. Especially
 useful for installing packages designed to be used via CLIs.
 }
-\details{
-Only for interactive use.
-}

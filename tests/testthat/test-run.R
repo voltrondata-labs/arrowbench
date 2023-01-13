@@ -254,7 +254,13 @@ test_that("run.BenchmarkDataFrame() works", {
   )
   bm_df <- BenchmarkDataFrame(benchmarks = bm_list, parameters = param_list)
 
-  bm_df_res <- run(bm_df)
+  # Narrower than `suppressWarnings()`; catches all 5 instances unlike `expect_warning()`
+  withCallingHandlers(
+    { bm_df_res <- run(bm_df) },
+    warning = function(w) if (conditionMessage(w) == "deparse may be incomplete") {
+      invokeRestart(findRestart("muffleWarning"))
+    }
+  )
 
   assert_benchmark_dataframe(
     bm_df_res,
@@ -290,4 +296,123 @@ test_that("run.BenchmarkDataFrame() works", {
 })
 
 
+test_that("run.BenchmarkDataFrame() with `publish = TRUE` works (with mocking)", {
+  bm_list <- list(placebo, placebo)
+  param_list <- list(
+    get_default_parameters(
+      placebo,
+      error = list(NULL, "rlang::abort", "base::stop"),
+      cpu_count = arrow::cpu_count()
+    ),
+    NULL
+  )
+  bm_df <- BenchmarkDataFrame(benchmarks = bm_list, parameters = param_list)
+
+  github <- list(
+    repository = "https://github.com/conchair/conchair",
+    commit = "2z8c9c49a5dc4a179243268e4bb6daa5",
+    pr_number = 47L
+  )
+  run_reason <- "mocked-arrowbench-unit-test"
+  run_name <- paste(run_reason, github$commit, sep = ": ")
+  host_name <- "fake-computer"
+
+
+
+  withr::with_envvar(
+    c(
+      CONBENCH_PROJECT_REPOSITORY = github$repository,
+      CONBENCH_PROJECT_PR_NUMBER = github$pr_number,
+      CONBENCH_PROJECT_COMMIT = github$commit,
+      CONBENCH_MACHINE_INFO_NAME = host_name
+    ),
+    {
+      # Narrower than `suppressWarnings()`; catches all 5 instances unlike `expect_warning()`
+      withCallingHandlers(
+        {
+          mockery::stub(
+            where = run.BenchmarkDataFrame,
+            what = "start_run",
+            how = function(run) {
+              run <- augment_run(run)
+              expect_identical(run$github, github)
+              expect_identical(run$name, run_name)
+              expect_identical(run$reason, run_reason)
+              expect_identical(run$machine_info$name, host_name)
+            }
+          )
+
+          mockery::stub(
+            where = run.BenchmarkDataFrame,
+            what = "submit_result",
+            how = function(result) {
+              expect_identical(result$github, github)
+              expect_identical(result$run_name, run_name)
+              expect_identical(result$run_reason, run_reason)
+              expect_identical(result$machine_info$name, host_name)
+            }
+          )
+
+          mockery::stub(
+            where = run.BenchmarkDataFrame,
+            what = "finish_run",
+            how = function(run) {
+              run <- augment_run(run)
+              expect_identical(run$github, github)
+              expect_identical(run$name, run_name)
+              expect_identical(run$reason, run_reason)
+              expect_identical(run$machine_info$name, host_name)
+            }
+          )
+
+          wipe_results()
+          bm_df_res <- run(
+            bm_df,
+            publish = TRUE,
+            run_name = run_name,
+            run_reason = run_reason
+
+          )
+        },
+        warning = function(w) if (conditionMessage(w) == "deparse may be incomplete") {
+          invokeRestart(findRestart("muffleWarning"))
+        }
+      )
+    }
+  )
+
+  assert_benchmark_dataframe(
+    bm_df_res,
+    benchmarks = bm_list,
+    parameters = list(param_list[[1]], get_default_parameters(placebo))
+  )
+  expect_true("results" %in% names(bm_df_res))
+  purrr::walk2(bm_df_res$parameters, bm_df_res$results, function(parameters, results) {
+    expect_s3_class(results, c("BenchmarkResults", "Serializable", "R6"))
+    expect_equal(nrow(parameters), length(results$results))
+    if ("error" %in% names(parameters)) {
+      # param set with some cases that will error
+      purrr::walk2(parameters$error, results$results, function(err, res) {
+        expect_s3_class(res, c("BenchmarkResult", "Serializable", "R6"))
+        if (is.null(err)) {
+          # passing case
+          expect_null(res$error)
+          expect_gt(res$stats$data[[1]], 0)
+        } else {
+          # erroring case
+          expect_false(is.null(res$error))
+        }
+      })
+    } else {
+      # param set with no cases that will error (includes defaults)
+      purrr::walk(results$results, function(res) {
+        expect_s3_class(res, c("BenchmarkResult", "Serializable", "R6"))
+        expect_null(res$error)
+        expect_gt(res$stats$data[[1]], 0)
+      })
+    }
+  })
+})
+
+unlink("benchconnect-state.json")
 wipe_results()

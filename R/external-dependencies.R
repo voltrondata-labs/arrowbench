@@ -1,26 +1,32 @@
-pipx_available <- function() {
-  exit_code <- system("which pipx", ignore.stdout = TRUE, ignore.stderr = TRUE)
-  exit_code == 0L
-}
-
 external_cli_available <- function(cli) {
   exit_code <- system(paste("which", cli), ignore.stdout = TRUE, ignore.stderr = TRUE)
 
   if (exit_code != 0L) {
-    warning(
-      warningCondition(
-        paste0(
-          paste(cli, 'not installed or on $PATH.\n\n'),
-          glue::glue('It can be installed interactively with `install_pipx(); install_{cli}()`\n\n'),
-          'If already installed with pipx, ensure it is on $PATH, e.g. by running',
-          '`pipx ensurepath` or adding `PATH="${PATH}:${HOME}/.local/bin"` to ~/.Renviron'
-        ),
-        class = "notInstalledWarning"
+    msg <- paste(cli, 'not installed or on $PATH.\n\n')
+    if (cli == "pipx") {
+      msg <- paste0(
+        msg,
+        glue::glue('It can be installed with `install_pipx()`\n\n'),
+        'If already installed, ensure it is on $PATH, e.g. by running',
+        '`pipx ensurepath` or adding `PATH="${PATH}:${HOME}/.local/bin"` to ~/.Renviron'
       )
-    )
+    } else {
+      msg <- paste0(
+        msg,
+        glue::glue('It can be installed with `install_pipx(); install_{cli}()`\n\n'),
+        'If already installed with pipx, ensure it is on $PATH, e.g. by running',
+        '`pipx ensurepath` or adding `PATH="${PATH}:${HOME}/.local/bin"` to ~/.Renviron'
+      )
+    }
+
+    warning(warningCondition(msg, class = "notInstalledWarning"))
   }
 
   exit_code == 0L
+}
+
+pipx_available <- function() {
+  external_cli_available(cli = "pipx")
 }
 
 benchconnect_available <- function() {
@@ -39,11 +45,8 @@ datalogistik_available <- function() {
 #' regardless of which version of Python is presently on `$PATH`. Especially
 #' useful for installing packages designed to be used via CLIs.
 #'
-#' Only for interactive use.
-#'
 #' @export
 install_pipx <- function() {
-  stopifnot(interactive())
   system('pip install pipx && pipx ensurepath', intern = TRUE)
 }
 
