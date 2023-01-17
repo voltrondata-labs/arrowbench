@@ -55,13 +55,14 @@ run.BenchmarkDataFrame <- function(x, ..., publish = FALSE, run_name = NULL, run
   x <- get_default_parameters(x, ...)
 
   if (publish) {
+    stopifnot(
+      "Results cannot be published without a `run_reason`!" = !is.null(run_reason)
+    )
+
     github <- github_info()
     if (is.null(run_name)) {
       run_name <- paste(run_reason, github$commit, sep = ": ")
     }
-    stopifnot(
-      "Results cannot be published without a `run_reason`!" = !is.null(run_reason)
-    )
     bm_run <- BenchmarkRun$new(name = run_name, reason = run_reason, github = github)
     start_run(run = bm_run)
   }
