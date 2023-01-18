@@ -387,9 +387,14 @@ test_that("run.BenchmarkDataFrame() with `publish = TRUE` works (with mocking)",
     parameters = list(param_list[[1]], get_default_parameters(placebo))
   )
   expect_true("results" %in% names(bm_df_res))
+
+  # iterate over param and res list cols
   purrr::walk2(bm_df_res$parameters, bm_df_res$results, function(parameters, results) {
+    # each element should be a `BenchmarkResults` (plural!) instance
     expect_s3_class(results, c("BenchmarkResults", "Serializable", "R6"))
+    # each row of the param df should correspond to a result instance
     expect_equal(nrow(parameters), length(results$results))
+    # iterate over results in `BenchmarkResults` object
     if ("error" %in% names(parameters)) {
       # param set with some cases that will error
       purrr::walk2(parameters$error, results$results, function(err, res) {
