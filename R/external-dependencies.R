@@ -47,7 +47,7 @@ datalogistik_available <- function() {
 #'
 #' @export
 install_pipx <- function() {
-  processx::run("sh", c("-c", "pip install pipx && pipx ensurepath"))
+  processx::run("sh", c("-c", "pip install pipx && pipx ensurepath"), echo_cmd = TRUE)
 }
 
 
@@ -69,12 +69,12 @@ install_benchconnect <- function() {
       ans <- "y"
     }
     if (tolower(ans) %in% c("y", "")) {
-      processx::run("pipx", c("install", "--include-deps", "--force", url))
+      processx::run("pipx", c("install", "--include-deps", "--force", url), echo_cmd = TRUE)
     } else {
       invisible()
     }
   } else {
-    processx::run("pipx", c("install", "--include-deps", url))
+    processx::run("pipx", c("install", "--include-deps", url), echo_cmd = TRUE)
   }
 }
 
@@ -94,17 +94,17 @@ install_datalogistik <- function() {
   ref <- Sys.getenv("DATALOGISTIK_BRANCH", unset = "main")
   url <- glue("git+https://github.com/conbench/datalogistik.git@{ref}")
 
-  pipx_call <- c("install", "--pip-args", "'--extra-index-url https://pypi.fury.io/arrow-nightlies --prefer-binary'")
+  pipx_call <- c("install", "--pip-args=--extra-index-url https://pypi.fury.io/arrow-nightlies --prefer-binary")
   if (datalogistik_available()) {
     # default to yes (and also this will make it work in non-interactive sessions)
     ans <- readline("datalogistik already installed. Update? [Y/n]: ")
     if (tolower(ans) %in% c("y", "")) {
       # we need the extra args to depend on the development version of arrow
-      return(processx::run("pipx", c(pipx_call, "--force", url)))
+      return(processx::run("pipx", c(pipx_call, "--force", url), echo_cmd = TRUE))
     } else {
       return(invisible())
     }
   }
 
-  processx::run("pipx", c(pipx_call, url))
+  processx::run("pipx", c(pipx_call, url), echo_cmd = TRUE)
 }
