@@ -65,6 +65,11 @@ run.BenchmarkDataFrame <- function(x, ..., publish = FALSE, run_name = NULL, run
     }
     bm_run <- BenchmarkRun$new(name = run_name, reason = run_reason, github = github)
     start_run(run = bm_run)
+
+    # clean up even if something fails
+    on.exit({
+      finish_run(run = bm_run)
+    })
   }
 
   x$results <- purrr::map2(x$benchmark, x$parameters, function(bm, params) {
@@ -78,10 +83,6 @@ run.BenchmarkDataFrame <- function(x, ..., publish = FALSE, run_name = NULL, run
     }
     ress
   })
-
-  if (publish) {
-    finish_run(run = bm_run)
-  }
 
   x
 }
