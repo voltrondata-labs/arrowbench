@@ -73,10 +73,8 @@ run.BenchmarkDataFrame <- function(x, ..., publish = FALSE, run_name = NULL, run
   }
 
   x$results <- purrr::map2(x$benchmark, x$parameters, function(bm, params) {
-    withr::with_envvar(
-      c(CONBENCH_RUN_NAME = run_name, CONBENCH_RUN_REASON = run_reason),
-      { ress <- run_benchmark(bm = bm, params = params, ...) }
-    )
+    ress <- run_benchmark(bm = bm, params = params, run_name = run_name, run_reason = run_reason, ...)
+
     if (publish) {
       ress$results <- lapply(ress$results, augment_result)
       lapply(ress$results, submit_result)
@@ -103,6 +101,8 @@ run.BenchmarkDataFrame <- function(x, ..., publish = FALSE, run_name = NULL, run
 #' `profvis::profvis(prof_input = file)`. Default is `FALSE`
 #' @param read_only this will only attempt to read benchmark files and will not
 #' run any that it cannot find.
+#' @param run_name Name for the run. If not specified, will use `{run_reason}: {commit hash}`
+#' @param run_reason Low-cardinality reason for the run, e.g. "commit" or "test"
 #'
 #' @return A `BenchmarkResults` object, containing `results` attribute of a list
 #' of length `nrow(params)`, each of those a `BenchmarkResult` object.
@@ -116,7 +116,9 @@ run_benchmark <- function(bm,
                           n_iter = 1,
                           dry_run = FALSE,
                           profiling = FALSE,
-                          read_only = FALSE) {
+                          read_only = FALSE,
+                          run_name = NULL,
+                          run_reason = NULL) {
   start <- Sys.time()
   stopifnot(is.data.frame(params), nrow(params) > 0)
   message("Running ", nrow(params), " benchmarks with ", n_iter, " iterations:")
@@ -145,6 +147,8 @@ run_benchmark <- function(bm,
     profiling = profiling,
     progress_bar = progress_bar,
     read_only = read_only,
+    run_name = run_name,
+    run_reason = run_reason,
     test_packages = unique(bm$packages_used(params))
   )
 
@@ -174,6 +178,8 @@ run_benchmark <- function(bm,
 #' @inheritParams run_benchmark
 #' @param batch_id a length 1 character vector to identify the batch
 #' @param progress_bar a `progress` object to update progress to (default `NULL`)
+#' @param run_name Name for the run
+#' @param run_reason Low-cardinality reason for the run, e.g. "commit" or "test"
 #' @param test_packages a character vector of packages that the benchmarks test (default `NULL`)
 #' @param ... parameters passed to `bm$setup()`.
 #'
@@ -188,6 +194,8 @@ run_one <- function(bm,
                     profiling = FALSE,
                     progress_bar = NULL,
                     read_only = FALSE,
+                    run_name = NULL,
+                    run_reason = NULL,
                     test_packages = NULL) {
   all_params <- list(...)
 
@@ -213,7 +221,7 @@ run_one <- function(bm,
   args <- modifyList(
     params,
     list(bm = bm, n_iter = n_iter, batch_id = batch_id, profiling = profiling,
-         global_params = global_params)
+         global_params = global_params, run_name = run_name, run_reason = run_reason)
   )
 
   # transform the arguments into a string representation that can be called in
@@ -256,7 +264,9 @@ run_one <- function(bm,
       name = bm$name,
       metadata = metadata,
       progress_bar = progress_bar,
-      read_only = read_only
+      read_only = read_only,
+      run_name = run_name,
+      run_reason = run_reason
     ),
     keep.null = TRUE
   )
@@ -275,10 +285,13 @@ run_one <- function(bm,
 #' in a fresh R process that `run_one()` provides.
 #' @inheritParams run_one
 #' @param global_params the global parameters that have been set
+#' @param run_name Name for the run
+#' @param run_reason Low-cardinality reason for the run, e.g. "commit" or "test"
 #' @export
 #' @importFrom utils modifyList
 #' @importFrom sessioninfo package_info
-run_bm <- function(bm, ..., n_iter = 1, batch_id = NULL, profiling = FALSE, global_params = list()) {
+run_bm <- function(bm, ..., n_iter = 1, batch_id = NULL, profiling = FALSE,
+                   global_params = list(), run_name = NULL, run_reason = NULL) {
   # We *don't* want to use altrep when we are setting up, or we get surprising results
   withr::with_options(
     list(arrow.use_altrep = FALSE),
@@ -318,14 +331,11 @@ run_bm <- function(bm, ..., n_iter = 1, batch_id = NULL, profiling = FALSE, glob
     n_iter = n_iter
   )
 
-  env_vars <- as.list(Sys.getenv(c("CONBENCH_RUN_NAME", "CONBENCH_RUN_ID", "CONBENCH_RUN_REASON")))
-  env_vars <- lapply(env_vars, function(x) if (nzchar(x)) x else NULL)
-
   out <- BenchmarkResult$new(
-    run_name = env_vars$CONBENCH_RUN_NAME,
-    run_id = env_vars$CONBENCH_RUN_ID,
+    run_name = run_name,
+    run_id = NULL,
     batch_id = batch_id,
-    run_reason = env_vars$CONBENCH_RUN_REASON,
+    run_reason = run_reason,
     # let default populate
     # timestamp = utc_now_iso_format(),
     stats = list(
@@ -363,7 +373,8 @@ run_iteration <- function(bm, ctx, profiling = FALSE) {
   out
 }
 
-global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL, test_packages = NULL, dry_run = FALSE, read_only = FALSE) {
+global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL,
+                         test_packages = NULL, dry_run = FALSE, read_only = FALSE) {
   script <- ""
   if (!dry_run & !read_only) {
     lib_path <- ensure_lib(lib_path, test_packages = test_packages)
@@ -461,7 +472,8 @@ github_info <- function() {
 
 #' @importFrom jsonlite fromJSON toJSON
 #' @importFrom withr with_envvar
-run_script <- function(lines, cmd = find_r(), ..., metadata, progress_bar, read_only = FALSE) {
+run_script <- function(lines, cmd = find_r(), ..., metadata, progress_bar, read_only = FALSE,
+                       run_name = run_name, run_reason = run_reason) {
   # cmd may need to vary by platform; possibly also a param for this fn?
 
   result_dir <- file.path(local_dir(), "results")
@@ -495,7 +507,7 @@ run_script <- function(lines, cmd = find_r(), ..., metadata, progress_bar, read_
     progress_bar$message(msg, set_width = FALSE)
   }
 
-  env_vars <- as.list(Sys.getenv(c("CONBENCH_RUN_NAME", "CONBENCH_RUN_ID", "CONBENCH_RUN_REASON")))
+  env_vars <- list()
   if (!is.na.null(dots$mem_alloc)) {
     env_vars <- c(env_vars, ARROW_DEFAULT_MEMORY_POOL = dots$mem_alloc)
   }
@@ -537,9 +549,9 @@ run_script <- function(lines, cmd = find_r(), ..., metadata, progress_bar, read_
     # This means the script errored.
     message(paste(result, collapse = "\n"))
     result <- BenchmarkResult$new(
-      run_name = if (nzchar(env_vars$CONBENCH_RUN_NAME)) env_vars$CONBENCH_RUN_NAME else NULL,
-      run_id = if (nzchar(env_vars$CONBENCH_RUN_ID)) env_vars$CONBENCH_RUN_ID else NULL,
-      run_reason = if (nzchar(env_vars$CONBENCH_RUN_REASON)) env_vars$CONBENCH_RUN_REASON else NULL,
+      run_name = run_name,
+      run_id = NULL,
+      run_reason = run_reason,
       error = list(log = result),
       tags = metadata$tags,
       info = metadata$info,

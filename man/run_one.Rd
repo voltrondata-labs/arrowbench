@@ -13,6 +13,8 @@ run_one(
   profiling = FALSE,
   progress_bar = NULL,
   read_only = FALSE,
+  run_name = NULL,
+  run_reason = NULL,
   test_packages = NULL
 )
 }
@@ -36,6 +38,10 @@ contain a \code{prof_file} field, which you can read in with
 
 \item{read_only}{this will only attempt to read benchmark files and will not
 run any that it cannot find.}
+
+\item{run_name}{Name for the run}
+
+\item{run_reason}{Low-cardinality reason for the run, e.g. "commit" or "test"}
 
 \item{test_packages}{a character vector of packages that the benchmarks test (default \code{NULL})}
 }
