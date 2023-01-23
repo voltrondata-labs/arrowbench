@@ -47,14 +47,34 @@ test_that("inherited serialization/deserialization methods work", {
 })
 
 test_that("S3 methods work", {
-  res <- BenchmarkResult$new(
-    run_name = "fake_run",
-    tags = c(is_real = FALSE),
-    optional_benchmark_info = list(
-      name = "fake",
-      result = data.frame(time = 0, status = "superfast", stringsAsFactors = FALSE),
-      params = list(speed = "lightning")
-    )
+  github <- list(
+    repository = "https://github.com/conchair/conchair",
+    commit = "2z8c9c49a5dc4a179243268e4bb6daa5",
+    pr_number = 47L
+  )
+  run_reason <- "mocked-arrowbench-unit-test"
+  run_name <- paste(run_reason, github$commit, sep = ": ")
+  host_name <- "fake-computer"
+
+  withr::with_envvar(
+    c(
+      CONBENCH_PROJECT_REPOSITORY = github$repository,
+      CONBENCH_PROJECT_PR_NUMBER = github$pr_number,
+      CONBENCH_PROJECT_COMMIT = github$commit,
+      CONBENCH_MACHINE_INFO_NAME = host_name
+    ),
+    {
+      res <- BenchmarkResult$new(
+        run_name = run_name,
+        run_reason = run_reason,
+        tags = c(is_real = FALSE),
+        optional_benchmark_info = list(
+          name = "fake",
+          result = data.frame(time = 0, status = "superfast", stringsAsFactors = FALSE),
+          params = list(speed = "lightning")
+        )
+      )
+    }
   )
 
   expect_equal(as.character(res), res$json)
@@ -67,7 +87,9 @@ test_that("S3 methods work", {
       list(iteration = 1L, time = 0, status = "superfast", speed = "lightning"),
       row.names = c(NA, -1L),
       class = c("tbl_df", "tbl", "data.frame"),
-      run_name = "fake_run",
+      run_name = run_name,
+      run_reason = run_reason,
+      github = github,
       timestamp = res$timestamp,
       tags = c(is_real = FALSE)
     )

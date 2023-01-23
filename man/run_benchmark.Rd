@@ -11,7 +11,9 @@ run_benchmark(
   n_iter = 1,
   dry_run = FALSE,
   profiling = FALSE,
-  read_only = FALSE
+  read_only = FALSE,
+  run_name = NULL,
+  run_reason = NULL
 )
 }
 \arguments{
@@ -35,6 +37,10 @@ contain a \code{prof_file} field, which you can read in with
 
 \item{read_only}{this will only attempt to read benchmark files and will not
 run any that it cannot find.}
+
+\item{run_name}{Name for the run. If not specified, will use \verb{\{run_reason\}: \{commit hash\}}}
+
+\item{run_reason}{Low-cardinality reason for the run, e.g. "commit" or "test"}
 }
 \value{
 A \code{BenchmarkResults} object, containing \code{results} attribute of a list

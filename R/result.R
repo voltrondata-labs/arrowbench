@@ -186,7 +186,7 @@ BenchmarkResult <- R6Point1Class(
                           machine_info = NULL,
                           cluster_info = NULL,
                           context = NULL,
-                          github = NULL) {
+                          github = github_info()) {
       self$run_name <- run_name
       self$run_id <- run_id
       self$batch_id <- batch_id
@@ -329,3 +329,55 @@ as.data.frame.BenchmarkResults <- function(x, row.names = NULL, optional = FALSE
 as.data.frame.BenchmarkResult <- function(x, row.names = NULL, optional = FALSE, packages = "arrow", ...) {
   x$to_dataframe(row.names = row.names, optional = optional, packages = packages, ...)
 }
+
+
+# A class for holding metadata on a benchmark run
+#
+# Because this class inherits from `Serializable`, it can be written to and
+# instantiated from JSON forms.
+#
+# All attributes are active bindings so that validation can be run when they are
+# set, whether during or after instantiation.
+BenchmarkRun <- R6Point1Class(
+  classname = "BenchmarkRun",
+  inherit = Serializable,
+
+  public = list(
+    initialize = function(
+      name = NULL,
+      id = NULL,
+      reason = NULL,
+      info = NULL,
+      machine_info = NULL,
+      cluster_info = NULL,
+      github = github_info(),
+      finished_timestamp = NULL,
+      error_type = NULL,
+      error_info = NULL
+    ) {
+      self$name <- name
+      self$id <- id
+      self$reason <- reason
+      self$info <- info
+      self$machine_info <- machine_info
+      self$cluster_info <- cluster_info
+      self$github <- github
+      self$finished_timestamp <- finished_timestamp
+      self$error_type <- error_type
+      self$error_info <- error_info
+    }
+  ),
+
+  active = list(
+    name = function(name) private$get_or_set_serializable(variable = "name", value = name),
+    id = function(id) private$get_or_set_serializable(variable = "id", value = id),
+    reason = function(reason) private$get_or_set_serializable(variable = "reason", value = reason),
+    info = function(info) private$get_or_set_serializable(variable = "info", value = info),
+    machine_info = function(machine_info) private$get_or_set_serializable(variable = "machine_info", value = machine_info),
+    cluster_info = function(cluster_info) private$get_or_set_serializable(variable = "cluster_info", value = cluster_info),
+    github = function(github) private$get_or_set_serializable(variable = "github", value = github),
+    finished_timestamp = function(finished_timestamp) private$get_or_set_serializable(variable = "finished_timestamp", value = finished_timestamp),
+    error_type = function(error_type) private$get_or_set_serializable(variable = "error_type", value = error_type),
+    error_info = function(error_info) private$get_or_set_serializable(variable = "error_info", value = error_info)
+  )
+)

@@ -20,14 +20,66 @@ run.default <- function(x, ...) {
 }
 
 
+#' @param publish Flag for whether to publish results to a Conbench server. See
+#' "Environment Variables" section for how to specify server details. Requires
+#' the benchconnect CLI is installed; see [install_benchconnect()].
+#' @param run_name Name for the run. If not specified, will use `{run_reason}: {commit hash}`
+#' @param run_reason Required. Low-cardinality reason for the run, e.g. "commit" or "test"
+#'
+#' @section Environment Variables:
+#'
+#' - `CONBENCH_URL`: Required. The URL of the Conbench server with no trailing
+#' slash. For arrow, should be `https://conbench.ursa.dev`.
+#' - `CONBENCH_EMAIL`: The email to use for Conbench login. Only required if the
+#' server is private.
+#' - `CONBENCH_PASSWORD`: The password to use for Conbench login. Only required
+#' if the server is private.
+#' - `CONBENCH_PROJECT_REPOSITORY`: The repository name (in the format
+#' `org/repo`) or the URL (in the format `https://github.com/org/repo`).
+#' Defaults to `"https://github.com/apache/arrow"` if unset.
+#' - `CONBENCH_PROJECT_PR_NUMBER`: Recommended. The number of the GitHub pull
+#' request that is running this benchmark, or `NULL` if it's a run on the
+#' default branch
+#' - `CONBENCH_PROJECT_COMMIT`: The 40-character commit SHA of the repo being
+#' benchmarked. If missing, will attempt to obtain it from
+#' `arrow::arrow_info()$build_info$git_id`, though this may not be populated
+#' depending on how Arrow was built.
+#' - `CONBENCH_MACHINE_INFO_NAME`: Will override detected machine host name sent
+#' in `machine_info.name` when posting runs and results. Needed for cases where
+#' the actual host name can vary, like CI and cloud runners.
+#'
 #' @rdname run
 #' @export
-run.BenchmarkDataFrame <- function(x, ...) {
+run.BenchmarkDataFrame <- function(x, ..., publish = FALSE, run_name = NULL, run_reason = NULL) {
   # if already run (so no elements of `parameters` are NULL), is no-op
   x <- get_default_parameters(x, ...)
 
+  if (publish) {
+    stopifnot(
+      "Results cannot be published without a `run_reason`!" = !is.null(run_reason)
+    )
+
+    github <- github_info()
+    if (is.null(run_name)) {
+      run_name <- paste(run_reason, github$commit, sep = ": ")
+    }
+    bm_run <- BenchmarkRun$new(name = run_name, reason = run_reason, github = github)
+    start_run(run = bm_run)
+
+    # clean up even if something fails
+    on.exit({
+      finish_run(run = bm_run)
+    })
+  }
+
   x$results <- purrr::map2(x$benchmark, x$parameters, function(bm, params) {
-    run_benchmark(bm = bm, params = params, ...)
+    ress <- run_benchmark(bm = bm, params = params, run_name = run_name, run_reason = run_reason, ...)
+
+    if (publish) {
+      ress$results <- lapply(ress$results, augment_result)
+      lapply(ress$results, submit_result)
+    }
+    ress
   })
 
   x
@@ -49,6 +101,8 @@ run.BenchmarkDataFrame <- function(x, ...) {
 #' `profvis::profvis(prof_input = file)`. Default is `FALSE`
 #' @param read_only this will only attempt to read benchmark files and will not
 #' run any that it cannot find.
+#' @param run_name Name for the run. If not specified, will use `{run_reason}: {commit hash}`
+#' @param run_reason Low-cardinality reason for the run, e.g. "commit" or "test"
 #'
 #' @return A `BenchmarkResults` object, containing `results` attribute of a list
 #' of length `nrow(params)`, each of those a `BenchmarkResult` object.
@@ -62,7 +116,9 @@ run_benchmark <- function(bm,
                           n_iter = 1,
                           dry_run = FALSE,
                           profiling = FALSE,
-                          read_only = FALSE) {
+                          read_only = FALSE,
+                          run_name = NULL,
+                          run_reason = NULL) {
   start <- Sys.time()
   stopifnot(is.data.frame(params), nrow(params) > 0)
   message("Running ", nrow(params), " benchmarks with ", n_iter, " iterations:")
@@ -91,6 +147,8 @@ run_benchmark <- function(bm,
     profiling = profiling,
     progress_bar = progress_bar,
     read_only = read_only,
+    run_name = run_name,
+    run_reason = run_reason,
     test_packages = unique(bm$packages_used(params))
   )
 
@@ -120,6 +178,8 @@ run_benchmark <- function(bm,
 #' @inheritParams run_benchmark
 #' @param batch_id a length 1 character vector to identify the batch
 #' @param progress_bar a `progress` object to update progress to (default `NULL`)
+#' @param run_name Name for the run
+#' @param run_reason Low-cardinality reason for the run, e.g. "commit" or "test"
 #' @param test_packages a character vector of packages that the benchmarks test (default `NULL`)
 #' @param ... parameters passed to `bm$setup()`.
 #'
@@ -134,6 +194,8 @@ run_one <- function(bm,
                     profiling = FALSE,
                     progress_bar = NULL,
                     read_only = FALSE,
+                    run_name = NULL,
+                    run_reason = NULL,
                     test_packages = NULL) {
   all_params <- list(...)
 
@@ -159,7 +221,7 @@ run_one <- function(bm,
   args <- modifyList(
     params,
     list(bm = bm, n_iter = n_iter, batch_id = batch_id, profiling = profiling,
-         global_params = global_params)
+         global_params = global_params, run_name = run_name, run_reason = run_reason)
   )
 
   # transform the arguments into a string representation that can be called in
@@ -185,6 +247,13 @@ run_one <- function(bm,
     return(script)
   }
 
+  metadata <- assemble_metadata(
+    name = bm$name,
+    params = bm$tags_fun(params),
+    cpu_count = global_params$cpu_count,
+    n_iter = n_iter
+  )
+
   # construct the `run_script()` arguments out of all of the params as well as a
   # few other arguments. We need all of the parameters here so that the
   # cached result file names are right. Then run the script.
@@ -193,8 +262,11 @@ run_one <- function(bm,
     list(
       lines = script,
       name = bm$name,
+      metadata = metadata,
       progress_bar = progress_bar,
-      read_only = read_only
+      read_only = read_only,
+      run_name = run_name,
+      run_reason = run_reason
     ),
     keep.null = TRUE
   )
@@ -213,10 +285,13 @@ run_one <- function(bm,
 #' in a fresh R process that `run_one()` provides.
 #' @inheritParams run_one
 #' @param global_params the global parameters that have been set
+#' @param run_name Name for the run
+#' @param run_reason Low-cardinality reason for the run, e.g. "commit" or "test"
 #' @export
 #' @importFrom utils modifyList
 #' @importFrom sessioninfo package_info
-run_bm <- function(bm, ..., n_iter = 1, batch_id = NULL, profiling = FALSE, global_params = list()) {
+run_bm <- function(bm, ..., n_iter = 1, batch_id = NULL, profiling = FALSE,
+                   global_params = list(), run_name = NULL, run_reason = NULL) {
   # We *don't* want to use altrep when we are setting up, or we get surprising results
   withr::with_options(
     list(arrow.use_altrep = FALSE),
@@ -257,10 +332,10 @@ run_bm <- function(bm, ..., n_iter = 1, batch_id = NULL, profiling = FALSE, glob
   )
 
   out <- BenchmarkResult$new(
-    run_name = NULL,
+    run_name = run_name,
     run_id = NULL,
     batch_id = batch_id,
-    run_reason = NULL,
+    run_reason = run_reason,
     # let default populate
     # timestamp = utc_now_iso_format(),
     stats = list(
@@ -298,7 +373,8 @@ run_iteration <- function(bm, ctx, profiling = FALSE) {
   out
 }
 
-global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL, test_packages = NULL, dry_run = FALSE, read_only = FALSE) {
+global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL,
+                         test_packages = NULL, dry_run = FALSE, read_only = FALSE) {
   script <- ""
   if (!dry_run & !read_only) {
     lib_path <- ensure_lib(lib_path, test_packages = test_packages)
@@ -365,13 +441,6 @@ assemble_metadata <- function(name, params, cpu_count, n_iter) {
     benchmark_language = "R"
   )
 
-  pr_number_env <- Sys.getenv("BENCHMARKABLE_PR_NUMBER")
-  github <- list(
-    repository = "https://github.com/apache/arrow",
-    commit = arrow_info$build_info$git_id,
-    pr_number = if (pr_number_env == "") NULL else as.integer(pr_number_env)
-  )
-
   options <- list(
     iterations = n_iter,
     drop_caches = FALSE,  # TODO: parameterize when implemented
@@ -383,14 +452,28 @@ assemble_metadata <- function(name, params, cpu_count, n_iter) {
     tags = tags,
     info = info,
     context = context,
-    github = github,
+    github = github_info(),
     options = options
   )
 }
 
+
+github_info <- function() {
+  repo_env <- Sys.getenv("CONBENCH_PROJECT_REPOSITORY")
+  pr_number_env <- Sys.getenv("CONBENCH_PROJECT_PR_NUMBER")
+  commit_env <- Sys.getenv("CONBENCH_PROJECT_COMMIT")
+  github <- list(
+    repository = if (repo_env != "") repo_env else "https://github.com/apache/arrow",
+    commit = if (commit_env != "") commit_env else arrow::arrow_info()$build_info$git_id,
+    pr_number = if (pr_number_env != "") as.integer(pr_number_env) else NULL
+  )
+}
+
+
 #' @importFrom jsonlite fromJSON toJSON
 #' @importFrom withr with_envvar
-run_script <- function(lines, cmd = find_r(), ..., progress_bar, read_only = FALSE) {
+run_script <- function(lines, cmd = find_r(), ..., metadata, progress_bar, read_only = FALSE,
+                       run_name = run_name, run_reason = run_reason) {
   # cmd may need to vary by platform; possibly also a param for this fn?
 
   result_dir <- file.path(local_dir(), "results")
@@ -466,8 +549,20 @@ run_script <- function(lines, cmd = find_r(), ..., progress_bar, read_only = FAL
     # This means the script errored.
     message(paste(result, collapse = "\n"))
     result <- BenchmarkResult$new(
+      run_name = run_name,
+      run_id = NULL,
+      run_reason = run_reason,
       error = list(log = result),
-      optional_benchmark_info = list(params = list(...))
+      tags = metadata$tags,
+      info = metadata$info,
+      optional_benchmark_info = list(
+        params = list(...),
+        options = metadata$options,
+        output = NULL,
+        rscript = lines
+      ),
+      context = metadata$context,
+      github = metadata$github
     )
   }
 
