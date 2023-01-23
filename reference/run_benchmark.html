@@ -51,7 +51,9 @@
 <span>  n_iter <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  dry_run <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  profiling <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  read_only <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  read_only <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  run_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  run_reason <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -90,6 +92,14 @@ contain a <code>prof_file</code> field, which you can read in with
 <dt>read_only</dt>
 <dd><p>this will only attempt to read benchmark files and will not
 run any that it cannot find.</p></dd>
+
+
+<dt>run_name</dt>
+<dd><p>Name for the run. If not specified, will use <code>{run_reason}: {commit hash}</code></p></dd>
+
+
+<dt>run_reason</dt>
+<dd><p>Low-cardinality reason for the run, e.g. "commit" or "test"</p></dd>
 
 </dl></div>
     <div id="value">

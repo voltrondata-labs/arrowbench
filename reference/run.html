@@ -47,7 +47,7 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">run</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for BenchmarkDataFrame</span></span>
-<span><span class="fu">run</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">run</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span>, publish <span class="op">=</span> <span class="cn">FALSE</span>, run_name <span class="op">=</span> <span class="cn">NULL</span>, run_reason <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -61,6 +61,20 @@
 <code>run.BenchmarkDataFrame</code>, passed through to <code><a href="get_default_parameters.html">get_default_parameters()</a></code> (when
 parameters are not specified) and <code><a href="run_benchmark.html">run_benchmark()</a></code>.</p></dd>
 
+
+<dt>publish</dt>
+<dd><p>Flag for whether to publish results to a Conbench server. See
+"Environment Variables" section for how to specify server details. Requires
+the benchconnect CLI is installed; see <code><a href="install_benchconnect.html">install_benchconnect()</a></code>.</p></dd>
+
+
+<dt>run_name</dt>
+<dd><p>Name for the run. If not specified, will use <code>{run_reason}: {commit hash}</code></p></dd>
+
+
+<dt>run_reason</dt>
+<dd><p>Required. Low-cardinality reason for the run, e.g. "commit" or "test"</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
@@ -69,6 +83,30 @@ parameters are not specified) and <code><a href="run_benchmark.html">run_benchma
 <p>A modified object containing run results. For <code>run.BenchmarkDataFrame</code>,
 a <code>results</code> list column is appended.</p>
     </div>
+    <div id="environment-variables">
+    <h2>Environment Variables</h2>
+    
+
+<ul><li><p><code>CONBENCH_URL</code>: Required. The URL of the Conbench server with no trailing
+slash. For arrow, should be <code>https://conbench.ursa.dev</code>.</p></li>
+<li><p><code>CONBENCH_EMAIL</code>: The email to use for Conbench login. Only required if the
+server is private.</p></li>
+<li><p><code>CONBENCH_PASSWORD</code>: The password to use for Conbench login. Only required
+if the server is private.</p></li>
+<li><p><code>CONBENCH_PROJECT_REPOSITORY</code>: The repository name (in the format
+<code>org/repo</code>) or the URL (in the format <code>https://github.com/org/repo</code>).
+Defaults to <code>"https://github.com/apache/arrow"</code> if unset.</p></li>
+<li><p><code>CONBENCH_PROJECT_PR_NUMBER</code>: Recommended. The number of the GitHub pull
+request that is running this benchmark, or <code>NULL</code> if it's a run on the
+default branch</p></li>
+<li><p><code>CONBENCH_PROJECT_COMMIT</code>: The 40-character commit SHA of the repo being
+benchmarked. If missing, will attempt to obtain it from
+<code>arrow::arrow_info()$build_info$git_id</code>, though this may not be populated
+depending on how Arrow was built.</p></li>
+<li><p><code>CONBENCH_MACHINE_INFO_NAME</code>: Will override detected machine host name sent
+in <code>machine_info.name</code> when posting runs and results. Needed for cases where
+the actual host name can vary, like CI and cloud runners.</p></li>
+</ul></div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

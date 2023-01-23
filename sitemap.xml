@@ -115,6 +115,15 @@
     <loc>/reference/index.html</loc>
   </url>
   <url>
+    <loc>/reference/install_benchconnect.html</loc>
+  </url>
+  <url>
+    <loc>/reference/install_datalogistik.html</loc>
+  </url>
+  <url>
+    <loc>/reference/install_pipx.html</loc>
+  </url>
+  <url>
     <loc>/reference/known_sources.html</loc>
   </url>
   <url>

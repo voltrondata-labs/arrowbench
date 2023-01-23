@@ -54,7 +54,9 @@ in a fresh R process that <code><a href="run_one.html">run_one()</a></code> prov
 <span>  n_iter <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  batch_id <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  profiling <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  global_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  global_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  run_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  run_reason <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -84,6 +86,14 @@ contain a <code>prof_file</code> field, which you can read in with
 
 <dt>global_params</dt>
 <dd><p>the global parameters that have been set</p></dd>
+
+
+<dt>run_name</dt>
+<dd><p>Name for the run</p></dd>
+
+
+<dt>run_reason</dt>
+<dd><p>Low-cardinality reason for the run, e.g. "commit" or "test"</p></dd>
 
 </dl></div>
 
