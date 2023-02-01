@@ -144,7 +144,11 @@ tpc_h <- Benchmark("tpch",
   tags_fun = function(params) {
     # for consistency with runs through voltrondata-labs/benchmarks
     params$query_id <- sprintf("TPCH-%02d", params$query_id)
-    if (params$output == "data_frame") {
+    # TODO / NOTE: `params$output` may be NULL if not specified in a call to
+    # `run_one()` as voltrondata-labs/benchmarks does.
+    # [arrowbench#129](https://github.com/voltrondata-labs/arrowbench/issues/129)
+    # will fix this, at which point the first condition here should be removed.
+    if (!is.null(params$output) && params$output == "data_frame") {
       params$output <- NULL
     }
     params
