@@ -1,0 +1,86 @@
+[
+  {
+    "lang": "R",
+    "command": "dataset_taxi_2013",
+    "name": "dataset_taxi_2013",
+    "runner": "arrowbench"
+  },
+  {
+    "lang": "R",
+    "command": "row_group_size",
+    "name": "row_group_size",
+    "runner": "arrowbench"
+  },
+  {
+    "lang": "R",
+    "command": "write_csv",
+    "name": "write_csv",
+    "runner": "arrowbench"
+  },
+  {
+    "lang": "R",
+    "command": "read_csv",
+    "name": "read_csv",
+    "runner": "arrowbench"
+  },
+  {
+    "lang": "R",
+    "command": "read_json",
+    "name": "read_json",
+    "runner": "arrowbench"
+  },
+  {
+    "lang": "R",
+    "command": "remote_dataset",
+    "name": "remote_dataset",
+    "runner": "arrowbench"
+  },
+  {
+    "lang": "R",
+    "command": "file-write",
+    "name": "file-write",
+    "runner": "arrowbench"
+  },
+  {
+    "lang": "R",
+    "command": "dataframe-to-table",
+    "name": "dataframe-to-table",
+    "runner": "arrowbench"
+  },
+  {
+    "lang": "R",
+    "command": "table_to_df",
+    "name": "table_to_df",
+    "runner": "arrowbench"
+  },
+  {
+    "lang": "R",
+    "command": "array_to_vector",
+    "name": "array_to_vector",
+    "runner": "arrowbench"
+  },
+  {
+    "lang": "R",
+    "command": "partitioned-dataset-filter",
+    "name": "partitioned-dataset-filter",
+    "runner": "arrowbench"
+  },
+  {
+    "lang": "R",
+    "command": "file-read",
+    "name": "file-read",
+    "runner": "arrowbench"
+  },
+  {
+    "lang": "R",
+    "command": "tpch",
+    "name": "tpch",
+    "runner": "arrowbench"
+  },
+  {
+    "lang": "R",
+    "command": "array_altrep_materialization",
+    "name": "array_altrep_materialization",
+    "runner": "arrowbench"
+  }
+]
