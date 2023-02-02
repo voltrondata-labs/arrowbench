@@ -8,10 +8,10 @@ to keep track of benchmarks available in a repository.
 arrowbench::get_package_benchmarks()$name |>
   lapply(function(name) {
     list(
-      lang = "R",
       command = name,
       name = name,
-      runner = "arrowbench"
+      runner = "arrowbench",
+      flags = list(language = "R")
     )
   }) |>
   unname() |>
