@@ -7,7 +7,7 @@
 \usage{
 run(x, ...)
 
-\method{run}{BenchmarkDataFrame}(x, ..., publish = FALSE, run_name = NULL, run_reason = NULL)
+\method{run}{BenchmarkDataFrame}(x, ..., publish = FALSE, run_id = NULL, run_name = NULL, run_reason = NULL)
 }
 \arguments{
 \item{x}{An S3 classed object to run}
@@ -19,6 +19,8 @@ parameters are not specified) and \code{\link[=run_benchmark]{run_benchmark()}}.
 \item{publish}{Flag for whether to publish results to a Conbench server. See
 "Environment Variables" section for how to specify server details. Requires
 the benchconnect CLI is installed; see \code{\link[=install_benchconnect]{install_benchconnect()}}.}
+
+\item{run_id}{Unique ID for the run. If not specified, will be generated.}
 
 \item{run_name}{Name for the run. If not specified, will use \verb{\{run_reason\}: \{commit hash\}}}
 
