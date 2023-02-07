@@ -1,0 +1,114 @@
+[
+  {
+    "command": "dataset_taxi_2013",
+    "name": "arrowbench/dataset_taxi_2013",
+    "runner": "arrowbench",
+    "flags": {
+      "language": "R"
+    }
+  },
+  {
+    "command": "row_group_size",
+    "name": "arrowbench/row_group_size",
+    "runner": "arrowbench",
+    "flags": {
+      "language": "R"
+    }
+  },
+  {
+    "command": "write_csv",
+    "name": "arrowbench/write_csv",
+    "runner": "arrowbench",
+    "flags": {
+      "language": "R"
+    }
+  },
+  {
+    "command": "read_csv",
+    "name": "arrowbench/read_csv",
+    "runner": "arrowbench",
+    "flags": {
+      "language": "R"
+    }
+  },
+  {
+    "command": "read_json",
+    "name": "arrowbench/read_json",
+    "runner": "arrowbench",
+    "flags": {
+      "language": "R"
+    }
+  },
+  {
+    "command": "remote_dataset",
+    "name": "arrowbench/remote_dataset",
+    "runner": "arrowbench",
+    "flags": {
+      "language": "R"
+    }
+  },
+  {
+    "command": "file-write",
+    "name": "arrowbench/file-write",
+    "runner": "arrowbench",
+    "flags": {
+      "language": "R"
+    }
+  },
+  {
+    "command": "dataframe-to-table",
+    "name": "arrowbench/dataframe-to-table",
+    "runner": "arrowbench",
+    "flags": {
+      "language": "R"
+    }
+  },
+  {
+    "command": "table_to_df",
+    "name": "arrowbench/table_to_df",
+    "runner": "arrowbench",
+    "flags": {
+      "language": "R"
+    }
+  },
+  {
+    "command": "array_to_vector",
+    "name": "arrowbench/array_to_vector",
+    "runner": "arrowbench",
+    "flags": {
+      "language": "R"
+    }
+  },
+  {
+    "command": "partitioned-dataset-filter",
+    "name": "arrowbench/partitioned-dataset-filter",
+    "runner": "arrowbench",
+    "flags": {
+      "language": "R"
+    }
+  },
+  {
+    "command": "file-read",
+    "name": "arrowbench/file-read",
+    "runner": "arrowbench",
+    "flags": {
+      "language": "R"
+    }
+  },
+  {
+    "command": "tpch",
+    "name": "arrowbench/tpch",
+    "runner": "arrowbench",
+    "flags": {
+      "language": "R"
+    }
+  },
+  {
+    "command": "array_altrep_materialization",
+    "name": "arrowbench/array_altrep_materialization",
+    "runner": "arrowbench",
+    "flags": {
+      "language": "R"
+    }
+  }
+]
