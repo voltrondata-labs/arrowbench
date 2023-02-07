@@ -9,7 +9,7 @@ arrowbench::get_package_benchmarks()$name |>
   lapply(function(name) {
     list(
       command = name,
-      name = name,
+      name = paste0("arrowbench/", name),
       runner = "arrowbench",
       flags = list(language = "R")
     )
