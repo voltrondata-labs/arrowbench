@@ -11,6 +11,7 @@ run_bm(
   batch_id = NULL,
   profiling = FALSE,
   global_params = list(),
+  run_id = NULL,
   run_name = NULL,
   run_reason = NULL
 )
@@ -29,6 +30,8 @@ contain a \code{prof_file} field, which you can read in with
 \code{profvis::profvis(prof_input = file)}. Default is \code{FALSE}}
 
 \item{global_params}{the global parameters that have been set}
+
+\item{run_id}{Unique ID for the run}
 
 \item{run_name}{Name for the run}
 

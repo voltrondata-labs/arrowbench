@@ -12,6 +12,7 @@ run_benchmark(
   dry_run = FALSE,
   profiling = FALSE,
   read_only = FALSE,
+  run_id = NULL,
   run_name = NULL,
   run_reason = NULL
 )
@@ -37,6 +38,8 @@ contain a \code{prof_file} field, which you can read in with
 
 \item{read_only}{this will only attempt to read benchmark files and will not
 run any that it cannot find.}
+
+\item{run_id}{Unique ID for the run}
 
 \item{run_name}{Name for the run. If not specified, will use \verb{\{run_reason\}: \{commit hash\}}}
 

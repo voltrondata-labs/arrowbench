@@ -313,6 +313,7 @@ test_that("run.BenchmarkDataFrame() with `publish = TRUE` works (with mocking)",
     commit = "2z8c9c49a5dc4a179243268e4bb6daa5",
     pr_number = 47L
   )
+  run_id <- "fake-run-id"
   run_reason <- "mocked-arrowbench-unit-test"
   run_name <- paste(run_reason, github$commit, sep = ": ")
   host_name <- "fake-computer"
@@ -336,6 +337,7 @@ test_that("run.BenchmarkDataFrame() with `publish = TRUE` works (with mocking)",
             how = function(run) {
               run <- augment_run(run)
               expect_identical(run$github, github)
+              expect_identical(run$id, run_id)
               expect_identical(run$name, run_name)
               expect_identical(run$reason, run_reason)
               expect_identical(run$machine_info$name, host_name)
@@ -347,6 +349,7 @@ test_that("run.BenchmarkDataFrame() with `publish = TRUE` works (with mocking)",
             what = "submit_result",
             how = function(result) {
               expect_identical(result$github, github)
+              expect_identical(result$run_id, run_id)
               expect_identical(result$run_name, run_name)
               expect_identical(result$run_reason, run_reason)
               expect_identical(result$machine_info$name, host_name)
@@ -359,6 +362,7 @@ test_that("run.BenchmarkDataFrame() with `publish = TRUE` works (with mocking)",
             how = function(run) {
               run <- augment_run(run)
               expect_identical(run$github, github)
+              expect_identical(run$id, run_id)
               expect_identical(run$name, run_name)
               expect_identical(run$reason, run_reason)
               expect_identical(run$machine_info$name, host_name)
@@ -369,6 +373,7 @@ test_that("run.BenchmarkDataFrame() with `publish = TRUE` works (with mocking)",
           bm_df_res <- run(
             bm_df,
             publish = TRUE,
+            run_id = run_id,
             run_name = run_name,
             run_reason = run_reason
 
