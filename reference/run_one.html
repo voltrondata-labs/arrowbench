@@ -53,6 +53,7 @@
 <span>  profiling <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  progress_bar <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  read_only <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  run_id <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  run_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  run_reason <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  test_packages <span class="op">=</span> <span class="cn">NULL</span></span>
@@ -95,6 +96,10 @@ contain a <code>prof_file</code> field, which you can read in with
 <dt>read_only</dt>
 <dd><p>this will only attempt to read benchmark files and will not
 run any that it cannot find.</p></dd>
+
+
+<dt>run_id</dt>
+<dd><p>Unique ID for the run</p></dd>
 
 
 <dt>run_name</dt>
