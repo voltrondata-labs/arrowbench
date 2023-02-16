@@ -22,7 +22,8 @@ run_one(
 \arguments{
 \item{bm}{\code{\link[=Benchmark]{Benchmark()}} object}
 
-\item{...}{parameters passed to \code{bm$setup()}.}
+\item{...}{parameters passed to \code{bm$setup()} or global parameters; see the
+"Parameterizing benchmarks" section of \code{\link[=Benchmark]{Benchmark()}}}
 
 \item{n_iter}{integer number of iterations to replicate each benchmark}
 

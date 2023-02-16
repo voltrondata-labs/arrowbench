@@ -19,7 +19,9 @@ get_default_parameters(x, ...)
 \item{x}{An object for which to generate parameters}
 
 \item{...}{Named arguments corresponding to the parameters of \code{bm}'s \code{setup}
-function. May also contain \code{cpu_count}, \code{lib_path}, and \code{mem_alloc}.}
+function. May also contain global params \code{cpu_count}, \code{lib_path}, \code{mem_alloc},
+and \code{drop_caches}. See the "Parameterizing benchmarks" section of \code{\link[=Benchmark]{Benchmark()}}
+for more details.}
 }
 \value{
 For \code{get_default_parameters.Benchmark}, a dataframe of parameter combinations

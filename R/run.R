@@ -202,7 +202,8 @@ run_benchmark <- function(bm,
 #' @param run_name Name for the run
 #' @param run_reason Low-cardinality reason for the run, e.g. "commit" or "test"
 #' @param test_packages a character vector of packages that the benchmarks test (default `NULL`)
-#' @param ... parameters passed to `bm$setup()`.
+#' @param ... parameters passed to `bm$setup()` or global parameters; see the
+#' "Parameterizing benchmarks" section of [Benchmark()]
 #'
 #' @return An instance of `BenchmarkResult`: an R6 object containing either
 #' "stats" or "error".
@@ -222,7 +223,7 @@ run_one <- function(bm,
   all_params <- list(...)
 
   # separate the global parameters, and make sure only those that are specified remain
-  global_param_names <- c("lib_path", "cpu_count", "mem_alloc")
+  global_param_names <- c("lib_path", "cpu_count", "mem_alloc", "drop_caches")
   global_params <- all_params[global_param_names]
   global_params <- Filter(Negate(is.null), global_params)
   # ensure that the lib_path "latest" is always present, since that's what would
@@ -274,6 +275,7 @@ run_one <- function(bm,
     name = bm$name,
     params = bm$tags_fun(params),
     cpu_count = global_params$cpu_count,
+    drop_caches = isTRUE(global_params$drop_caches),
     n_iter = n_iter
   )
 
@@ -353,6 +355,7 @@ run_bm <- function(bm, ..., n_iter = 1, batch_id = NULL, profiling = FALSE,
     name = bm$name,
     params = bm$tags_fun(params),
     cpu_count = global_params$cpu_count,
+    drop_caches = isTRUE(global_params[["drop_caches"]]),
     n_iter = n_iter
   )
 
@@ -399,7 +402,8 @@ run_iteration <- function(bm, ctx, profiling = FALSE) {
 }
 
 global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL,
-                         test_packages = NULL, dry_run = FALSE, read_only = FALSE) {
+                         drop_caches = NULL, test_packages = NULL,
+                         dry_run = FALSE, read_only = FALSE) {
   script <- ""
   if (!dry_run & !read_only) {
     lib_path <- ensure_lib(lib_path, test_packages = test_packages)
@@ -433,6 +437,12 @@ global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL,
       paste0("confirm_mem_alloc('", mem_alloc, "')")
     )
   }
+  if (isTRUE(drop_caches)) {
+    script <- c(
+      script,
+      "sync_and_drop_caches()"
+    )
+  }
   script
 }
 
@@ -441,10 +451,12 @@ global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL,
 #' @param name Benchmark name, i.e. `bm$name`
 #' @param params Named list of parameters for the individual run, i.e. the case
 #' @param cpu_count Number of CPUs allocated
+#' @param drop_caches Attempt to drop the disk cache before each iteration.
+#' Currently only works on linux and defaults to `FALSE`.
 #' @param n_iter Number of iterations
 #'
 #' @keywords internal
-assemble_metadata <- function(name, params, cpu_count, n_iter) {
+assemble_metadata <- function(name, params, cpu_count, drop_caches, n_iter) {
   tags <- params
   tags[["name"]] <- name
   tags[["dataset"]] <- params$source
@@ -468,7 +480,7 @@ assemble_metadata <- function(name, params, cpu_count, n_iter) {
 
   options <- list(
     iterations = n_iter,
-    drop_caches = FALSE,  # TODO: parameterize when implemented
+    drop_caches = drop_caches,
     cpu_count = cpu_count
   )
 

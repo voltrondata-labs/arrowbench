@@ -4,7 +4,7 @@
 \alias{assemble_metadata}
 \title{Assemble metadata for a benchmark run}
 \usage{
-assemble_metadata(name, params, cpu_count, n_iter)
+assemble_metadata(name, params, cpu_count, drop_caches, n_iter)
 }
 \arguments{
 \item{name}{Benchmark name, i.e. \code{bm$name}}
@@ -12,6 +12,9 @@ assemble_metadata(name, params, cpu_count, n_iter)
 \item{params}{Named list of parameters for the individual run, i.e. the case}
 
 \item{cpu_count}{Number of CPUs allocated}
+
+\item{drop_caches}{Attempt to drop the disk cache before each iteration.
+Currently only works on linux and defaults to \code{FALSE}.}
 
 \item{n_iter}{Number of iterations}
 }

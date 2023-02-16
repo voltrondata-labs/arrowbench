@@ -89,7 +89,7 @@ a range of parameter combinations is handled by the runner, not the functions
 in the benchmark object.
 }
 
-\section{Parametrizing benchmarks}{
+\section{Parameterizing benchmarks}{
 
 
 When we benchmark, we often want to run our code compared with someone else's
@@ -125,6 +125,10 @@ installed outside of this process.
 \item \code{cpu_count}: To restrict the number of threads available for computation,
 specify an integer \code{cpu_count}. This sets the R \code{Ncpus} option, which many
 packages follow, and also caps the \code{arrow} threadpool size.
+\item \code{mem_alloc}: The memory allocator to be tested (one of: "jemalloc",
+"mimalloc", "system")
+\item \code{drop_caches}: Attempt to drop the disk cache before each iteration.
+Currently only works on linux and defaults to \code{FALSE}.
 }
 
 Because these parameters can alter the global session state in unpredictable
