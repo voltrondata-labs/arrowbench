@@ -28,7 +28,7 @@ get_default_parameters.default <- function(x, ...) {
 get_default_parameters.Benchmark <- function(x, ...) {
   # This takes the expansion of the default parameters in the function signature
   # perhaps restricted by the ... params
-  params <- modifyList(get_default_args(x$setup), list(...))
+  params <- modifyList(get_default_args(x$setup), list(...), keep.null = TRUE)
   if (identical(params[["lib_path"]], "all")) {
     # Default for lib_path is just "latest", if omitted
     # "all" means all old versions
@@ -40,7 +40,11 @@ get_default_parameters.Benchmark <- function(x, ...) {
   if (is.null(params[["cpu_count"]])) {
     params$cpu_count <- c(1L, parallel::detectCores())
   }
-  params[["drop_caches"]] <- isTRUE(params[["drop_caches"]])
+
+  # params[["drop_caches"]] may be `NULL`
+  to_list_col <- lengths(params) == 0
+  params[to_list_col] <- lapply(params[to_list_col], list)
+
   params[["stringsAsFactors"]] <- FALSE
   out <- do.call(expand.grid, params)
 

@@ -79,7 +79,7 @@ test_that("get_params_summary returns a data.frame",{
 
   expected_summary <- dplyr::tibble(
     duration = 0.01, grid = TRUE, cpu_count = 1L, output_type = "message",
-    drop_caches = FALSE, lib_path = "latest", did_error = FALSE
+    lib_path = "latest", did_error = FALSE
   )
   expect_identical(success_summary, expected_summary)
 })
@@ -225,9 +225,9 @@ test_that("form of the results during a dry run", {
 
 test_that("an rscript is added to the results object", {
   expect_benchmark_run(res <- run_benchmark(placebo, cpu_count = 1))
-  expect_true(file.exists(test_path("results/placebo/1-FALSE-0.01-TRUE.json")))
+  expect_true(file.exists(test_path("results/placebo/1-0.01-TRUE.json")))
   expect_benchmark_run(res <- run_benchmark(placebo, cpu_count = 10, duration = 0.1))
-  res_path <- test_path("results/placebo/10-FALSE-0.1-TRUE.json")
+  res_path <- test_path("results/placebo/10-0.1-TRUE.json")
   expect_true(file.exists(res_path))
 
   res <- jsonlite::read_json(res_path)

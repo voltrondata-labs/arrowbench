@@ -224,8 +224,7 @@ run_one <- function(bm,
 
   # separate the global parameters, and make sure only those that are specified remain
   global_param_names <- c("lib_path", "cpu_count", "mem_alloc", "drop_caches")
-  global_params <- all_params[global_param_names]
-  global_params <- Filter(Negate(is.null), global_params)
+  global_params <- all_params[names(all_params) %in% global_param_names]
   # ensure that the lib_path "latest" is always present, since that's what would
   # happen when the script runs regardless
   global_params[["lib_path"]] <- global_params[["lib_path"]] %||% "latest"
@@ -245,7 +244,8 @@ run_one <- function(bm,
     params,
     list(bm = bm, n_iter = n_iter, batch_id = batch_id, profiling = profiling,
          global_params = global_params, run_id = run_id, run_name = run_name,
-         run_reason = run_reason)
+         run_reason = run_reason),
+    keep.null = TRUE
   )
 
   # transform the arguments into a string representation that can be called in
@@ -343,13 +343,13 @@ run_bm <- function(bm, ..., n_iter = 1, batch_id = NULL, profiling = FALSE,
 
   defaults <- lapply(get_default_args(bm$setup), head, 1)
   defaults$cpu_count <- parallel::detectCores()
-  params <- modifyList(defaults, list(...))
+  params <- modifyList(defaults, list(...), keep.null = TRUE)
 
   case_version <- bm$case_version(params)
   stopifnot("Case versions may not be NA; use NULL for no versioning" = !is.na(case_version))
   params$case_version <- case_version
 
-  all_params <- modifyList(params, global_params)
+  all_params <- modifyList(params, global_params, keep.null = TRUE)
   all_params$packages <- package_info()[, c("package", "loadedversion", "date", "source")]
   names(all_params$packages)[2] <- "version"
   row.names(all_params$packages) <- NULL
