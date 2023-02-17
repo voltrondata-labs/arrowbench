@@ -13,8 +13,9 @@ assemble_metadata(name, params, cpu_count, drop_caches, n_iter)
 
 \item{cpu_count}{Number of CPUs allocated}
 
-\item{drop_caches}{Attempt to drop the disk cache before each iteration.
-Currently only works on linux and defaults to \code{FALSE}.}
+\item{drop_caches}{Attempt to drop the disk cache before each case or iteration.
+Currently only works on linux. Permissible values are \code{"case"}, \code{"iteration"},
+and \code{NULL}. Defaults to \code{NULL}, i.e. don't drop caches.}
 
 \item{n_iter}{Number of iterations}
 }

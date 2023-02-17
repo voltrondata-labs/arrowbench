@@ -127,8 +127,9 @@ specify an integer \code{cpu_count}. This sets the R \code{Ncpus} option, which 
 packages follow, and also caps the \code{arrow} threadpool size.
 \item \code{mem_alloc}: The memory allocator to be tested (one of: "jemalloc",
 "mimalloc", "system")
-\item \code{drop_caches}: Attempt to drop the disk cache before each iteration.
-Currently only works on linux and defaults to \code{FALSE}.
+\item \code{drop_caches}: Attempt to drop the disk cache before each case or iteration.
+Currently only works on linux. Permissible values are \code{"case"}, \code{"iteration"},
+and \code{NULL}. Defaults to \code{NULL}, i.e. don't drop caches.
 }
 
 Because these parameters can alter the global session state in unpredictable

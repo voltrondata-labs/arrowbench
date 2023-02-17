@@ -54,8 +54,9 @@
 #' packages follow, and also caps the `arrow` threadpool size.
 #' * `mem_alloc`: The memory allocator to be tested (one of: "jemalloc",
 #' "mimalloc", "system")
-#' * `drop_caches`: Attempt to drop the disk cache before each iteration.
-#' Currently only works on linux and defaults to `FALSE`.
+#' * `drop_caches`: Attempt to drop the disk cache before each case or iteration.
+#' Currently only works on linux. Permissible values are `"case"`, `"iteration"`,
+#' and `NULL`. Defaults to `NULL`, i.e. don't drop caches.
 #'
 #' Because these parameters can alter the global session state in unpredictable
 #' ways, when we run benchmarks, we always do so by calling out to a fresh R

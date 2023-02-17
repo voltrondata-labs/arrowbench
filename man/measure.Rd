@@ -4,14 +4,18 @@
 \alias{measure}
 \title{Measure times and memory usage}
 \usage{
-measure(..., profiling = FALSE)
+measure(..., profiling = FALSE, drop_caches = NULL)
 }
 \arguments{
-\item{...}{An expression to run}
+\item{...}{An expression to}
 
 \item{profiling}{Logical: collect prof info? If \code{TRUE}, the result data will
 contain a \code{prof_file} field, which you can read in with
 \code{profvis::profvis(prof_input = file)}. Default is \code{FALSE}}
+
+\item{drop_caches}{Attempt to drop the disk cache before each case or iteration.
+Currently only works on linux. Permissible values are \code{"case"}, \code{"iteration"},
+and \code{NULL}. Defaults to \code{NULL}, i.e. don't drop caches.}
 }
 \value{
 A tibble of timings and memory usage

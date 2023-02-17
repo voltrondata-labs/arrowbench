@@ -274,8 +274,8 @@ run_one <- function(bm,
   metadata <- assemble_metadata(
     name = bm$name,
     params = bm$tags_fun(params),
-    cpu_count = global_params$cpu_count,
-    drop_caches = isTRUE(global_params$drop_caches),
+    cpu_count = global_params[["cpu_count"]],
+    drop_caches = global_params[["drop_caches"]],
     n_iter = n_iter
   )
 
@@ -331,7 +331,12 @@ run_bm <- function(bm, ..., n_iter = 1, batch_id = NULL, profiling = FALSE,
 
   results <- list()
   for (i in seq_len(n_iter)) {
-    results[[i]] <- run_iteration(bm, ctx, profiling = profiling)
+    results[[i]] <- run_iteration(
+      bm = bm,
+      ctx = ctx,
+      profiling = profiling,
+      drop_caches = global_params[["drop_caches"]]
+    )
   }
 
   result_df <- do.call(rbind, results)
@@ -355,7 +360,7 @@ run_bm <- function(bm, ..., n_iter = 1, batch_id = NULL, profiling = FALSE,
     name = bm$name,
     params = bm$tags_fun(params),
     cpu_count = global_params$cpu_count,
-    drop_caches = isTRUE(global_params[["drop_caches"]]),
+    drop_caches = global_params[["drop_caches"]],
     n_iter = n_iter
   )
 
@@ -393,10 +398,14 @@ run_bm <- function(bm, ..., n_iter = 1, batch_id = NULL, profiling = FALSE,
   out
 }
 
-run_iteration <- function(bm, ctx, profiling = FALSE) {
+run_iteration <- function(bm, ctx, profiling = FALSE, drop_caches = NULL) {
   eval(bm$before_each, envir = ctx)
   gc(full = TRUE)
-  out <- measure(eval(bm$run, envir = ctx), profiling = profiling)
+  out <- measure(
+    eval(bm$run, envir = ctx),
+    profiling = profiling,
+    drop_caches = drop_caches
+  )
   eval(bm$after_each, envir = ctx)
   out
 }
@@ -437,7 +446,7 @@ global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL,
       paste0("confirm_mem_alloc('", mem_alloc, "')")
     )
   }
-  if (isTRUE(drop_caches)) {
+  if (!is.null(drop_caches) && drop_caches == "case") {
     script <- c(
       script,
       "sync_and_drop_caches()"
@@ -451,8 +460,9 @@ global_setup <- function(lib_path = NULL, cpu_count = NULL, mem_alloc = NULL,
 #' @param name Benchmark name, i.e. `bm$name`
 #' @param params Named list of parameters for the individual run, i.e. the case
 #' @param cpu_count Number of CPUs allocated
-#' @param drop_caches Attempt to drop the disk cache before each iteration.
-#' Currently only works on linux and defaults to `FALSE`.
+#' @param drop_caches Attempt to drop the disk cache before each case or iteration.
+#' Currently only works on linux. Permissible values are `"case"`, `"iteration"`,
+#' and `NULL`. Defaults to `NULL`, i.e. don't drop caches.
 #' @param n_iter Number of iterations
 #'
 #' @keywords internal
