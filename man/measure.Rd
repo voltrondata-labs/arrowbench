@@ -15,7 +15,9 @@ contain a \code{prof_file} field, which you can read in with
 
 \item{drop_caches}{Attempt to drop the disk cache before each case or iteration.
 Currently only works on linux. Permissible values are \code{"case"}, \code{"iteration"},
-and \code{NULL}. Defaults to \code{NULL}, i.e. don't drop caches.}
+and \code{NULL}. Defaults to \code{NULL}, i.e. don't drop caches. As \code{measure()} is run
+once per iteration, here \code{"iteration"} results in dropping caches once and
+\code{NULL} and \code{"case"} result in no cache dropping.}
 }
 \value{
 A tibble of timings and memory usage
