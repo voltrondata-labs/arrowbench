@@ -27,7 +27,8 @@ be constructed from the expansion of the \code{...} arguments, the declared
 parameter options in \code{bm$setup}, and any restrictions potentially defined in
 \code{bm$valid_params()}.}
 
-\item{n_iter}{integer number of iterations to replicate each benchmark}
+\item{n_iter}{Integer number of iterations to replicate each benchmark. If
+\code{n_iter} is also supplied in \code{params}, that takes precedence.}
 
 \item{dry_run}{logical: just return the R source code that would be run in
 a subprocess? Default is \code{FALSE}, meaning that the benchmarks will be run.}

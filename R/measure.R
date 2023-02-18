@@ -1,12 +1,20 @@
 #' Measure times and memory usage
 #'
-#' @param ... An expression to run
+#' @param ... An expression to
+#' @param drop_caches Attempt to drop the disk cache before each case or iteration.
+#' Currently only works on linux. Permissible values are `"case"`, `"iteration"`,
+#' and `NULL`. Defaults to `NULL`, i.e. don't drop caches. As `measure()` is run
+#' once per iteration, here `"iteration"` results in dropping caches once and
+#' `NULL` and `"case"` result in no cache dropping.
 #' @inheritParams run_benchmark
 #'
 #' @return A tibble of timings and memory usage
 #' @export
-measure <- function(..., profiling = FALSE) {
+measure <- function(..., profiling = FALSE, drop_caches = NULL) {
   start_mem <- bench::bench_process_memory()
+  if (!is.null(drop_caches) && drop_caches == "iteration") {
+    sync_and_drop_caches()
+  }
   gc_info <- with_gc_info({
     prof_file <- with_profiling(profiling, {
       timings <- bench::bench_time(eval.parent(...))

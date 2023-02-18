@@ -70,6 +70,36 @@ bm_run_cache_key <- function(name, ...) {
   paste0(name, "/", paste(dots, collapse="-"))
 }
 
+#' Attempt to drop disk caches
+#'
+#' Attempts to drop disk caches. Currently only works on Linux. If clearing
+#' fails, will set an option so it will not reattempt on future calls.
+#'
+#' @return Logical; were caches cleared?
+#' @export
+#' @keywords internal
+sync_and_drop_caches <- function() {
+  command_list <- list(
+    c(command = "sync; echo 3 | sudo tee /proc/sys/vm/drop_caches", option = "arrowbench.drop_caches_failed"),
+    c(command = "sync; sudo purge", option = "arrowbench.purge_failed")
+  )
+
+  for (cl in command_list) {
+    if (!getOption(cl[["option"]], default = FALSE)) {
+      res <- processx::run(command = "bash", args = cl[["command"]], error_on_status = FALSE)
+      if (res$status == 0L) {
+        return(TRUE)
+      } else {
+        opt <- list(TRUE)
+        names(opt) <- cl[["option"]]
+        do.call(options, opt)
+      }
+    }
+  }
+
+  FALSE
+}
+
 #' Confirm that the memory allocator enabled
 #'
 #' @param mem_alloc the memory allocator to be tested (one of: "jemalloc", "mimalloc", "system")

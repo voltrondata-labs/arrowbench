@@ -17,7 +17,7 @@
 #' a range of parameter combinations is handled by the runner, not the functions
 #' in the benchmark object.
 #'
-#' @section Parametrizing benchmarks:
+#' @section Parameterizing benchmarks:
 #'
 #' When we benchmark, we often want to run our code compared with someone else's
 #' code, or we want to run our code but with different settings. There are a few
@@ -52,6 +52,11 @@
 #' * `cpu_count`: To restrict the number of threads available for computation,
 #' specify an integer `cpu_count`. This sets the R `Ncpus` option, which many
 #' packages follow, and also caps the `arrow` threadpool size.
+#' * `mem_alloc`: The memory allocator to be tested (one of: "jemalloc",
+#' "mimalloc", "system")
+#' * `drop_caches`: Attempt to drop the disk cache before each case or iteration.
+#' Currently only works on linux. Permissible values are `"case"`, `"iteration"`,
+#' and `NULL`. Defaults to `NULL`, i.e. don't drop caches.
 #'
 #' Because these parameters can alter the global session state in unpredictable
 #' ways, when we run benchmarks, we always do so by calling out to a fresh R
