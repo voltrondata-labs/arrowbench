@@ -153,8 +153,8 @@ returning a vector of R package names required</p></dd>
 a range of parameter combinations is handled by the runner, not the functions
 in the benchmark object.</p>
     </div>
-    <div id="parametrizing-benchmarks">
-    <h2>Parametrizing benchmarks</h2>
+    <div id="parameterizing-benchmarks">
+    <h2>Parameterizing benchmarks</h2>
     
 
 
@@ -186,6 +186,11 @@ installed outside of this process.</p></li>
 <li><p><code>cpu_count</code>: To restrict the number of threads available for computation,
 specify an integer <code>cpu_count</code>. This sets the R <code>Ncpus</code> option, which many
 packages follow, and also caps the <code>arrow</code> threadpool size.</p></li>
+<li><p><code>mem_alloc</code>: The memory allocator to be tested (one of: "jemalloc",
+"mimalloc", "system")</p></li>
+<li><p><code>drop_caches</code>: Attempt to drop the disk cache before each case or iteration.
+Currently only works on linux. Permissible values are <code>"case"</code>, <code>"iteration"</code>,
+and <code>NULL</code>. Defaults to <code>NULL</code>, i.e. don't drop caches.</p></li>
 </ul><p>Because these parameters can alter the global session state in unpredictable
 ways, when we run benchmarks, we always do so by calling out to a fresh R
 subprocess. That way, there is no potential contamination.</p>

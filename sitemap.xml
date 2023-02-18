@@ -169,6 +169,9 @@
     <loc>/reference/run_one.html</loc>
   </url>
   <url>
+    <loc>/reference/sync_and_drop_caches.html</loc>
+  </url>
+  <url>
     <loc>/reference/table_to_df.html</loc>
   </url>
   <url>

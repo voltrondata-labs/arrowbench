@@ -44,19 +44,27 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">measure</span><span class="op">(</span><span class="va">...</span>, profiling <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">measure</span><span class="op">(</span><span class="va">...</span>, profiling <span class="op">=</span> <span class="cn">FALSE</span>, drop_caches <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>...</dt>
-<dd><p>An expression to run</p></dd>
+<dd><p>An expression to</p></dd>
 
 
 <dt>profiling</dt>
 <dd><p>Logical: collect prof info? If <code>TRUE</code>, the result data will
 contain a <code>prof_file</code> field, which you can read in with
 <code>profvis::profvis(prof_input = file)</code>. Default is <code>FALSE</code></p></dd>
+
+
+<dt>drop_caches</dt>
+<dd><p>Attempt to drop the disk cache before each case or iteration.
+Currently only works on linux. Permissible values are <code>"case"</code>, <code>"iteration"</code>,
+and <code>NULL</code>. Defaults to <code>NULL</code>, i.e. don't drop caches. As <code>measure()</code> is run
+once per iteration, here <code>"iteration"</code> results in dropping caches once and
+<code>NULL</code> and <code>"case"</code> result in no cache dropping.</p></dd>
 
 </dl></div>
     <div id="value">

@@ -44,7 +44,7 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">assemble_metadata</span><span class="op">(</span><span class="va">name</span>, <span class="va">params</span>, <span class="va">cpu_count</span>, <span class="va">n_iter</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">assemble_metadata</span><span class="op">(</span><span class="va">name</span>, <span class="va">params</span>, <span class="va">cpu_count</span>, <span class="va">drop_caches</span>, <span class="va">n_iter</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -59,6 +59,12 @@
 
 <dt>cpu_count</dt>
 <dd><p>Number of CPUs allocated</p></dd>
+
+
+<dt>drop_caches</dt>
+<dd><p>Attempt to drop the disk cache before each case or iteration.
+Currently only works on linux. Permissible values are <code>"case"</code>, <code>"iteration"</code>,
+and <code>NULL</code>. Defaults to <code>NULL</code>, i.e. don't drop caches.</p></dd>
 
 
 <dt>n_iter</dt>
