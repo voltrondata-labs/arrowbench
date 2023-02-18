@@ -256,7 +256,7 @@ test_that("run.BenchmarkDataFrame() works", {
 
   # Narrower than `suppressWarnings()`; catches all 5 instances unlike `expect_warning()`
   withCallingHandlers(
-    { bm_df_res <- run(bm_df) },
+    { bm_df_res <- run(bm_df, drop_caches = "iteration", n_iter = 3L) },
     warning = function(w) if (conditionMessage(w) == "deparse may be incomplete") {
       invokeRestart(findRestart("muffleWarning"))
     }
@@ -265,7 +265,10 @@ test_that("run.BenchmarkDataFrame() works", {
   assert_benchmark_dataframe(
     bm_df_res,
     benchmarks = bm_list,
-    parameters = list(param_list[[1]], get_default_parameters(placebo))
+    parameters = list(
+      param_list[[1]],
+      get_default_parameters(placebo, drop_caches = "iteration", n_iter = 3L)
+    )
   )
   expect_true("results" %in% names(bm_df_res))
   purrr::walk2(bm_df_res$parameters, bm_df_res$results, function(parameters, results) {

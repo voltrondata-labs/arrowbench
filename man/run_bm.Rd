@@ -22,7 +22,7 @@ run_bm(
 \item{...}{parameters passed to \code{bm$setup()} or global parameters; see the
 "Parameterizing benchmarks" section of \code{\link[=Benchmark]{Benchmark()}}}
 
-\item{n_iter}{integer number of iterations to replicate each benchmark}
+\item{n_iter}{Integer number of iterations to replicate each benchmark}
 
 \item{batch_id}{a length 1 character vector to identify the batch}
 

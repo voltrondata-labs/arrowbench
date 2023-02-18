@@ -41,9 +41,9 @@ get_default_parameters.Benchmark <- function(x, ...) {
     params$cpu_count <- c(1L, parallel::detectCores())
   }
 
-  # params[["drop_caches"]] may be `NULL`
-  to_list_col <- lengths(params) == 0
-  params[to_list_col] <- lapply(params[to_list_col], list)
+  # `NULL` is a valid argument but needs to be wrapped in `list()`
+  to_list <- lengths(params) == 0
+  params[to_list] <- lapply(params[to_list], list)
 
   params[["stringsAsFactors"]] <- FALSE
   out <- do.call(expand.grid, params)

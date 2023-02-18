@@ -111,7 +111,8 @@ run.BenchmarkDataFrame <- function(x,
 #' be constructed from the expansion of the `...` arguments, the declared
 #' parameter options in `bm$setup`, and any restrictions potentially defined in
 #' `bm$valid_params()`.
-#' @param n_iter integer number of iterations to replicate each benchmark
+#' @param n_iter Integer number of iterations to replicate each benchmark. If
+#' `n_iter` is also supplied in `params`, that takes precedence.
 #' @param dry_run logical: just return the R source code that would be run in
 #' a subprocess? Default is `FALSE`, meaning that the benchmarks will be run.
 #' @param profiling Logical: collect prof info? If `TRUE`, the result data will
@@ -157,9 +158,7 @@ run_benchmark <- function(bm,
   )
   progress_bar$tick(0)
 
-  out <- pmap(
-    params,
-    run_one,
+  run_one_args <- list(
     bm = bm,
     n_iter = n_iter,
     dry_run = dry_run,
@@ -170,6 +169,15 @@ run_benchmark <- function(bm,
     run_name = run_name,
     run_reason = run_reason,
     test_packages = unique(bm$packages_used(params))
+  )
+
+  if ("n_iter" %in% names(params)) {
+    run_one_args[["n_iter"]] <- NULL
+  }
+
+  out <- pmap(
+    params,
+    do.call(purrr::partial, c(list(.f = run_one), run_one_args))
   )
 
   if (dry_run) {
@@ -196,6 +204,7 @@ run_benchmark <- function(bm,
 #' Run a Benchmark with a single set of parameters
 #'
 #' @inheritParams run_benchmark
+#' @param n_iter Integer number of iterations to replicate each benchmark
 #' @param batch_id a length 1 character vector to identify the batch
 #' @param progress_bar a `progress` object to update progress to (default `NULL`)
 #' @param run_id Unique ID for the run
