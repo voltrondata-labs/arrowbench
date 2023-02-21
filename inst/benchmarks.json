@@ -1,6 +1,6 @@
 [
   {
-    "command": "dataset_taxi_2013",
+    "command": "dataset_taxi_2013, n_iter = 3, drop_caches = 'iteration'",
     "name": "arrowbench/dataset_taxi_2013",
     "runner": "arrowbench",
     "flags": {
@@ -8,7 +8,7 @@
     }
   },
   {
-    "command": "row_group_size",
+    "command": "row_group_size, n_iter = 3, drop_caches = 'iteration'",
     "name": "arrowbench/row_group_size",
     "runner": "arrowbench",
     "flags": {
@@ -16,7 +16,7 @@
     }
   },
   {
-    "command": "write_csv",
+    "command": "write_csv, n_iter = 3, drop_caches = 'iteration'",
     "name": "arrowbench/write_csv",
     "runner": "arrowbench",
     "flags": {
@@ -24,7 +24,7 @@
     }
   },
   {
-    "command": "read_csv",
+    "command": "read_csv, n_iter = 3, drop_caches = 'iteration'",
     "name": "arrowbench/read_csv",
     "runner": "arrowbench",
     "flags": {
@@ -32,7 +32,7 @@
     }
   },
   {
-    "command": "read_json",
+    "command": "read_json, n_iter = 3, drop_caches = 'iteration'",
     "name": "arrowbench/read_json",
     "runner": "arrowbench",
     "flags": {
@@ -40,7 +40,7 @@
     }
   },
   {
-    "command": "remote_dataset",
+    "command": "remote_dataset, n_iter = 3, drop_caches = 'iteration'",
     "name": "arrowbench/remote_dataset",
     "runner": "arrowbench",
     "flags": {
@@ -48,7 +48,7 @@
     }
   },
   {
-    "command": "file-write",
+    "command": "file-write, n_iter = 3, drop_caches = 'iteration'",
     "name": "arrowbench/file-write",
     "runner": "arrowbench",
     "flags": {
@@ -56,7 +56,7 @@
     }
   },
   {
-    "command": "dataframe-to-table",
+    "command": "dataframe-to-table, n_iter = 3, drop_caches = 'iteration'",
     "name": "arrowbench/dataframe-to-table",
     "runner": "arrowbench",
     "flags": {
@@ -64,7 +64,7 @@
     }
   },
   {
-    "command": "table_to_df",
+    "command": "table_to_df, n_iter = 3, drop_caches = 'iteration'",
     "name": "arrowbench/table_to_df",
     "runner": "arrowbench",
     "flags": {
@@ -72,7 +72,7 @@
     }
   },
   {
-    "command": "array_to_vector",
+    "command": "array_to_vector, n_iter = 3, drop_caches = 'iteration'",
     "name": "arrowbench/array_to_vector",
     "runner": "arrowbench",
     "flags": {
@@ -80,7 +80,7 @@
     }
   },
   {
-    "command": "partitioned-dataset-filter",
+    "command": "partitioned-dataset-filter, n_iter = 3, drop_caches = 'iteration'",
     "name": "arrowbench/partitioned-dataset-filter",
     "runner": "arrowbench",
     "flags": {
@@ -88,7 +88,7 @@
     }
   },
   {
-    "command": "file-read",
+    "command": "file-read, n_iter = 3, drop_caches = 'iteration'",
     "name": "arrowbench/file-read",
     "runner": "arrowbench",
     "flags": {
@@ -96,7 +96,7 @@
     }
   },
   {
-    "command": "tpch",
+    "command": "tpch, n_iter = 3, drop_caches = 'iteration'",
     "name": "arrowbench/tpch",
     "runner": "arrowbench",
     "flags": {
@@ -104,7 +104,7 @@
     }
   },
   {
-    "command": "array_altrep_materialization",
+    "command": "array_altrep_materialization, n_iter = 3, drop_caches = 'iteration'",
     "name": "arrowbench/array_altrep_materialization",
     "runner": "arrowbench",
     "flags": {

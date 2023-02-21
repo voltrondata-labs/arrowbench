@@ -8,7 +8,7 @@ to keep track of benchmarks available in a repository.
 arrowbench::get_package_benchmarks()$name |>
   lapply(function(name) {
     list(
-      command = name,
+      command = paste(name, "n_iter = 3", "drop_caches = 'iteration'", sep = ", "),
       name = paste0("arrowbench/", name),
       runner = "arrowbench",
       flags = list(language = "R")
