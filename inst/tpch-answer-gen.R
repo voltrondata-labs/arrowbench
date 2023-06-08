@@ -22,7 +22,7 @@ input_functions[["arrow"]] <- function(name) {
   return(arrow::open_dataset(file, format = "parquet"))
 }
 
-con <- dbConnect(duckdb::duckdb("temp"))
+con <- dbConnect(duckdb::duckdb("answer_gen_db"))
 dbExecute(con, paste0("PRAGMA threads=10"))
 
 # DuckDB tables
@@ -54,6 +54,7 @@ for (q in c(1:22)) {
     glue::glue("https://raw.githubusercontent.com/duckdb/duckdb/master/extension/tpch/dbgen/queries/q{stringr::str_pad(query, 2, pad = '0')}.sql")
   ), collapse = "\n")
 
+  # dplyr with scale factor 10 requires a lot of memory, if hitting `vector memory exhausted (limit reached?)` comment it out
   result_dplyr <- tpc_h_queries[[query]](input_functions[["dplyr"]])
   result_arrow <- tpc_h_queries[[query]](input_functions[["arrow"]], collect_func = compute)
   result_duckdb <- as_tibble(dbGetQuery(con, sql))
@@ -67,4 +68,4 @@ for (q in c(1:22)) {
 
 # clean up duckdb database file
 DBI::dbDisconnect(con, shutdown = TRUE)
-unlink("temp")
+unlink("answer_gen_db")
