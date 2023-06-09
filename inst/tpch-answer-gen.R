@@ -55,6 +55,7 @@ for (q in c(1:22)) {
   ), collapse = "\n")
 
   # dplyr with scale factor 10 requires a lot of memory, if hitting `vector memory exhausted (limit reached?)` comment it out
+  # at scale factor 0.01 there are small differences between duckdb and arrow for some queries. This is likely due to decimal precision / rounding differences, but I haven't dug into it too deeply.
   result_dplyr <- tpc_h_queries[[query]](input_functions[["dplyr"]])
   result_arrow <- tpc_h_queries[[query]](input_functions[["arrow"]], collect_func = compute)
   result_duckdb <- as_tibble(dbGetQuery(con, sql))
