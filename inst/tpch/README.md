@@ -7,4 +7,4 @@ But it's plain to see if you look at the official answers and the duckdb ones fo
 https://github.com/databricks/tpch-dbgen/blob/6985da461c641fd0d255b214f2d693f1bf08bc33/answers/q2.out
 https://github.com/duckdb/duckdb/blob/c0a4ab96c626426961c207f49c19aa81448e91da/extension/tpch/dbgen/answers/sf1/q02.csv
 
-Additionally, DuckDB >= 0.8 has also changed slightly some of the `s_comment` columns. This doesn't impact queries themselves, but [the answers changed](https://github.com/duckdb/duckdb/pull/6535). Note the answer differences before PR #XXX.
+Additionally, DuckDB >= 0.8 has also changed slightly some of the `s_comment` columns. This doesn't impact queries themselves, but [the answers changed](https://github.com/duckdb/duckdb/pull/6535). Note the answer differences before PR #136.
