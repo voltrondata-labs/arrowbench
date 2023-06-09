@@ -16,7 +16,7 @@ Imports:
     arrow,
     bench,
     dplyr,
-    duckdb (>= 0.6.0),
+    duckdb (>= 0.8.0),
     distro,
     glue, 
     jsonlite,
