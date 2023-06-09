@@ -76,7 +76,13 @@ tpc_h <- Benchmark("tpch",
       con = con,
       scale_factor = scale_factor,
       query_id = query_id,
-      collect_func = collect_func
+      collect_func = collect_func,
+      metadata = list(
+        engine = engine,
+        scale_factor = scale_factor,
+        query_id = query_id,
+        chunk_size = chunk_size
+      )
     )
   },
   # delete the results before each iteration
@@ -85,7 +91,7 @@ tpc_h <- Benchmark("tpch",
   },
   # the benchmark to run
   run = {
-    result <- query(input_func, collect_func, con)
+    result <- query(input_func, collect_func, con, metadata)
   },
   # after each iteration, check the dimensions and delete the results
   after_each = {
@@ -408,7 +414,7 @@ get_sql_query_func <- function(query_num) {
   query_sql <- get_sql_tpch_query(query_num)
 
   # wrap the SQL in a function
-  function(input_func = NULL, collect_func = NULL, con) {
+  function(input_func = NULL, collect_func = NULL, con, metadata=NULL) {
     DBI::dbGetQuery(con, query_sql)
   }
 }
