@@ -1,3 +1,13 @@
+old_env_vars <- sapply(
+  c("CONBENCH_PROJECT_REPOSITORY", "CONBENCH_PROJECT_COMMIT", "CONBENCH_PR_NUMBER"),
+  Sys.getenv,
+  simplify = FALSE
+)
+
+Sys.setenv("CONBENCH_PROJECT_REPOSITORY" = "https://github.com/apache/arrow")
+Sys.setenv("CONBENCH_PROJECT_COMMIT" = "fake-test-commit")
+Sys.setenv("CONBENCH_PR_NUMBER" = "fake-pr-number")
+
 test_that("run_iteration", {
   b <- Benchmark("test")
   out <- run_iteration(b, ctx = new.env())
@@ -22,7 +32,7 @@ test_that("run_bm", {
   expect_s3_class(out, "BenchmarkResult")
   expect_identical(nrow(out$optional_benchmark_info$result), 3L)
 
-  expect_error(run_bm(b, param1 = "b"), "isTRUE(result) is not TRUE", fixed = TRUE)
+  expect_match(run_bm(b, param1 = "b")$error$error, "isTRUE(result) is not TRUE", fixed = TRUE)
 })
 
 
@@ -109,8 +119,7 @@ test_that("Argument validation", {
 
   suppress_deparse_warning(
     expect_message(
-      run_one(placebo, cpu_count = 1),
-      NA
+      run_one(placebo, cpu_count = 1)
     )
   )
 
@@ -122,8 +131,7 @@ test_that("Path validation and redaction", {
   # the one being tested (e.g. when using devtools::test())
   suppress_deparse_warning(
     expect_message(
-      run_one(placebo, cpu_count = 1, grid = "not/a/file@path"),
-      NA
+      run_one(placebo, cpu_count = 1, grid = "not/a/file@path")
     )
   )
 
@@ -163,7 +171,7 @@ test_that("form of the results, including output", {
     iteration = 1L,
     cpu_count = 1L,
     lib_path = "latest",
-    output = "A message: here's some output\n### RESULTS HAVE BEEN PARSED ###"
+    output = "A message: here's some output\n\n### RESULTS HAVE BEEN PARSED ###"
   )
   # output is always a character, even < 4.0, where it would default to factors
   expected$output <- as.character(expected$output)
@@ -178,8 +186,8 @@ test_that("form of the results, including output", {
   ))
 
   json_keys <- c(
-    "batch_id", "timestamp", "stats", "tags", "info", "optional_benchmark_info",
-    "context", "github"
+    'batch_id', 'context', 'github', 'info', 'machine_info',
+    'optional_benchmark_info', 'run_name', 'stats', 'tags', 'timestamp'
   )
   expect_named(res$results[[1]]$list, json_keys, ignore.order = TRUE)
 
@@ -429,3 +437,5 @@ test_that("run.BenchmarkDataFrame() with `publish = TRUE` works (with mocking)",
 
 unlink("benchconnect-state.json")
 wipe_results()
+
+do.call(Sys.setenv, old_env_vars)

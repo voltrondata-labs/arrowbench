@@ -8,7 +8,7 @@ test_that("with_gc_info + errors", {
     )
   )
   expect_false(is.null(base_error$error))
-  expect_match(base_error$error$log[[1]], "Error.*something went wrong \\(but I knew that\\)")
+  expect_match(base_error$error$error, "Error.*something went wrong \\(but I knew that\\)")
 
   suppress_deparse_warning(
     capture.output(
@@ -16,5 +16,5 @@ test_that("with_gc_info + errors", {
     )
   )
   expect_false(is.null(base_error$error))
-  expect_match(paste0(rlang_error$error$log, collapse = "\n"), "Error.*something went wrong \\(but I knew that\\)")
+  expect_match(rlang_error$error$error, "Error.*something went wrong \\(but I knew that\\)")
 })

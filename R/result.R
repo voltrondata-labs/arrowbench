@@ -91,6 +91,9 @@ Serializable <- R6Point1Class(
 
   public = list(
     write_json = function(path) {
+      if (!dir.exists(dirname(path))) {
+        dir.create(dirname(path), recursive = TRUE)
+      }
       writeLines(self$json, path)
     }
   ),

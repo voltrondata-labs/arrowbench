@@ -301,15 +301,19 @@ run_one <- function(bm,
       read_only = read_only,
       run_id = run_id,
       run_name = run_name,
+      batch_id = batch_id,
       run_reason = run_reason
     ),
     keep.null = TRUE
   )
   result <- do.call(run_script, run_script_args)
-  # If JSON reading fails because `run_bm()` errored, `batch_id` will not be populated
-  if (is.null(result$batch_id)) {
-    result$batch_id <- batch_id
+
+  if (!identical(Sys.getenv("TESTTHAT"), "true") && !is.null(result$error)) {
+    cat("Result errored; quitting with status = 1")
+    cat(result$error)
+    quit(status = 1L)
   }
+
   result
 }
 
@@ -339,12 +343,28 @@ run_bm <- function(bm, ..., n_iter = 1, batch_id = NULL, profiling = FALSE,
   })
 
   results <- list()
+  error <- NULL
   for (i in seq_len(n_iter)) {
-    results[[i]] <- run_iteration(
-      bm = bm,
-      ctx = ctx,
-      profiling = profiling,
-      drop_caches = global_params[["drop_caches"]]
+    tryCatch(
+      {
+        results[[i]] <- run_iteration(
+          bm = bm,
+          ctx = ctx,
+          profiling = profiling,
+          drop_caches = global_params[["drop_caches"]]
+        )
+      },
+      error = function(e){
+        # Note: this will only capture the last error
+        error <<- list(
+          error = as.character(e),
+          stack_trace = vapply(
+            traceback(3),
+            function(x) paste(x, collapse = "\n"),
+            character(1)
+          )
+        )
+      }
     )
   }
 
@@ -373,6 +393,18 @@ run_bm <- function(bm, ..., n_iter = 1, batch_id = NULL, profiling = FALSE,
     n_iter = n_iter
   )
 
+  if (length(result_df$real) == 0) {
+    stats <- NULL
+  } else {
+    stats <- list(
+      data = as.list(result_df$real),
+      unit = "s",
+      times = list(),
+      time_unit = "s",
+      iterations = n_iter
+    )
+  }
+
   out <- BenchmarkResult$new(
     run_name = run_name,
     run_id = run_id,
@@ -380,14 +412,8 @@ run_bm <- function(bm, ..., n_iter = 1, batch_id = NULL, profiling = FALSE,
     run_reason = run_reason,
     # let default populate
     # timestamp = utc_now_iso_format(),
-    stats = list(
-      data = as.list(result_df$real),
-      unit = "s",
-      times = list(),
-      time_unit = "s",
-      iterations = n_iter
-    ),
-    error = NULL,
+    stats = stats,
+    error = error,
     validation = NULL,
     tags = metadata$tags,
     info = metadata$info,
@@ -529,7 +555,7 @@ github_info <- function() {
 #' @importFrom jsonlite fromJSON toJSON
 #' @importFrom withr with_envvar
 run_script <- function(lines, cmd = find_r(), ..., metadata, progress_bar, read_only = FALSE,
-                       run_id = NULL, run_name = NULL, run_reason = NULL) {
+                       run_id = NULL, run_name = NULL, batch_id = NULL, run_reason = NULL) {
   # cmd may need to vary by platform; possibly also a param for this fn?
 
   result_dir <- file.path(local_dir(), "results")
@@ -590,9 +616,6 @@ run_script <- function(lines, cmd = find_r(), ..., metadata, progress_bar, read_
     ))
 
     # Cache the result so we don't have to re-run it
-    if (!dir.exists(dirname(file))) {
-      dir.create(dirname(file))
-    }
     result <- BenchmarkResult$from_json(result_json)
     if (is.null(result$optional_benchmark_info)) {
       result$optional_benchmark_info <- list()
@@ -600,15 +623,15 @@ run_script <- function(lines, cmd = find_r(), ..., metadata, progress_bar, read_
     result$optional_benchmark_info$output <- result_output
     ## add actual script
     result$optional_benchmark_info$rscript <- lines
-    result$write_json(file)
   } else {
     # This means the script errored.
     message(paste(result, collapse = "\n"))
     result <- BenchmarkResult$new(
       run_name = run_name,
       run_id = run_id,
+      batch_id = batch_id,
       run_reason = run_reason,
-      error = list(log = result),
+      error = list(error = result),
       tags = metadata$tags,
       info = metadata$info,
       optional_benchmark_info = list(
@@ -617,10 +640,14 @@ run_script <- function(lines, cmd = find_r(), ..., metadata, progress_bar, read_
         output = NULL,
         rscript = lines
       ),
+      machine_info=NULL,
       context = metadata$context,
       github = metadata$github
     )
   }
+
+  result <- augment_result(result)
+  result$write_json(file)
 
   if (!is.null(progress_bar)) {
     # only tick progress after completion
