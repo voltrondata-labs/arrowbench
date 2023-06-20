@@ -308,12 +308,6 @@ run_one <- function(bm,
   )
   result <- do.call(run_script, run_script_args)
 
-  if (!identical(Sys.getenv("TESTTHAT"), "true") && !is.null(result$error)) {
-    cat("Result errored; quitting with status = 1")
-    cat(result$error)
-    quit(status = 1L)
-  }
-
   result
 }
 
