@@ -367,7 +367,7 @@ run_bm <- function(bm, ..., n_iter = 1, batch_id = NULL, profiling = FALSE,
         }
       ),
       error = function(e){
-        # Note: this will only capture the last error
+        # Note: this will only capture the error from the last erroring iteration
         error <<- list(
           error = as.character(e),
           stack_trace = vapply(
