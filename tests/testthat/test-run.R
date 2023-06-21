@@ -119,7 +119,8 @@ test_that("Argument validation", {
 
   suppress_deparse_warning(
     expect_message(
-      run_one(placebo, cpu_count = 1)
+      run_one(placebo, cpu_count = 1),
+      NA
     )
   )
 
@@ -131,7 +132,8 @@ test_that("Path validation and redaction", {
   # the one being tested (e.g. when using devtools::test())
   suppress_deparse_warning(
     expect_message(
-      run_one(placebo, cpu_count = 1, grid = "not/a/file@path")
+      run_one(placebo, cpu_count = 1, grid = "not/a/file@path"),
+      NA
     )
   )
 
@@ -186,8 +188,8 @@ test_that("form of the results, including output", {
   ))
 
   json_keys <- c(
-    'batch_id', 'context', 'github', 'info', 'machine_info',
-    'optional_benchmark_info', 'run_name', 'stats', 'tags', 'timestamp'
+    "batch_id", "timestamp", "stats", "tags", "info", "optional_benchmark_info",
+    "context", "github"
   )
   expect_named(res$results[[1]]$list, json_keys, ignore.order = TRUE)
 

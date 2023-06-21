@@ -662,7 +662,6 @@ run_script <- function(lines, cmd = find_r(), ..., metadata, progress_bar, read_
     )
   }
 
-  result <- augment_result(result)
   result$write_json(file)
 
   if (!is.null(progress_bar)) {
