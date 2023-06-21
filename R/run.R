@@ -339,15 +339,33 @@ run_bm <- function(bm, ..., n_iter = 1, batch_id = NULL, profiling = FALSE,
   results <- list()
   error <- NULL
   for (i in seq_len(n_iter)) {
+    warnings <- list()
     tryCatch(
-      {
-        results[[i]] <- run_iteration(
-          bm = bm,
-          ctx = ctx,
-          profiling = profiling,
-          drop_caches = global_params[["drop_caches"]]
-        )
-      },
+      # warnings must be captured with `withCallingHandlers()` instead of
+      # `tryCatch()` so code continues execution after a warning is raised
+      withCallingHandlers(
+        {
+          results[[i]] <- run_iteration(
+            bm = bm,
+            ctx = ctx,
+            profiling = profiling,
+            drop_caches = global_params[["drop_caches"]]
+          )
+        },
+        warning = function(w){
+          warnings <<- c(warnings, list(list(
+            warning = as.character(w),
+            # Simplifies to a character vector with one element for each call.
+            # Unfortunately ends up as a list of strings because jsonlite,
+            # but the resulting json is fine.
+            stack_trace = vapply(
+              traceback(3),
+              function(x) paste(x, collapse = "\n"),
+              character(1)
+            )
+          )))
+        }
+      ),
       error = function(e){
         # Note: this will only capture the last error
         error <<- list(
@@ -360,6 +378,10 @@ run_bm <- function(bm, ..., n_iter = 1, batch_id = NULL, profiling = FALSE,
         )
       }
     )
+  }
+
+  if (!is.null(error) && length(warnings) > 0L) {
+    error[["warnings"]] <- warnings
   }
 
   result_df <- do.call(rbind, results)

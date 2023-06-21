@@ -142,9 +142,8 @@ Serializable <- R6Point1Class(
     from_json = function(json) {
       self$from_list(jsonlite::fromJSON(
         paste(json, collapse = "\n"),
-        # Cursed, but necessary; we need to maintain singleton arrays, but
-        # roundtrip dataframes
-        simplifyVector = FALSE, simplifyMatrix = FALSE, simplifyDataFrame = TRUE
+        # Cursed, but necessary; we need to maintain singleton arrays
+        simplifyVector = FALSE, simplifyMatrix = FALSE, simplifyDataFrame = FALSE
       ))
     },
     read_json = function(path) {
@@ -250,7 +249,19 @@ BenchmarkResult <- R6Point1Class(
     validation = function(validation) private$get_or_set_serializable(variable = "validation", value = validation),
     tags = function(tags) private$get_or_set_serializable(variable = "tags", value = tags),
     info = function(info) private$get_or_set_serializable(variable = "info", value = info),
-    optional_benchmark_info = function(optional_benchmark_info) private$get_or_set_serializable(variable = "optional_benchmark_info", value = optional_benchmark_info),
+    optional_benchmark_info = function(optional_benchmark_info) {
+      if (!missing(optional_benchmark_info)) {
+        # roundtrip data.frames
+        if (!is.null(optional_benchmark_info$result)) {
+          optional_benchmark_info$result <- dplyr::bind_rows(optional_benchmark_info$result)
+        }
+        if (!is.null(optional_benchmark_info$params$packages)) {
+          optional_benchmark_info$params$packages <- dplyr::bind_rows(optional_benchmark_info$params$packages)
+        }
+        private$to_serialize[["optional_benchmark_info"]] <- optional_benchmark_info
+      }
+      private$to_serialize[["optional_benchmark_info"]]
+    },
     machine_info = function(machine_info) private$get_or_set_serializable(variable = "machine_info", value = machine_info),
     cluster_info = function(cluster_info) private$get_or_set_serializable(variable = "cluster_info", value = cluster_info),
     context = function(context) private$get_or_set_serializable(variable = "context", value = context),

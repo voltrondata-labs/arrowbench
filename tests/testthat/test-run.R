@@ -197,7 +197,9 @@ test_that("form of the results, including output", {
     )
   )
   results_df <- as.data.frame(res)
-  expect_identical(
+  # `expect_match()` instead of `expect_identical()` because a traceback for the
+  # warning also gets printed
+  expect_match(
     results_df$output,
     paste(
       "Warning message:",
@@ -205,7 +207,8 @@ test_that("form of the results, including output", {
       "",
       "### RESULTS HAVE BEEN PARSED ###",
       sep = "\n"
-    )
+    ),
+    fixed = TRUE
   )
 
   expect_message(
@@ -256,13 +259,14 @@ test_that("run.BenchmarkDataFrame() works", {
     get_default_parameters(
       placebo,
       error = list(NULL, "rlang::abort", "base::stop"),
+      output_type = list(NULL, "message", "warning", "cat"),
       cpu_count = arrow::cpu_count()
     ),
     NULL
   )
   bm_df <- BenchmarkDataFrame(benchmarks = bm_list, parameters = param_list)
 
-  # Narrower than `suppressWarnings()`; catches all 5 instances unlike `expect_warning()`
+  # Narrower than `suppressWarnings()`; catches all instances unlike `expect_warning()`
   withCallingHandlers(
     { bm_df_res <- run(bm_df, drop_caches = "iteration", n_iter = 3L) },
     warning = function(w) if (conditionMessage(w) == "deparse may be incomplete") {
@@ -293,6 +297,16 @@ test_that("run.BenchmarkDataFrame() works", {
         } else {
           # erroring case
           expect_false(is.null(res$error))
+          expect_false(is.null(res$error$error))
+          expect_false(is.null(res$error$stack_trace))
+          if (!is.null(res$tags$output_type) && res$tags$output_type == "warning") {
+            expect_false(is.null(res$error$warnings))
+            expect_identical(
+              res$error$warnings[[1]]$warning,
+              "simpleWarning in placebo_func(): A warning:here's some output\n"
+            )
+            expect_gt(length(res$error$warnings[[1]]$stack_trace), 0L)
+          }
         }
       })
     } else {
