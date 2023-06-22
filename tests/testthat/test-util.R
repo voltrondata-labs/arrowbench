@@ -41,10 +41,10 @@ test_that("sync_and_drop_caches() works", {
     }
   }
 
-  cases = purrr::cross(list(
+  cases = suppressWarnings(purrr::cross(list(
     "sync; echo 3 | sudo tee /proc/sys/vm/drop_caches" = c(TRUE, FALSE),
     "sync; sudo purge" = c(TRUE, FALSE)
-  ))
+  )))
 
   for (case in cases) {
     options(

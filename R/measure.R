@@ -45,6 +45,7 @@ with_profiling <- function(profiling_on, expr) {
 }
 
 with_gc_info <- function(expr) {
+  force(expr)
   with_gcinfo <- "bench" %:::% "with_gcinfo"
   gc_output <- with_gcinfo(eval.parent(expr))
   # This will swallow errors, so check for error output and re-raise

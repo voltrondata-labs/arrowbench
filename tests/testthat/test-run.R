@@ -1,3 +1,13 @@
+old_env_vars <- sapply(
+  c("CONBENCH_PROJECT_REPOSITORY", "CONBENCH_PROJECT_COMMIT", "CONBENCH_PR_NUMBER"),
+  Sys.getenv,
+  simplify = FALSE
+)
+
+Sys.setenv("CONBENCH_PROJECT_REPOSITORY" = "https://github.com/apache/arrow")
+Sys.setenv("CONBENCH_PROJECT_COMMIT" = "fake-test-commit")
+Sys.setenv("CONBENCH_PR_NUMBER" = "fake-pr-number")
+
 test_that("run_iteration", {
   b <- Benchmark("test")
   out <- run_iteration(b, ctx = new.env())
@@ -22,7 +32,7 @@ test_that("run_bm", {
   expect_s3_class(out, "BenchmarkResult")
   expect_identical(nrow(out$optional_benchmark_info$result), 3L)
 
-  expect_error(run_bm(b, param1 = "b"), "isTRUE(result) is not TRUE", fixed = TRUE)
+  expect_match(run_bm(b, param1 = "b")$error$error, "isTRUE(result) is not TRUE", fixed = TRUE)
 })
 
 
@@ -163,7 +173,7 @@ test_that("form of the results, including output", {
     iteration = 1L,
     cpu_count = 1L,
     lib_path = "latest",
-    output = "A message: here's some output\n### RESULTS HAVE BEEN PARSED ###"
+    output = "A message: here's some output\n\n### RESULTS HAVE BEEN PARSED ###"
   )
   # output is always a character, even < 4.0, where it would default to factors
   expected$output <- as.character(expected$output)
@@ -189,7 +199,9 @@ test_that("form of the results, including output", {
     )
   )
   results_df <- as.data.frame(res)
-  expect_identical(
+  # `expect_match()` instead of `expect_identical()` because a traceback for the
+  # warning also gets printed
+  expect_match(
     results_df$output,
     paste(
       "Warning message:",
@@ -197,7 +209,8 @@ test_that("form of the results, including output", {
       "",
       "### RESULTS HAVE BEEN PARSED ###",
       sep = "\n"
-    )
+    ),
+    fixed = TRUE
   )
 
   expect_message(
@@ -248,13 +261,14 @@ test_that("run.BenchmarkDataFrame() works", {
     get_default_parameters(
       placebo,
       error = list(NULL, "rlang::abort", "base::stop"),
+      output_type = list(NULL, "message", "warning", "cat"),
       cpu_count = arrow::cpu_count()
     ),
     NULL
   )
   bm_df <- BenchmarkDataFrame(benchmarks = bm_list, parameters = param_list)
 
-  # Narrower than `suppressWarnings()`; catches all 5 instances unlike `expect_warning()`
+  # Narrower than `suppressWarnings()`; catches all instances unlike `expect_warning()`
   withCallingHandlers(
     { bm_df_res <- run(bm_df, drop_caches = "iteration", n_iter = 3L) },
     warning = function(w) if (conditionMessage(w) == "deparse may be incomplete") {
@@ -285,6 +299,16 @@ test_that("run.BenchmarkDataFrame() works", {
         } else {
           # erroring case
           expect_false(is.null(res$error))
+          expect_false(is.null(res$error$error))
+          expect_false(is.null(res$error$stack_trace))
+          if (!is.null(res$tags$output_type) && res$tags$output_type == "warning") {
+            expect_false(is.null(res$error$warnings))
+            expect_identical(
+              res$error$warnings[[1]]$warning,
+              "simpleWarning in placebo_func(): A warning:here's some output\n"
+            )
+            expect_gt(length(res$error$warnings[[1]]$stack_trace), 0L)
+          }
         }
       })
     } else {
@@ -429,3 +453,5 @@ test_that("run.BenchmarkDataFrame() with `publish = TRUE` works (with mocking)",
 
 unlink("benchconnect-state.json")
 wipe_results()
+
+do.call(Sys.setenv, old_env_vars)

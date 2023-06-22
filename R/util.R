@@ -64,6 +64,7 @@ file_with_ext <- function(file, new_ext) {
 
 bm_run_cache_key <- function(name, ...) {
   dots <- list(...)
+  dots <- lapply(dots, function(x) if (is.null(x)) "NULL" else x)
   # redact any slashes from the dots since they will not save correctly
   dots <- lapply(dots, gsub, pattern = "/", replacement = "_")
   dots <- dots[sort(names(dots))]
